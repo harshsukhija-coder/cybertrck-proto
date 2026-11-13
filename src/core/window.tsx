@@ -1,90 +1,154 @@
-import { useRef } from "react";
-import { useAsciiText } from 'react-ascii-text';
+import { useCallback, useEffect, useRef, useState } from "react";
+// import { useAsciiText } from 'react-ascii-text';
 import Draggable from "react-draggable";
-import confusedMeme from "../assets/memes/confused.gif";
+import { NmapIcon } from "../icons/DesktopIcons";
+import MessageBlock from "./message-block";
+import { story, type StoryMessage } from "./story";
 import TerminalTextBox from "./terminal-textbox";
 
-const Window = ({ title }: { title: string }) => {
+const MESSAGE_GAP_MS = 650;
+
+type ChatMessage = StoryMessage & { id: number; time: string };
+
+const currentTime = () =>
+  new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+type WindowProps = {
+  title: string;
+  minimized: boolean;
+  onMinimize: () => void;
+  onClose: () => void;
+};
+
+const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
   const windowRef = useRef(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const timers = useRef<number[]>([]);
+  const nextId = useRef(0);
 
-  const asciiTextRef = useAsciiText({
-    text: "nmap",
-    isAnimated: false
-  });
+  // The intro scene starts playing on mount
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [nextScene, setNextScene] = useState(1);
+  const [busy, setBusy] = useState(true);
 
-  const storyLine = [
-    {
-      "label": "system",
-      "line": "every network reveals secrets if you know how to listen"
-    },
-    {
-      "label": "story",
-      "line": "there is a employee satyam"
-    },
-    {
-      "label": "story",
-      "line": "working in a startup"
-    },
-    {
-      "label": "story",
-      "line": "in his network there are handful of devices"
-    },
-    {
-      "label": "info",
-      "line": "every device on the network leaves a trace"
-    },
-    {
-      "label": "info",
-      "line": "its ip Address (xx.xx.xx.xx)"
-    },
-    {
-      "label": "info",
-      "line": "open ports / doors"
-    },
-    {
-      "label": "info",
-      "line": "services + version (software it runs)"
-    },
-    {
-      "label": "info",
-      "line": "operating System"
-    },
-    {
-      "label": "story",
-      "line": "network is not a mystery, its an open map"
+  // const asciiTextRef = useAsciiText({
+  //   text: "nmap",
+  //   isAnimated: false
+  // });
+
+  const addMessage = useCallback((message: StoryMessage) => {
+    setMessages(prev => [...prev, { ...message, id: nextId.current++, time: currentTime() }]);
+  }, []);
+
+  // Messages of a scene pop up one after another, like output streaming into a terminal
+  const revealScene = useCallback((index: number) => {
+    const scene = story[index];
+    scene.forEach((message, i) => {
+      const timer = window.setTimeout(() => {
+        addMessage(message);
+        if (i === scene.length - 1) setBusy(false);
+      }, 150 + i * MESSAGE_GAP_MS);
+      timers.current.push(timer);
+    });
+  }, [addMessage]);
+
+  const playScene = (index: number) => {
+    setBusy(true);
+    setNextScene(index + 1);
+    revealScene(index);
+  };
+
+  useEffect(() => {
+    revealScene(0);
+    return () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+    };
+  }, [revealScene]);
+
+  // Coming back from minimized should put the cursor straight back in the input
+  useEffect(() => {
+    if (!minimized) inputRef.current?.focus();
+  }, [minimized]);
+
+  const storyDone = nextScene >= story.length;
+
+  const handleSubmit = (input: string) => {
+    const text = input.trim();
+    if (text) addMessage({ from: "you", text });
+
+    if (text.toLowerCase() === "restart" || text.toLowerCase() === "clear") {
+      setMessages([]);
+      playScene(0);
+      return;
     }
-  ];
 
-  const storyPoints = [
-    "Network is not a mystery, its an open map"
-  ];
+    if (storyDone) {
+      addMessage({ from: "system", text: "that's all for now. type 'restart' to play again." });
+      return;
+    }
+
+    playScene(nextScene);
+  };
+
+  // Clicking anywhere on the window puts the cursor back in the input, unless the user is selecting text
+  const focusInput = () => {
+    if (window.getSelection()?.toString()) return;
+    inputRef.current?.focus();
+  };
+
+  const handleWindowButton = (action: () => void) => (event: React.MouseEvent) => {
+    event.stopPropagation();
+    action();
+  };
 
   return (
-    <Draggable nodeRef={windowRef}>
-      <div className="w-3xl" ref={windowRef}>
-        {/* Header */}
-        <div className="flex h-[4vh] items-center justify-between px-2 py-1 bg-white/20 rounded-t-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[5px] border-t border-white/30">
-          <div className="flex gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-700"></div>
-            <div className="w-3 h-3 rounded-full bg-green-600"></div>
-            <div className="w-3 h-3 rounded-full bg-purple-600"></div>
+    <Draggable nodeRef={windowRef} handle=".window-handle" cancel=".window-button">
+      <div className={`pointer-events-auto w-[min(48rem,92vw)] ${minimized ? "hidden" : ""}`} ref={windowRef} onClick={focusInput}>
+        <div className="animate-window-open flex h-[min(75vh,44rem)] flex-col overflow-hidden rounded-xl border border-neon/25 bg-panel/80 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9),0_0_60px_-20px_rgba(0,255,156,0.45)] backdrop-blur-xl">
+          {/* Header */}
+          <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/5 px-3 text-xs active:cursor-grabbing">
+            <div className="flex items-center gap-2">
+              <NmapIcon className="h-4 w-4 text-neon" />
+              <span className="font-semibold text-neon neon-text">{title}</span>
+              <span className="text-neon/40">friday@startup: ~/nmap</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="mr-2 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">target 192.168.1.0/24</span>
+              <button
+                className="window-button grid h-6 w-6 place-items-center rounded text-neon/60 hover:bg-neon/15 hover:text-neon"
+                onClick={handleWindowButton(onMinimize)}
+                aria-label="minimize"
+              >
+                —
+              </button>
+              <button
+                className="window-button grid h-6 w-6 place-items-center rounded text-neon/60 hover:bg-danger hover:text-black"
+                onClick={handleWindowButton(onClose)}
+                aria-label="close"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-          <div>{title}</div>
-          <div>192.0.0.1</div>
-        </div>
-        {/* Body */}
-        <div className="w-full h-[70vh] bg-black/20 rounded-b-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[5px] border-b border-black/30 border flex justify-end flex-col">
+          {/* Body */}
           {/*<div className="px-2 py-1">
             <pre ref={asciiTextRef}></pre>
           </div>*/}
-          {/*{storyLine && storyLine.length > 0 && storyLine.map(story => (
-            <div className="tracking-wide flex" key={story.line}>
-              <span className="text-[#77DB89]">{story.label}&nbsp;:&nbsp;</span>
-              <input type="name" value={story.line} className="grow" disabled />
+          {/* column-reverse keeps the list pinned to the bottom as new messages grow in */}
+          <div className="thin-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto">
+            <div>
+              {messages.map(message => (
+                <MessageBlock key={message.id} message={message} time={message.time} />
+              ))}
             </div>
-          ))}*/}
-          {/*<img src={confusedMeme} width={200} height={200} alt="loading..." />*/}
-          <TerminalTextBox />
+          </div>
+          <TerminalTextBox
+            inputRef={inputRef}
+            onSubmit={handleSubmit}
+            busy={busy}
+            placeholder={busy ? "" : storyDone ? "type 'restart' to play again" : "press enter to continue..."}
+          />
         </div>
       </div>
     </Draggable>

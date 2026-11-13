@@ -8,3 +8,7 @@
 * How to keep the current window in focus and go accordingly
 * Find a good design for a terminal window
 * Introduce memes in between as well
+
+
+
+* Conversation is best way of learning + practical as well

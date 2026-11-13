@@ -1,9 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from "react";
 import { CommandIcon } from "../icons/CommandIcon";
 
-const TerminalTextBox = () => {
+type TerminalTextBoxProps = {
+  inputRef: RefObject<HTMLTextAreaElement | null>;
+  onSubmit: (text: string) => void;
+  busy?: boolean;
+  placeholder?: string;
+};
 
-  const ref = useRef(null);
+const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: TerminalTextBoxProps) => {
+
+  const [value, setValue] = useState("");
 
   // Disable the default behaviour of tab while input is auto highlighted
   const handleTabDown = (event: KeyboardEvent) => {
@@ -12,20 +19,49 @@ const TerminalTextBox = () => {
     }
   }
 
-  // Auto increase the textarea when content is exceeding
-
   useEffect(() => {
     window.addEventListener('keydown', handleTabDown);
     return () => window.removeEventListener('keydown', handleTabDown);
   }, []);
 
+  // Auto increase the textarea when content is exceeding
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value, inputRef]);
+
+  // Enter sends the message, Shift + Enter adds a new line
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    if (busy) return;
+    onSubmit(value);
+    setValue("");
+  };
+
   return (
-    <div className="border-t border-slate-700 px-2 py-2 font-jetbrains">
-      <div className="border border-slate-700 w-fit px-1.5 rounded-lg flex items-center bg-black/20 gap-1 mb-2 cursor-pointer">
-        <CommandIcon /> <span className="text-sm">~</span>
+    <div className="shrink-0 border-t border-neon/20 bg-black/40 px-3 py-2 font-jetbrains">
+      <div className="mb-1.5 flex items-center gap-2 text-xs">
+        <span className="flex items-center gap-1 rounded-md border border-neon/25 bg-neon/10 px-1.5 py-0.5 text-neon">
+          <CommandIcon /> ~/nmap
+        </span>
+        <span className="text-neon/40">friday@startup</span>
+        {busy && <span className="text-amber">receiving<span className="animate-blink">...</span></span>}
       </div>
-      <div className="my-2 w-full *:outline-none">
-        <textarea ref={ref} className="text-sm font-medium caret-[#00ff00] w-full " autoFocus={true} />
+      <div className="flex w-full items-start gap-2 *:outline-none">
+        <span className="text-sm leading-5 text-neon neon-text">❯</span>
+        <textarea
+          ref={inputRef}
+          rows={1}
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="max-h-32 w-full resize-none bg-transparent text-sm leading-5 font-medium text-white caret-neon placeholder:text-neon/30"
+          autoFocus={true}
+        />
       </div>
     </div>
   );
