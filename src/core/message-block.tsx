@@ -12,19 +12,16 @@ const MessageBlock = ({ message, time }: MessageBlockProps) => {
   return (
     <div className="grid animate-message-in">
       <div className="min-h-0 overflow-hidden">
-        <div
-          className="border-t border-neon/10 border-l-2 px-4 py-2.5 text-sm transition-colors hover:bg-neon/5"
-          style={{ borderLeftColor: `${speaker.color}66` }}
-        >
+        <div className="border-t border-neon/[0.07] px-4 py-2.5 text-sm">
           <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 font-semibold" style={{ color: speaker.color, textShadow: `0 0 8px ${speaker.color}80` }}>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: speaker.color, boxShadow: `0 0 6px ${speaker.color}` }} />
+            <span className="flex items-center gap-1.5 font-medium" style={{ color: speaker.color }}>
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: speaker.color }} />
               {speaker.name}
             </span>
             <span className="text-neon/30">{time}</span>
           </div>
           {message.text && (
-            <p className={`select-text ${isUser ? "font-semibold text-white" : "text-slate-200/90"}`}>
+            <p className={`select-text ${isUser ? "font-medium text-slate-100" : "text-slate-300"}`}>
               {isUser && <span className="mr-2 text-neon">❯</span>}
               {message.text}
             </p>
@@ -35,7 +32,7 @@ const MessageBlock = ({ message, time }: MessageBlockProps) => {
               <img
                 src={message.image}
                 alt={message.caption ?? ""}
-                className="h-44 w-auto rounded-md border border-neon/20"
+                className="h-44 w-auto rounded border border-neon/15"
               />
               {message.caption && (
                 <figcaption className="mt-1 text-xs italic text-neon/40">{message.caption}</figcaption>

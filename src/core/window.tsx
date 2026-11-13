@@ -105,25 +105,25 @@ const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
   return (
     <Draggable nodeRef={windowRef} handle=".window-handle" cancel=".window-button">
       <div className={`pointer-events-auto w-[min(48rem,92vw)] ${minimized ? "hidden" : ""}`} ref={windowRef} onClick={focusInput}>
-        <div className="animate-window-open flex h-[min(75vh,44rem)] flex-col overflow-hidden rounded-xl border border-neon/25 bg-panel/80 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9),0_0_60px_-20px_rgba(0,255,156,0.45)] backdrop-blur-xl">
+        <div className="animate-window-open flex h-[min(75vh,44rem)] flex-col overflow-hidden rounded-lg border border-neon/20 bg-panel">
           {/* Header */}
-          <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/5 px-3 text-xs active:cursor-grabbing">
+          <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-3 text-xs active:cursor-grabbing">
             <div className="flex items-center gap-2">
               <NmapIcon className="h-4 w-4 text-neon" />
-              <span className="font-semibold text-neon neon-text">{title}</span>
+              <span className="font-semibold text-neon">{title}</span>
               <span className="text-neon/40">friday@startup: ~/nmap</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="mr-2 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">target 192.168.1.0/24</span>
               <button
-                className="window-button grid h-6 w-6 place-items-center rounded text-neon/60 hover:bg-neon/15 hover:text-neon"
+                className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
                 onClick={handleWindowButton(onMinimize)}
                 aria-label="minimize"
               >
                 —
               </button>
               <button
-                className="window-button grid h-6 w-6 place-items-center rounded text-neon/60 hover:bg-danger hover:text-black"
+                className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-danger hover:text-white"
                 onClick={handleWindowButton(onClose)}
                 aria-label="close"
               >

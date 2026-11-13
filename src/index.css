@@ -5,12 +5,12 @@
 @theme {
     --font-jetbrains: "JetBrains Mono", monospace;
 
-    --color-void: #030507;
-    --color-panel: #070b0d;
-    --color-neon: #00ff9c;
-    --color-amber: #ffb000;
-    --color-cyan: #22d3ee;
-    --color-danger: #ff3b5c;
+    --color-void: #050607;
+    --color-panel: #0b0d0f;
+    --color-neon: #3ddc84;
+    --color-amber: #c9a35a;
+    --color-cyan: #6fa8b8;
+    --color-danger: #c4545e;
 
     --animate-message-in: message-in 320ms ease-out both;
     --animate-window-open: window-open 200ms ease-out both;
@@ -68,18 +68,7 @@ body {
     @apply bg-neon/30 text-white;
 }
 
-/* CRT scanlines over the whole screen */
-.crt-overlay {
-    background:
-        repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.25) 3px),
-        radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.7) 100%);
-}
-
-.neon-text {
-    text-shadow: 0 0 6px rgba(0, 255, 156, 0.6), 0 0 18px rgba(0, 255, 156, 0.25);
-}
-
 .thin-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 255, 156, 0.25) transparent;
+    scrollbar-color: rgba(61, 220, 132, 0.2) transparent;
 }

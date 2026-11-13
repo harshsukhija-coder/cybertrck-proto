@@ -16,10 +16,10 @@ export type StoryMessage = {
 export type Scene = StoryMessage[];
 
 export const speakers: Record<Speaker, { name: string; color: string }> = {
-  system: { name: "system", color: "#00FF9C" },
-  friday: { name: "friday", color: "#FFB000" },
-  ramesh: { name: "ramesh", color: "#22D3EE" },
-  you: { name: "you", color: "#E2E8F0" },
+  system: { name: "system", color: "#3DDC84" },
+  friday: { name: "friday", color: "#C9A35A" },
+  ramesh: { name: "ramesh", color: "#6FA8B8" },
+  you: { name: "you", color: "#A1A8B0" },
 };
 
 export const story: Scene[] = [

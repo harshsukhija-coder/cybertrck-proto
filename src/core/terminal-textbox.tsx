@@ -42,16 +42,16 @@ const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: Term
   };
 
   return (
-    <div className="shrink-0 border-t border-neon/20 bg-black/40 px-3 py-2 font-jetbrains">
+    <div className="shrink-0 border-t border-neon/15 px-3 py-2 font-jetbrains">
       <div className="mb-1.5 flex items-center gap-2 text-xs">
-        <span className="flex items-center gap-1 rounded-md border border-neon/25 bg-neon/10 px-1.5 py-0.5 text-neon">
+        <span className="flex items-center gap-1 rounded border border-neon/25 bg-neon/[0.06] px-1.5 py-0.5 text-neon">
           <CommandIcon /> ~/nmap
         </span>
         <span className="text-neon/40">friday@startup</span>
-        {busy && <span className="text-amber">receiving<span className="animate-blink">...</span></span>}
+        {busy && <span className="text-neon/60">receiving<span className="animate-blink">...</span></span>}
       </div>
       <div className="flex w-full items-start gap-2 *:outline-none">
-        <span className="text-sm leading-5 text-neon neon-text">❯</span>
+        <span className="text-sm leading-5 text-neon">❯</span>
         <textarea
           ref={inputRef}
           rows={1}
@@ -59,7 +59,7 @@ const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: Term
           onChange={(event) => setValue(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="max-h-32 w-full resize-none bg-transparent text-sm leading-5 font-medium text-white caret-neon placeholder:text-neon/30"
+          className="max-h-32 w-full resize-none bg-transparent text-sm leading-5 font-medium text-slate-100 caret-neon placeholder:text-neon/30"
           autoFocus={true}
         />
       </div>
