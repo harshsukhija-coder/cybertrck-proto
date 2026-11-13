@@ -1,6 +1,8 @@
 import confusedMeme from "../assets/memes/confused.gif";
 import hackermanMeme from "../assets/memes/hackerman.gif";
 import thisIsFineMeme from "../assets/memes/this-is-fine.gif";
+import toyLaptopHackerMeme from "../assets/memes/toy-laptop-hacker.gif";
+import turnItOffAndOnMeme from "../assets/memes/turn-it-off-and-on.gif";
 
 export type Speaker = "system" | "friday" | "ramesh" | "you";
 
@@ -25,17 +27,37 @@ export const story: Scene[] = [
     { from: "system", text: "connecting to office network 192.168.1.0/24 ..." },
     { from: "system", text: "every network reveals secrets, if you know how to listen." },
   ],
+  // Meet friday
   [
-    { from: "friday", text: "hey! i'm friday." },
-    { from: "friday", text: "i just joined a small startup. 12 people and one very tired coffee machine." },
-    { from: "friday", text: "my job? keep the office network running." },
+    { from: "system", text: "[profile] friday · 23 · junior developer at chaibyte, a 12-person startup" },
+    { from: "friday", text: "hi, i'm friday. officially, i write code." },
+    { from: "friday", text: "unofficially, i'm 'the IT guy'. i fixed the wifi once by restarting the router, and now everyone calls me.", image: turnItOffAndOnMeme, caption: "my entire IT training" },
+  ],
+  // The problem
+  [
+    { from: "friday", text: "this morning my boss walked up to my desk." },
+    { from: "friday", text: "'friday, why is the wifi so slow? and what is DESKTOP-X7Q?'" },
+    { from: "friday", text: "i have never seen DESKTOP-X7Q in my life.", image: confusedMeme, caption: "me, staring at the router admin page" },
+  ],
+  // Meet ramesh
+  [
+    { from: "friday", text: "so i called the only hacker i know. my college senior." },
+    { from: "system", text: "[profile] ramesh · 27 · ethical hacker. companies pay him to break into their systems, legally." },
+    { from: "ramesh", text: "friday! long time. let me guess... something is broken?" },
   ],
   [
-    { from: "friday", text: "we have a handful of devices here. laptops, a printer, the wifi router, and a storage box nobody remembers setting up." },
-    { from: "ramesh", text: "nice. and do you know what each of them is saying about itself?" },
-    { from: "friday", text: "saying??", image: confusedMeme, caption: "devices can talk?" },
+    { from: "ramesh", text: "relax. i hack things for a living. the good kind.", image: toyLaptopHackerMeme, caption: "how ramesh thinks he looks while hacking" },
+    { from: "friday", text: "wait, there's a good kind?" },
+    { from: "ramesh", text: "ethical hacker = i break in with permission, so the bad guys can't break in without it." },
+  ],
+  // Back to the network
+  [
+    { from: "ramesh", text: "first question. how many devices are on your network?" },
+    { from: "friday", text: "a handful? laptops, a printer, the wifi router, a storage box nobody remembers setting up... and now DESKTOP-X7Q." },
+    { from: "ramesh", text: "and do you know what each of them is saying about itself?" },
   ],
   [
+    { from: "friday", text: "saying?? devices can talk?" },
     { from: "ramesh", text: "every device on a network leaves a trace. it can't help it." },
     { from: "ramesh", text: "think of the network as a street, and every device as a house on it." },
   ],
@@ -53,7 +75,7 @@ export const story: Scene[] = [
   ],
   [
     { from: "ramesh", text: "yep. a network is not a mystery. it's an open map." },
-    { from: "ramesh", text: "and nmap is the tool we use to read that map.", image: hackermanMeme, caption: "you, after this course" },
-    { from: "system", text: "chapter 1 complete." },
+    { from: "ramesh", text: "and nmap is the tool we use to read it. let's find out who DESKTOP-X7Q really is.", image: hackermanMeme, caption: "you, after this course" },
+    { from: "system", text: "chapter 1 complete. next: your first scan." },
   ],
 ];
