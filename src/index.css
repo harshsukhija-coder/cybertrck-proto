@@ -16,6 +16,16 @@
     --animate-window-open: window-open 200ms ease-out both;
     --animate-toast: toast 300ms ease-out both;
     --animate-blink: blink 1.1s steps(2, start) infinite;
+    --animate-line-in: line-in 120ms ease-out both;
+
+    @keyframes line-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 
     /* Grows from 0 height so older messages slide up smoothly instead of jumping */
     @keyframes message-in {

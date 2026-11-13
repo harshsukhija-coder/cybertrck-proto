@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { FileIcon, FolderIcon, NmapIcon, TerminalIcon, TrashIcon } from "../icons/DesktopIcons";
+import { useClock } from "./use-clock";
+import { useNetworkStatus } from "./use-network-status";
 import Window from "./window";
 
 type DesktopApp = {
@@ -29,17 +31,18 @@ const wallpaperArt = [
 const formatClock = (date: Date) =>
   date.toLocaleString([], { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
-const Desktop = () => {
+type DesktopProps = {
+  username: string;
+  onLogout: () => void;
+};
+
+const Desktop = ({ username, onLogout }: DesktopProps) => {
   const [selected, setSelected] = useState<string | null>(null);
   const [nmapState, setNmapState] = useState<"closed" | "open" | "minimized">("closed");
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
-  const [clock, setClock] = useState(() => formatClock(new Date()));
+  const clock = formatClock(useClock());
+  const { privateIp, online, mbps, testing, runSpeedTest } = useNetworkStatus();
   const toastTimer = useRef<number>(undefined);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setClock(formatClock(new Date())), 10_000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
@@ -69,7 +72,7 @@ const Desktop = () => {
       {/* Top panel */}
       <header className="relative z-20 flex h-8 items-center justify-between border-b border-neon/15 bg-black/60 px-3 text-xs">
         <div className="flex items-center gap-4">
-          <span className="font-semibold text-neon">⌬ saiphex.innovations</span>
+          <span className="font-semibold text-neon">⌬ offtrck</span>
           {nmapState !== "closed" && (
             <button
               className={`rounded px-2 py-0.5 transition-colors ${nmapState === "open" ? "bg-neon/10 text-neon" : "text-neon/50 hover:bg-neon/5"}`}
@@ -81,10 +84,25 @@ const Desktop = () => {
         </div>
         <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 lg:inline">{clock}</span>
         <div className="flex items-center gap-4 text-neon/40">
-          <span className="text-neon/70 lg:hidden">{clock}</span>
-          <span className="hidden md:inline">wlan0 <span className="text-neon/80">192.168.1.23</span></span>
-          <span className="hidden md:inline">vpn <span className="text-danger">off</span></span>
-          <span className="hidden sm:inline">bat 87%</span>
+          <span className="hidden text-neon/70 md:inline lg:hidden">{clock}</span>
+          <button
+            className="rounded px-1 tabular-nums hover:bg-neon/10"
+            onClick={runSpeedTest}
+            title="click to test speed again"
+          >
+            {!online ? (
+              <span className="text-danger">offline</span>
+            ) : (
+              <>↓ <span className="text-neon/80">{testing && mbps === null ? "testing..." : mbps === null ? "--" : `${mbps.toFixed(1)} Mbps`}</span></>
+            )}
+          </button>
+          <span><span className="hidden sm:inline">wlan0 </span><span className="text-neon/80">{privateIp}</span></span>
+          <span className="hidden lg:inline">vpn <span className="text-danger">off</span></span>
+          <span className="hidden lg:inline">bat 87%</span>
+          <span className="text-neon/80">{username}</span>
+          <button className="rounded px-1.5 py-0.5 text-neon/50 hover:bg-neon/10 hover:text-neon" onClick={onLogout}>
+            log out
+          </button>
         </div>
       </header>
 
