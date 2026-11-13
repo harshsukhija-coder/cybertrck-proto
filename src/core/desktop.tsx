@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
-import { FileIcon, FolderIcon, NmapIcon, TerminalIcon, TrashIcon } from "../icons/DesktopIcons";
+import { FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
+import FolderWindow, { type FolderItem } from "./folder-window";
 import { useClock } from "./use-clock";
 import { useNetworkStatus } from "./use-network-status";
 import Window from "./window";
@@ -13,7 +14,7 @@ type DesktopApp = {
 };
 
 const apps: DesktopApp[] = [
-  { id: "nmap", label: "nMap", Icon: NmapIcon },
+  { id: "cyber-tools", label: "cyber-tools", Icon: ToolsFolderIcon },
   { id: "terminal", label: "terminal", Icon: TerminalIcon, message: "bash: permission denied. finish nMap first." },
   { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 3 folders, 0 secrets (so far)." },
   { id: "todo", label: "todo.txt", Icon: FileIcon, message: "todo.txt -> 1. learn nmap  2. don't get fired" },
@@ -31,6 +32,9 @@ const wallpaperArt = [
 const formatClock = (date: Date) =>
   date.toLocaleString([], { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
+type WindowState = "closed" | "open" | "minimized";
+type WindowId = "folder" | "nmap";
+
 type DesktopProps = {
   username: string;
   onLogout: () => void;
@@ -38,7 +42,9 @@ type DesktopProps = {
 
 const Desktop = ({ username, onLogout }: DesktopProps) => {
   const [selected, setSelected] = useState<string | null>(null);
-  const [nmapState, setNmapState] = useState<"closed" | "open" | "minimized">("closed");
+  const [folderState, setFolderState] = useState<WindowState>("closed");
+  const [nmapState, setNmapState] = useState<WindowState>("closed");
+  const [front, setFront] = useState<WindowId>("folder");
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   const clock = formatClock(useClock());
   const { privateIp, online, mbps, testing, runSpeedTest } = useNetworkStatus();
@@ -53,12 +59,37 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
   };
 
   const openApp = (app: DesktopApp) => {
-    if (app.id === "nmap") {
-      setNmapState("open");
+    if (app.id === "cyber-tools") {
+      setFolderState("open");
+      setFront("folder");
       return;
     }
     if (app.message) showToast(app.message);
   };
+
+  const openFolderItem = (item: FolderItem) => {
+    if (item.lockedMessage) {
+      showToast(item.lockedMessage);
+      return;
+    }
+    setNmapState("open");
+    setFront("nmap");
+  };
+
+  // Taskbar button: open/raise a hidden or background window, minimize the one already in front
+  const toggleTask = (id: WindowId, state: WindowState, setState: (state: WindowState) => void) => {
+    if (state === "open" && front === id) {
+      setState("minimized");
+      return;
+    }
+    setState("open");
+    setFront(id);
+  };
+
+  const tasks = [
+    { id: "folder" as const, label: "cyber-tools", state: folderState, setState: setFolderState },
+    { id: "nmap" as const, label: "nMap", state: nmapState, setState: setNmapState },
+  ];
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-void select-none">
@@ -71,16 +102,17 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
 
       {/* Top panel */}
       <header className="relative z-20 flex h-8 items-center justify-between border-b border-neon/15 bg-black/60 px-3 text-xs">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold text-neon">⌬ offtrck</span>
-          {nmapState !== "closed" && (
+        <div className="flex items-center gap-2">
+          <span className="mr-2 font-semibold text-neon">⌬ offtrck</span>
+          {tasks.map(task => task.state !== "closed" && (
             <button
-              className={`rounded px-2 py-0.5 transition-colors ${nmapState === "open" ? "bg-neon/10 text-neon" : "text-neon/50 hover:bg-neon/5"}`}
-              onClick={() => setNmapState(nmapState === "open" ? "minimized" : "open")}
+              key={task.id}
+              className={`rounded px-2 py-0.5 transition-colors ${task.state === "open" ? "bg-neon/10 text-neon" : "text-neon/50 hover:bg-neon/5"}`}
+              onClick={() => toggleTask(task.id, task.state, task.setState)}
             >
-              nMap
+              {task.label}
             </button>
-          )}
+          ))}
         </div>
         <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 lg:inline">{clock}</span>
         <div className="flex items-center gap-4 text-neon/40">
@@ -122,21 +154,40 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
                 onKeyDown={(event) => event.key === "Enter" && openApp(app)}
                 className={`group flex w-24 flex-col items-center gap-1.5 rounded-lg border p-2 outline-none transition-colors ${isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"}`}
               >
-                <app.Icon className={`h-10 w-10 ${app.id === "nmap" ? "text-neon" : "text-neon/50"}`} />
+                <app.Icon className={`h-10 w-10 ${app.id === "cyber-tools" ? "text-neon" : "text-neon/50"}`} />
                 <span className={`rounded px-1 text-xs ${isSelected ? "bg-neon/20 text-neon" : "text-neon/70"}`}>{app.label}</span>
               </button>
             );
           })}
         </div>
 
-        {nmapState === "closed" && (
+        {folderState === "closed" && nmapState === "closed" && (
           <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-neon/40">
-            double-click <span className="text-neon">nMap</span> to start<span className="animate-blink">_</span>
+            double-click <span className="text-neon">cyber-tools</span> to start<span className="animate-blink">_</span>
           </p>
         )}
 
+        {folderState !== "closed" && (
+          <div
+            className={`pointer-events-none absolute inset-0 flex items-center justify-center ${front === "folder" ? "z-20" : "z-10"}`}
+            onMouseDownCapture={() => setFront("folder")}
+          >
+            <div className="-translate-y-10 md:-translate-x-24 md:-translate-y-16">
+              <FolderWindow
+                minimized={folderState === "minimized"}
+                onOpenItem={openFolderItem}
+                onMinimize={() => setFolderState("minimized")}
+                onClose={() => setFolderState("closed")}
+              />
+            </div>
+          </div>
+        )}
+
         {nmapState !== "closed" && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div
+            className={`pointer-events-none absolute inset-0 flex items-center justify-center ${front === "nmap" ? "z-20" : "z-10"}`}
+            onMouseDownCapture={() => setFront("nmap")}
+          >
             <Window
               title="nMap"
               username={username}
