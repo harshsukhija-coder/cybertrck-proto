@@ -132,6 +132,79 @@ body {
     50% { opacity: 0.4; }
 }
 
+/* Same red / cyan split as .glitch-text, but only while the parent .group is hovered */
+.glitch-hover {
+    position: relative;
+}
+
+.glitch-hover::before,
+.glitch-hover::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    display: none;
+}
+
+.group:hover .glitch-hover::before {
+    display: block;
+    color: var(--color-danger);
+    transform: translateX(-2px);
+    animation: glitch-slice 0.3s steps(1) infinite;
+}
+
+.group:hover .glitch-hover::after {
+    display: block;
+    color: var(--color-cyan);
+    transform: translateX(2px);
+    animation: glitch-slice 0.4s steps(1) infinite reverse;
+}
+
+/* Photo with red / cyan copies that tear across it in short bursts (constantly on hover) */
+.glitch-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.glitch-image::before,
+.glitch-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--glitch-img);
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
+    mix-blend-mode: screen;
+    opacity: 0.8;
+    clip-path: inset(100% 0 0 0);
+    animation: glitch-burst 3.2s steps(1) infinite;
+}
+
+.glitch-image::before {
+    background-color: var(--color-danger);
+    transform: translateX(-8px);
+}
+
+.glitch-image::after {
+    background-color: var(--color-cyan);
+    transform: translateX(8px);
+    animation-delay: 0.08s;
+}
+
+.group:hover .glitch-image::before,
+.group:hover .glitch-image::after {
+    animation: glitch-slice 0.35s steps(1) infinite;
+}
+
+@keyframes glitch-burst {
+    0%, 86%, 100% { clip-path: inset(100% 0 0 0); }
+    88% { clip-path: inset(12% 0 70% 0); }
+    90% { clip-path: inset(55% 0 25% 0); }
+    92% { clip-path: inset(30% 0 52% 0); }
+    94% { clip-path: inset(78% 0 6% 0); }
+    96% { clip-path: inset(40% 0 44% 0); }
+}
+
 .thin-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(61, 220, 132, 0.2) transparent;

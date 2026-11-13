@@ -83,6 +83,13 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
       <p className="absolute bottom-5 left-6 hidden max-w-xs text-xs text-neon/40 md:block">
         every network reveals secrets, if you know how to listen.
       </p>
+      <a
+        href="#/founders"
+        onClick={(event) => event.stopPropagation()}
+        className="absolute right-6 bottom-5 z-10 text-xs text-neon/60 hover:text-neon hover:underline"
+      >
+        [ founders ]
+      </a>
 
       {/* Console */}
       <div className="absolute inset-0 flex items-center justify-center px-4 md:justify-end md:pr-[8vw]">

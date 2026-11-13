@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
+import DesktopWidgets from "./desktop-widgets";
 import FolderWindow, { type FolderItem } from "./folder-window";
 import { useClock } from "./use-clock";
 import { useNetworkStatus } from "./use-network-status";
@@ -95,7 +96,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
     <div className="relative h-screen w-full overflow-hidden bg-void select-none">
       {/* Wallpaper */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(61,220,132,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(61,220,132,0.035)_1px,transparent_1px)] bg-size-[40px_40px]" />
-      <pre className="pointer-events-none absolute right-10 bottom-16 hidden text-xs leading-tight text-neon/15 md:block">
+      <pre className="pointer-events-none absolute right-10 bottom-16 hidden text-xs lg:right-[23rem] leading-tight text-neon/15 md:block">
         {wallpaperArt}
         {"\n\nevery network reveals secrets,\nif you know how to listen."}
       </pre>
@@ -114,9 +115,9 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
             </button>
           ))}
         </div>
-        <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 lg:inline">{clock}</span>
+        <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 xl:inline">{clock}</span>
         <div className="flex items-center gap-4 text-neon/40">
-          <span className="hidden text-neon/70 md:inline lg:hidden">{clock}</span>
+          <span className="hidden text-neon/70 md:inline xl:hidden">{clock}</span>
           <button
             className="rounded px-1 tabular-nums hover:bg-neon/10"
             onClick={runSpeedTest}
@@ -161,15 +162,17 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
           })}
         </div>
 
+        <DesktopWidgets />
+
         {folderState === "closed" && nmapState === "closed" && (
-          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-neon/40">
+          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm lg:left-[calc(50%-10.5rem)] text-neon/40">
             double-click <span className="text-neon">cyber-tools</span> to start<span className="animate-blink">_</span>
           </p>
         )}
 
         {folderState !== "closed" && (
           <div
-            className={`pointer-events-none absolute inset-0 flex items-center justify-center ${front === "folder" ? "z-20" : "z-10"}`}
+            className={`pointer-events-none absolute inset-0 flex items-center justify-center lg:pr-[21rem] ${front === "folder" ? "z-20" : "z-10"}`}
             onMouseDownCapture={() => setFront("folder")}
           >
             <div className="-translate-y-10 md:-translate-x-24 md:-translate-y-16">
@@ -185,7 +188,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
 
         {nmapState !== "closed" && (
           <div
-            className={`pointer-events-none absolute inset-0 flex items-center justify-center ${front === "nmap" ? "z-20" : "z-10"}`}
+            className={`pointer-events-none absolute inset-0 flex items-center justify-center lg:pr-[21rem] ${front === "nmap" ? "z-20" : "z-10"}`}
             onMouseDownCapture={() => setFront("nmap")}
           >
             <Window
