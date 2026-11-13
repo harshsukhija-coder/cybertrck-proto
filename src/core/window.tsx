@@ -311,6 +311,10 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     }
 
     if (!chapterDone) {
+      if (text) {
+        say([{ from: "system", text: "no need to type anything here. the story only needs you to press {green:enter} to continue." }]);
+        return;
+      }
       playScene(nextScene);
       return;
     }
@@ -332,7 +336,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     if (phase === "quiz") return `type 1-${quiz[quizIndex].options.length} and press enter`;
     if (phase === "failed") return "type 'retry' or 'restart'";
     if (phase === "passed") return upcomingChapter ? `press enter for ${upcomingChapter.title}...` : "type 'notes' or 'reset'";
-    if (!chapterDone) return "press enter to continue...";
+    if (!chapterDone) return "just press enter to continue (no typing needed)...";
     if (chapter.quiz) return "press enter to start the quiz...";
     return "type 'restart' to replay this chapter";
   })();

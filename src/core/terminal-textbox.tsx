@@ -8,9 +8,19 @@ type TerminalTextBoxProps = {
   placeholder?: string;
 };
 
+const NUDGE_MS = 1800;
+
 const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: TerminalTextBoxProps) => {
 
   const [value, setValue] = useState("");
+  // Flashes a reminder when someone types while the story is still playing
+  const [nudged, setNudged] = useState(false);
+
+  useEffect(() => {
+    if (!nudged) return;
+    const timer = window.setTimeout(() => setNudged(false), NUDGE_MS);
+    return () => window.clearTimeout(timer);
+  }, [nudged]);
 
   // Disable the default behaviour of tab while input is auto highlighted
   const handleTabDown = (event: KeyboardEvent) => {
@@ -34,9 +44,12 @@ const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: Term
 
   // Enter sends the message, Shift + Enter adds a new line
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (busy) {
+      if (event.key.length === 1 || event.key === "Enter") setNudged(true);
+      return;
+    }
     if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
     event.preventDefault();
-    if (busy) return;
     onSubmit(value);
     setValue("");
   };
@@ -49,17 +62,23 @@ const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: Term
         </span>
         <span className="text-neon/40">friday@startup</span>
         {busy && <span className="text-neon/60">receiving<span className="animate-blink">...</span></span>}
+        {busy && nudged && (
+          <span className="ml-auto animate-pulse rounded border border-amber/40 bg-amber/10 px-1.5 py-0.5 text-amber">
+            hold on, the story is still playing. no input needed yet.
+          </span>
+        )}
       </div>
-      <div className="flex w-full items-start gap-2 *:outline-none">
-        <span className="text-sm leading-5 text-neon">❯</span>
+      <div className={`flex w-full items-start gap-2 *:outline-none ${busy ? "opacity-60" : ""}`}>
+        <span className={`text-sm leading-5 ${busy ? "text-neon/40" : "text-neon"}`}>❯</span>
         <textarea
           ref={inputRef}
           rows={1}
           value={value}
+          readOnly={busy}
           onChange={(event) => setValue(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="max-h-32 w-full resize-none bg-transparent text-sm leading-5 font-medium text-slate-100 caret-neon placeholder:text-neon/30"
+          placeholder={busy ? "story is playing... sit back and read, no input needed" : placeholder}
+          className={`max-h-32 w-full resize-none bg-transparent text-sm leading-5 font-medium text-slate-100 placeholder:text-neon/30 ${busy ? "cursor-default caret-transparent" : "caret-neon"}`}
           autoFocus={true}
         />
       </div>
