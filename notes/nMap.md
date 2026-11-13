@@ -54,9 +54,13 @@
 6. Friday realises anyone on the wifi can see all of this
 7. Ending: "a network is not a mystery, it's an open map. nmap is how we read it." Goal: find out who `DESKTOP-X7Q` is
 
-### Chapter 2: Your first scan (next)
+8. Quiz: 10 questions on chapter 1. 90% (9/10) is needed to unlock chapter 2. Below that: `retry` the quiz or `restart` the chapter
+9. On passing: glitch transition into chapter 2
 
-* The learner runs their first scan with Ramesh's help, and finds `DESKTOP-X7Q` in the results
+### Chapter 2: Your first scan (in progress)
+
+* Opening written: Ramesh explains what `192.168.1.0/24` means (256 addresses on one street)
+* Next: the learner runs their first scan with Ramesh's help, and finds `DESKTOP-X7Q` in the results
 
 ## Practical
 

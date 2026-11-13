@@ -139,6 +139,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <Window
               title="nMap"
+              username={username}
               minimized={nmapState === "minimized"}
               onMinimize={() => setNmapState("minimized")}
               onClose={() => setNmapState("closed")}

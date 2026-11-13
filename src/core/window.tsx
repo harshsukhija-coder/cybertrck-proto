@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Draggable from "react-draggable";
 import { NmapIcon } from "../icons/DesktopIcons";
 import MessageBlock from "./message-block";
+import { loadProgress, saveProgress, type Progress } from "./progress";
 import { chapters, PASS_SCORE, type QuizQuestion, type StoryMessage } from "./story";
 import TerminalTextBox from "./terminal-textbox";
 
@@ -12,7 +13,7 @@ const GLITCH_MS = 1800;
 
 type ChatMessage = StoryMessage & { id: number; time: string };
 
-type Phase = "story" | "quiz" | "failed" | "glitch";
+type Phase = "story" | "quiz" | "failed" | "passed" | "glitch";
 
 const currentTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -23,27 +24,51 @@ const questionMessage = (quiz: QuizQuestion[], index: number): StoryMessage => {
   return { from: "system", text: `question ${index + 1}/${quiz.length}\n${question}\n\n${choices}` };
 };
 
+// Rebuilds the conversation up to the saved point, so a resumed session looks like it never stopped
+const resumedHistory = (progress: Progress): StoryMessage[] => {
+  const chapter = chapters[progress.chapterIndex];
+  const history = chapter.scenes.slice(0, progress.nextScene).flat();
+  const restored: StoryMessage = { from: "system", text: `session restored · ${chapter.title} · ${chapter.subtitle}` };
+
+  if (progress.phase === "quiz" && chapter.quiz) {
+    return [
+      ...history,
+      restored,
+      { from: "system", text: `quiz in progress · ${progress.correctCount}/${progress.quizIndex} correct so far` },
+      questionMessage(chapter.quiz, progress.quizIndex),
+    ];
+  }
+  if (progress.phase === "failed") {
+    return [...history, restored, { from: "ramesh", text: "type 'retry' to take the quiz again, or 'restart' to replay the chapter." }];
+  }
+  return [...history, restored];
+};
+
 type WindowProps = {
   title: string;
+  username: string;
   minimized: boolean;
   onMinimize: () => void;
   onClose: () => void;
 };
 
-const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
+const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps) => {
   const windowRef = useRef(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const timers = useRef<number[]>([]);
-  const nextId = useRef(0);
 
-  // The intro scene of the first chapter starts playing on mount
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chapterIndex, setChapterIndex] = useState(0);
-  const [nextScene, setNextScene] = useState(1);
-  const [phase, setPhase] = useState<Phase>("story");
-  const [quizIndex, setQuizIndex] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [busy, setBusy] = useState(true);
+  // Resume from local storage if this user has played before, otherwise the intro scene plays on mount
+  const [saved] = useState(() => loadProgress(username));
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    saved ? resumedHistory(saved).map((message, id) => ({ ...message, id, time: currentTime() })) : [],
+  );
+  const nextId = useRef(messages.length);
+  const [chapterIndex, setChapterIndex] = useState(saved?.chapterIndex ?? 0);
+  const [nextScene, setNextScene] = useState(saved?.nextScene ?? 1);
+  const [phase, setPhase] = useState<Phase>(saved?.phase ?? "story");
+  const [quizIndex, setQuizIndex] = useState(saved?.quizIndex ?? 0);
+  const [correctCount, setCorrectCount] = useState(saved?.correctCount ?? 0);
+  const [busy, setBusy] = useState(!saved);
 
   // const asciiTextRef = useAsciiText({
   //   text: "nmap",
@@ -85,12 +110,22 @@ const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
   };
 
   useEffect(() => {
-    reveal(chapters[0].scenes[0]);
+    if (!saved) reveal(chapters[0].scenes[0]);
     return () => {
       timers.current.forEach(clearTimeout);
       timers.current = [];
     };
-  }, [reveal]);
+  }, [reveal, saved]);
+
+  useEffect(() => {
+    saveProgress(username, {
+      chapterIndex,
+      nextScene,
+      phase: phase === "glitch" ? "passed" : phase,
+      quizIndex,
+      correctCount,
+    });
+  }, [username, chapterIndex, nextScene, phase, quizIndex, correctCount]);
 
   // Coming back from minimized should put the cursor straight back in the input
   useEffect(() => {
@@ -109,6 +144,8 @@ const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
     setChapterIndex(index);
     setPhase("story");
     setNextScene(1);
+    setQuizIndex(0);
+    setCorrectCount(0);
     say(chapters[index].scenes[0]);
   };
 
@@ -154,6 +191,7 @@ const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
     const score = correct / quiz.length;
     const result = `score: ${Math.round(score * 100)}% (${correct}/${quiz.length}).`;
     if (score >= PASS_SCORE) {
+      setPhase("passed");
       say([feedback, { from: "system", text: `${result} access granted.` }], () => {
         setBusy(true);
         schedule(BEFORE_GLITCH_MS, startGlitch);
@@ -176,6 +214,12 @@ const Window = ({ title, minimized, onMinimize, onClose }: WindowProps) => {
     if (command === "restart" || command === "clear") {
       clearTimers();
       startChapter(chapterIndex);
+      return;
+    }
+
+    if (command === "reset") {
+      clearTimers();
+      startChapter(0);
       return;
     }
 
