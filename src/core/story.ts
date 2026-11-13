@@ -15,6 +15,22 @@ export type StoryMessage = {
 
 export type Scene = StoryMessage[];
 
+export type QuizQuestion = {
+  question: string;
+  options: string[];
+  answer: number;
+  explanation: string;
+};
+
+export type Chapter = {
+  title: string;
+  subtitle: string;
+  scenes: Scene[];
+  quiz?: QuizQuestion[];
+};
+
+export const PASS_SCORE = 0.9;
+
 export const speakers: Record<Speaker, { name: string; color: string }> = {
   system: { name: "system", color: "#3DDC84" },
   friday: { name: "friday", color: "#C9A35A" },
@@ -22,7 +38,7 @@ export const speakers: Record<Speaker, { name: string; color: string }> = {
   you: { name: "you", color: "#A1A8B0" },
 };
 
-export const story: Scene[] = [
+const chapterOneScenes: Scene[] = [
   [
     { from: "system", text: "connecting to office network 192.168.1.0/24 ..." },
     { from: "system", text: "every network reveals secrets, if you know how to listen." },
@@ -78,4 +94,99 @@ export const story: Scene[] = [
     { from: "ramesh", text: "and nmap is the tool we use to read it. let's find out who DESKTOP-X7Q really is.", image: hackermanMeme, caption: "you, after this course" },
     { from: "system", text: "chapter 1 complete. next: your first scan." },
   ],
+];
+
+const chapterOneQuiz: QuizQuestion[] = [
+  {
+    question: "what is friday's real job at chaibyte?",
+    options: ["IT manager", "junior developer", "ethical hacker", "CEO"],
+    answer: 1,
+    explanation: "he writes code. he's only 'the IT guy' because he restarted the router once.",
+  },
+  {
+    question: "which device did nobody recognise on the office network?",
+    options: ["the printer", "the wifi router", "DESKTOP-X7Q", "the storage box"],
+    answer: 2,
+    explanation: "DESKTOP-X7Q showed up and nobody knew whose it was.",
+  },
+  {
+    question: "what does an ethical hacker do?",
+    options: [
+      "breaks into systems without permission",
+      "breaks in with permission, so the bad guys can't",
+      "fixes printers for a living",
+      "sells stolen passwords",
+    ],
+    answer: 1,
+    explanation: "same skills as a bad hacker, but with permission and paperwork.",
+  },
+  {
+    question: "in ramesh's example the network is a street. what is each device?",
+    options: ["a car", "a traffic light", "a shop sign", "a house"],
+    answer: 3,
+    explanation: "every device is a house on the street.",
+  },
+  {
+    question: "which trace is the 'house number' of a device?",
+    options: ["its ip address", "its operating system", "its open ports", "its service version"],
+    answer: 0,
+    explanation: "the ip address tells you where the device lives, like 192.168.1.23.",
+  },
+  {
+    question: "in the house example, what are open ports?",
+    options: ["the roof", "the doors", "the street name", "the paint colour"],
+    answer: 1,
+    explanation: "ports are doors. some are locked, some are wide open.",
+  },
+  {
+    question: "'OpenSSH 7.2' is an example of which trace?",
+    options: ["ip address", "operating system", "service + version", "open port"],
+    answer: 2,
+    explanation: "it tells you who answers the door (OpenSSH) and how old it is (7.2).",
+  },
+  {
+    question: "windows, linux and macos are examples of which trace?",
+    options: ["operating system", "service + version", "ip address", "open port"],
+    answer: 0,
+    explanation: "the operating system is what the house is built with.",
+  },
+  {
+    question: "which of these could be a device in friday's office network (192.168.1.0/24)?",
+    options: ["8.8.8.8", "999.1.1.1", "DESKTOP-X7Q.com", "192.168.1.23"],
+    answer: 3,
+    explanation: "office devices live at 192.168.1.something.",
+  },
+  {
+    question: "what is nmap used for?",
+    options: [
+      "making the wifi faster",
+      "deleting viruses",
+      "reading the network map: finding devices and what they reveal",
+      "sending memes to the boss",
+    ],
+    answer: 2,
+    explanation: "nmap finds devices and reads the traces they leave.",
+  },
+];
+
+const chapterTwoScenes: Scene[] = [
+  [
+    { from: "system", text: "chapter 2 · your first scan" },
+    { from: "ramesh", text: "welcome back. you passed the test, so you're officially less confused than friday." },
+    { from: "friday", text: "hey! ...fair." },
+  ],
+  [
+    { from: "ramesh", text: "first, nmap needs to know where to look. friday's office network is 192.168.1.0/24." },
+    { from: "friday", text: "what does the /24 mean?" },
+  ],
+  [
+    { from: "ramesh", text: "it means every address from 192.168.1.0 to 192.168.1.255. 256 houses on one street." },
+    { from: "ramesh", text: "next, we knock on every door on that street, and find out where DESKTOP-X7Q lives." },
+    { from: "system", text: "chapter 2 continues soon." },
+  ],
+];
+
+export const chapters: Chapter[] = [
+  { title: "chapter 01", subtitle: "the unknown device", scenes: chapterOneScenes, quiz: chapterOneQuiz },
+  { title: "chapter 02", subtitle: "your first scan", scenes: chapterTwoScenes },
 ];

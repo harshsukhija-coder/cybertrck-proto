@@ -21,7 +21,7 @@ const MessageBlock = ({ message, time }: MessageBlockProps) => {
             <span className="text-neon/30">{time}</span>
           </div>
           {message.text && (
-            <p className={`select-text ${isUser ? "font-medium text-slate-100" : "text-slate-300"}`}>
+            <p className={`select-text whitespace-pre-line ${isUser ? "font-medium text-slate-100" : "text-slate-300"}`}>
               {isUser && <span className="mr-2 text-neon">❯</span>}
               {message.text}
             </p>
