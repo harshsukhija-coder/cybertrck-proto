@@ -1,0 +1,21 @@
+learn hacking like a story, not a textbook. 🕵️‍♂️💻
+
+meet offtrck: a hacker-style linux desktop that runs in your browser.
+
+log in, open cyber-tools, launch nMap... and you're dropped into a story.
+
+friday ("the IT guy" who just restarted the router once) finds a mystery device called DESKTOP-X7Q on the office wifi. ramesh, an ethical hacker, teaches you how to find out who it is, using the same tool real security teams use: nmap.
+
+what you get:
+▸ story chapters with friday & ramesh
+▸ memes instead of boring lectures
+▸ a quiz at the end of every chapter (score 90% to unlock the next one)
+▸ live attack data & security news right on your desktop
+▸ progress auto-saves, so pick up where you left off
+
+chapter 01 · "the unknown device" is live now.
+ethical hacking only. learn the tools, respect the rules.
+
+🔗 link in bio
+
+#offtrck #cybersecurity #ethicalhacking #nmap #infosec #hacking #learntohack #linux #networksecurity #cyberawareness #techeducation #learncoding #hackerlife #securityresearch
