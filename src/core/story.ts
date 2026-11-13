@@ -1,19 +1,63 @@
-import confusedMeme from "../assets/memes/confused.gif";
-import hackermanMeme from "../assets/memes/hackerman.gif";
-import thisIsFineMeme from "../assets/memes/this-is-fine.gif";
-import toyLaptopHackerMeme from "../assets/memes/toy-laptop-hacker.gif";
-import turnItOffAndOnMeme from "../assets/memes/turn-it-off-and-on.gif";
+import fridayAvatar from "../assets/characters/friday.jpg";
+import rameshAvatar from "../assets/characters/ramesh.jpg";
+import { chapterFive } from "./chapters/chapter-05";
+import { chapterFour } from "./chapters/chapter-04";
+import { chapterOne } from "./chapters/chapter-01";
+import { chapterThree } from "./chapters/chapter-03";
+import { chapterTwo } from "./chapters/chapter-02";
+import type { VividColor } from "./palette";
 
 export type Speaker = "system" | "friday" | "ramesh" | "you";
+
+export type VisualKey =
+  | "office-network"
+  | "ip-anatomy"
+  | "packet-journey"
+  | "broadcast"
+  | "who-is-who"
+  | "devices-found"
+  | "network-diagram"
+  | "port-doors"
+  | "handshake"
+  | "port-coverage"
+  | "os-fingerprint"
+  | "recon-pipeline";
+
+// Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
+export type TerminalBlock = {
+  command: string;
+  output?: string;
+  prompt?: string;
+  title?: string;
+};
+
+export type Callout = {
+  tone: "tip" | "warning" | "danger";
+  title: string;
+  text: string;
+};
 
 export type StoryMessage = {
   from: Speaker;
   text?: string;
   image?: string;
   caption?: string;
+  terminal?: TerminalBlock;
+  visual?: VisualKey;
+  callout?: Callout;
+  // Index of the chapter whose notes + quiz can be downloaded from this message
+  downloads?: number;
 };
 
-export type Scene = StoryMessage[];
+// Asks the learner something (like their OS) once; later choice scenes with the same key reuse the answer
+export type ChoiceScene = {
+  kind: "choice";
+  key: string;
+  prompt: StoryMessage[];
+  options: { label: string; messages: StoryMessage[] }[];
+};
+
+export type Scene = StoryMessage[] | ChoiceScene;
 
 export type QuizQuestion = {
   question: string;
@@ -27,166 +71,56 @@ export type Chapter = {
   subtitle: string;
   scenes: Scene[];
   quiz?: QuizQuestion[];
+  notes: string;
 };
+
+export type Choices = Record<string, number>;
 
 export const PASS_SCORE = 0.9;
 
-export const speakers: Record<Speaker, { name: string; color: string }> = {
+export const speakers: Record<Speaker, { name: string; color: string; avatar?: string }> = {
   system: { name: "system", color: "#3DDC84" },
-  friday: { name: "friday", color: "#C9A35A" },
-  ramesh: { name: "ramesh", color: "#6FA8B8" },
+  friday: { name: "friday", color: "#C9A35A", avatar: fridayAvatar },
+  ramesh: { name: "ramesh", color: "#6FA8B8", avatar: rameshAvatar },
   you: { name: "you", color: "#A1A8B0" },
 };
 
-const chapterOneScenes: Scene[] = [
-  [
-    { from: "system", text: "connecting to office network 192.168.1.0/24 ..." },
-    { from: "system", text: "every network reveals secrets, if you know how to listen." },
-  ],
-  // Meet friday
-  [
-    { from: "system", text: "[profile] friday · 23 · junior developer at chaibyte, a 12-person startup" },
-    { from: "friday", text: "hi, i'm friday. officially, i write code." },
-    { from: "friday", text: "unofficially, i'm 'the IT guy'. i fixed the wifi once by restarting the router, and now everyone calls me.", image: turnItOffAndOnMeme, caption: "my entire IT training" },
-  ],
-  // The problem
-  [
-    { from: "friday", text: "this morning my boss walked up to my desk." },
-    { from: "friday", text: "'friday, why is the wifi so slow? and what is DESKTOP-X7Q?'" },
-    { from: "friday", text: "i have never seen DESKTOP-X7Q in my life.", image: confusedMeme, caption: "me, staring at the router admin page" },
-  ],
-  // Meet ramesh
-  [
-    { from: "friday", text: "so i called the only hacker i know. my college senior." },
-    { from: "system", text: "[profile] ramesh · 27 · ethical hacker. companies pay him to break into their systems, legally." },
-    { from: "ramesh", text: "friday! long time. let me guess... something is broken?" },
-  ],
-  [
-    { from: "ramesh", text: "relax. i hack things for a living. the good kind.", image: toyLaptopHackerMeme, caption: "how ramesh thinks he looks while hacking" },
-    { from: "friday", text: "wait, there's a good kind?" },
-    { from: "ramesh", text: "ethical hacker = i break in with permission, so the bad guys can't break in without it." },
-  ],
-  // Back to the network
-  [
-    { from: "ramesh", text: "first question. how many devices are on your network?" },
-    { from: "friday", text: "a handful? laptops, a printer, the wifi router, a storage box nobody remembers setting up... and now DESKTOP-X7Q." },
-    { from: "ramesh", text: "and do you know what each of them is saying about itself?" },
-  ],
-  [
-    { from: "friday", text: "saying?? devices can talk?" },
-    { from: "ramesh", text: "every device on a network leaves a trace. it can't help it." },
-    { from: "ramesh", text: "think of the network as a street, and every device as a house on it." },
-  ],
-  [
-    { from: "ramesh", text: "trace #1 -> ip address. the house number. like 192.168.1.23" },
-    { from: "ramesh", text: "trace #2 -> open ports. the doors of the house. some are locked, some are wide open." },
-  ],
-  [
-    { from: "ramesh", text: "trace #3 -> services + version. who opens the door, and how old they are. like 'OpenSSH 7.2' or 'nginx 1.18'" },
-    { from: "ramesh", text: "trace #4 -> operating system. what the house is built with. windows, linux, macos..." },
-  ],
-  [
-    { from: "friday", text: "wait... so anyone on our wifi can see all of that?" },
-    { from: "friday", image: thisIsFineMeme, caption: "me, looking at our network right now" },
-  ],
-  [
-    { from: "ramesh", text: "yep. a network is not a mystery. it's an open map." },
-    { from: "ramesh", text: "and nmap is the tool we use to read it. let's find out who DESKTOP-X7Q really is.", image: hackermanMeme, caption: "you, after this course" },
-    { from: "system", text: "chapter 1 complete. next: your first scan." },
-  ],
-];
+export type HighlightPart = string | { color: VividColor; text: string };
 
-const chapterOneQuiz: QuizQuestion[] = [
-  {
-    question: "what is friday's real job at chaibyte?",
-    options: ["IT manager", "junior developer", "ethical hacker", "CEO"],
-    answer: 1,
-    explanation: "he writes code. he's only 'the IT guy' because he restarted the router once.",
-  },
-  {
-    question: "which device did nobody recognise on the office network?",
-    options: ["the printer", "the wifi router", "DESKTOP-X7Q", "the storage box"],
-    answer: 2,
-    explanation: "DESKTOP-X7Q showed up and nobody knew whose it was.",
-  },
-  {
-    question: "what does an ethical hacker do?",
-    options: [
-      "breaks into systems without permission",
-      "breaks in with permission, so the bad guys can't",
-      "fixes printers for a living",
-      "sells stolen passwords",
-    ],
-    answer: 1,
-    explanation: "same skills as a bad hacker, but with permission and paperwork.",
-  },
-  {
-    question: "in ramesh's example the network is a street. what is each device?",
-    options: ["a car", "a traffic light", "a shop sign", "a house"],
-    answer: 3,
-    explanation: "every device is a house on the street.",
-  },
-  {
-    question: "which trace is the 'house number' of a device?",
-    options: ["its ip address", "its operating system", "its open ports", "its service version"],
-    answer: 0,
-    explanation: "the ip address tells you where the device lives, like 192.168.1.23.",
-  },
-  {
-    question: "in the house example, what are open ports?",
-    options: ["the roof", "the doors", "the street name", "the paint colour"],
-    answer: 1,
-    explanation: "ports are doors. some are locked, some are wide open.",
-  },
-  {
-    question: "'OpenSSH 7.2' is an example of which trace?",
-    options: ["ip address", "operating system", "service + version", "open port"],
-    answer: 2,
-    explanation: "it tells you who answers the door (OpenSSH) and how old it is (7.2).",
-  },
-  {
-    question: "windows, linux and macos are examples of which trace?",
-    options: ["operating system", "service + version", "ip address", "open port"],
-    answer: 0,
-    explanation: "the operating system is what the house is built with.",
-  },
-  {
-    question: "which of these could be a device in friday's office network (192.168.1.0/24)?",
-    options: ["8.8.8.8", "999.1.1.1", "DESKTOP-X7Q.com", "192.168.1.23"],
-    answer: 3,
-    explanation: "office devices live at 192.168.1.something.",
-  },
-  {
-    question: "what is nmap used for?",
-    options: [
-      "making the wifi faster",
-      "deleting viruses",
-      "reading the network map: finding devices and what they reveal",
-      "sending memes to the boss",
-    ],
-    answer: 2,
-    explanation: "nmap finds devices and reads the traces they leave.",
-  },
-];
+const HIGHLIGHT_PATTERN = /\{(pink|yellow|cyan|orange|purple|red|green|blue):([^{}]+)\}/g;
 
-const chapterTwoScenes: Scene[] = [
-  [
-    { from: "system", text: "chapter 2 · your first scan" },
-    { from: "ramesh", text: "welcome back. you passed the test, so you're officially less confused than friday." },
-    { from: "friday", text: "hey! ...fair." },
-  ],
-  [
-    { from: "ramesh", text: "first, nmap needs to know where to look. friday's office network is 192.168.1.0/24." },
-    { from: "friday", text: "what does the /24 mean?" },
-  ],
-  [
-    { from: "ramesh", text: "it means every address from 192.168.1.0 to 192.168.1.255. 256 houses on one street." },
-    { from: "ramesh", text: "next, we knock on every door on that street, and find out where DESKTOP-X7Q lives." },
-    { from: "system", text: "chapter 2 continues soon." },
-  ],
-];
+export const parseHighlights = (text: string): HighlightPart[] => {
+  const parts: HighlightPart[] = [];
+  let last = 0;
+  for (const match of text.matchAll(HIGHLIGHT_PATTERN)) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    parts.push({ color: match[1] as VividColor, text: match[2] });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+};
 
-export const chapters: Chapter[] = [
-  { title: "chapter 01", subtitle: "the unknown device", scenes: chapterOneScenes, quiz: chapterOneQuiz },
-  { title: "chapter 02", subtitle: "your first scan", scenes: chapterTwoScenes },
-];
+export const stripHighlights = (text: string) => text.replace(HIGHLIGHT_PATTERN, "$2");
+
+export const isChoiceScene = (scene: Scene): scene is ChoiceScene => !Array.isArray(scene);
+
+export const choiceOptionsMessage = (scene: ChoiceScene): StoryMessage => ({
+  from: "system",
+  text: `${scene.options.map((option, i) => `${i + 1}) ${option.label}`).join("\n")}\n\ntype the number and press enter.`,
+});
+
+export const pickedMessage = (scene: ChoiceScene, picked: number): StoryMessage => ({
+  from: "system",
+  text: `showing: ${scene.options[picked].label}`,
+});
+
+// What a scene looked like once it has been played, used to rebuild the chat on resume
+export const playedScene = (scene: Scene, choices: Choices): StoryMessage[] => {
+  if (!isChoiceScene(scene)) return scene;
+  const picked = choices[scene.key];
+  if (picked === undefined || !scene.options[picked]) return scene.prompt;
+  return [...scene.prompt, pickedMessage(scene, picked), ...scene.options[picked].messages];
+};
+
+export const chapters: Chapter[] = [chapterOne, chapterTwo, chapterThree, chapterFour, chapterFive];

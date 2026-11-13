@@ -4,16 +4,25 @@ import Draggable from "react-draggable";
 import { NmapIcon } from "../icons/DesktopIcons";
 import MessageBlock from "./message-block";
 import { loadProgress, saveProgress, type Progress } from "./progress";
-import { chapters, PASS_SCORE, type QuizQuestion, type StoryMessage } from "./story";
+import {
+  chapters,
+  choiceOptionsMessage,
+  isChoiceScene,
+  PASS_SCORE,
+  pickedMessage,
+  playedScene,
+  type Choices,
+  type QuizQuestion,
+  type StoryMessage,
+} from "./story";
 import TerminalTextBox from "./terminal-textbox";
 
 const MESSAGE_GAP_MS = 650;
-const BEFORE_GLITCH_MS = 900;
 const GLITCH_MS = 1800;
 
 type ChatMessage = StoryMessage & { id: number; time: string };
 
-type Phase = "story" | "quiz" | "failed" | "passed" | "glitch";
+type Phase = "story" | "choice" | "quiz" | "failed" | "passed" | "glitch";
 
 const currentTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -25,9 +34,19 @@ const questionMessage = (quiz: QuizQuestion[], index: number): StoryMessage => {
 };
 
 // Rebuilds the conversation up to the saved point, so a resumed session looks like it never stopped
+const passedMessages = (chapterIndex: number): StoryMessage[] => {
+  const next = chapters[chapterIndex + 1];
+  return [
+    { from: "system", downloads: chapterIndex },
+    next
+      ? { from: "ramesh", text: `grab the notes if you want to go deeper. press enter when you're ready for ${next.title}: ${next.subtitle}.` }
+      : { from: "ramesh", text: "that's the whole nmap module, friday. and you. type 'notes' anytime to download any chapter again." },
+  ];
+};
+
 const resumedHistory = (progress: Progress): StoryMessage[] => {
   const chapter = chapters[progress.chapterIndex];
-  const history = chapter.scenes.slice(0, progress.nextScene).flat();
+  const history = chapter.scenes.slice(0, progress.nextScene).flatMap(scene => playedScene(scene, progress.choices));
   const restored: StoryMessage = { from: "system", text: `session restored · ${chapter.title} · ${chapter.subtitle}` };
 
   if (progress.phase === "quiz" && chapter.quiz) {
@@ -41,6 +60,7 @@ const resumedHistory = (progress: Progress): StoryMessage[] => {
   if (progress.phase === "failed") {
     return [...history, restored, { from: "ramesh", text: "type 'retry' to take the quiz again, or 'restart' to replay the chapter." }];
   }
+  if (progress.phase === "passed") return [...history, restored, ...passedMessages(progress.chapterIndex)];
   return [...history, restored];
 };
 
@@ -68,6 +88,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
   const [phase, setPhase] = useState<Phase>(saved?.phase ?? "story");
   const [quizIndex, setQuizIndex] = useState(saved?.quizIndex ?? 0);
   const [correctCount, setCorrectCount] = useState(saved?.correctCount ?? 0);
+  const [choices, setChoices] = useState<Choices>(saved?.choices ?? {});
   const [busy, setBusy] = useState(!saved);
 
   // const asciiTextRef = useAsciiText({
@@ -110,7 +131,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
   };
 
   useEffect(() => {
-    if (!saved) reveal(chapters[0].scenes[0]);
+    if (!saved) reveal(playedScene(chapters[0].scenes[0], {}));
     return () => {
       timers.current.forEach(clearTimeout);
       timers.current = [];
@@ -121,11 +142,13 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     saveProgress(username, {
       chapterIndex,
       nextScene,
-      phase: phase === "glitch" ? "passed" : phase,
+      // An unanswered choice is simply asked again on resume
+      phase: phase === "glitch" ? "passed" : phase === "choice" ? "story" : phase,
       quizIndex,
       correctCount,
+      choices,
     });
-  }, [username, chapterIndex, nextScene, phase, quizIndex, correctCount]);
+  }, [username, chapterIndex, nextScene, phase, quizIndex, correctCount, choices]);
 
   // Coming back from minimized should put the cursor straight back in the input
   useEffect(() => {
@@ -135,8 +158,35 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
   const chapterDone = nextScene >= chapter.scenes.length;
 
   const playScene = (index: number) => {
-    setNextScene(index + 1);
-    say(chapter.scenes[index]);
+    const scene = chapter.scenes[index];
+    if (!isChoiceScene(scene)) {
+      setNextScene(index + 1);
+      say(scene);
+      return;
+    }
+    const picked = choices[scene.key];
+    if (picked !== undefined && scene.options[picked]) {
+      setNextScene(index + 1);
+      say([...scene.prompt, pickedMessage(scene, picked), ...scene.options[picked].messages]);
+      return;
+    }
+    setPhase("choice");
+    say([...scene.prompt, choiceOptionsMessage(scene)]);
+  };
+
+  const answerChoice = (text: string) => {
+    const scene = chapter.scenes[nextScene];
+    if (!isChoiceScene(scene)) return;
+    const choice = Number(text);
+    if (!Number.isInteger(choice) || choice < 1 || choice > scene.options.length) {
+      say([{ from: "system", text: `type a number from 1 to ${scene.options.length}.` }]);
+      return;
+    }
+    const picked = choice - 1;
+    setChoices(prev => ({ ...prev, [scene.key]: picked }));
+    setPhase("story");
+    setNextScene(nextScene + 1);
+    say([pickedMessage(scene, picked), ...scene.options[picked].messages]);
   };
 
   const startChapter = (index: number) => {
@@ -146,16 +196,25 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     setNextScene(1);
     setQuizIndex(0);
     setCorrectCount(0);
-    say(chapters[index].scenes[0]);
+    say(playedScene(chapters[index].scenes[0], choices));
   };
+
+  const completedChapters = chapters
+    .map((_, index) => index)
+    .filter(index => index < chapterIndex || (index === chapterIndex && (phase === "passed" || phase === "glitch")));
 
   const startQuiz = () => {
     setPhase("quiz");
     setQuizIndex(0);
     setCorrectCount(0);
     say([
-      { from: "ramesh", text: `before we move on, a quick check. ${quiz.length} questions about what you just learned.` },
-      { from: "system", text: `you need ${PASS_SCORE * 100}% to unlock the next chapter. type the number of your answer and press enter.` },
+      {
+        from: "ramesh",
+        text: upcomingChapter
+          ? `before we move on, a quick check. ${quiz.length} questions about what you just learned.`
+          : `final check. ${quiz.length} questions and the nmap module is yours.`,
+      },
+      { from: "system", text: `you need ${PASS_SCORE * 100}% to pass and unlock the chapter notes. type the number of your answer and press enter.` },
       questionMessage(quiz, 0),
     ]);
   };
@@ -192,10 +251,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     const result = `score: ${Math.round(score * 100)}% (${correct}/${quiz.length}).`;
     if (score >= PASS_SCORE) {
       setPhase("passed");
-      say([feedback, { from: "system", text: `${result} access granted.` }], () => {
-        setBusy(true);
-        schedule(BEFORE_GLITCH_MS, startGlitch);
-      });
+      say([feedback, { from: "system", text: `${result} access granted.` }, ...passedMessages(chapterIndex)]);
       return;
     }
     setPhase("failed");
@@ -223,6 +279,20 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
       return;
     }
 
+    if (command === "notes" || command === "downloads") {
+      say(
+        completedChapters.length
+          ? completedChapters.map((index): StoryMessage => ({ from: "system", downloads: index }))
+          : [{ from: "system", text: "pass a chapter's quiz to unlock its notes and quiz download." }],
+      );
+      return;
+    }
+
+    if (phase === "choice") {
+      answerChoice(text);
+      return;
+    }
+
     if (phase === "quiz") {
       answerQuestion(text);
       return;
@@ -234,12 +304,18 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
       return;
     }
 
+    if (phase === "passed") {
+      if (upcomingChapter) startGlitch();
+      else say([{ from: "system", text: "module complete. type 'notes' to download any chapter, or 'reset' to start over." }]);
+      return;
+    }
+
     if (!chapterDone) {
       playScene(nextScene);
       return;
     }
 
-    if (chapter.quiz && upcomingChapter) {
+    if (chapter.quiz) {
       startQuiz();
       return;
     }
@@ -249,10 +325,15 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
 
   const placeholder = (() => {
     if (busy) return "";
+    if (phase === "choice") {
+      const scene = chapter.scenes[nextScene];
+      return isChoiceScene(scene) ? `type 1-${scene.options.length} and press enter` : "";
+    }
     if (phase === "quiz") return `type 1-${quiz[quizIndex].options.length} and press enter`;
     if (phase === "failed") return "type 'retry' or 'restart'";
+    if (phase === "passed") return upcomingChapter ? `press enter for ${upcomingChapter.title}...` : "type 'notes' or 'reset'";
     if (!chapterDone) return "press enter to continue...";
-    if (chapter.quiz && upcomingChapter) return "press enter to start the quiz...";
+    if (chapter.quiz) return "press enter to start the quiz...";
     return "type 'restart' to replay this chapter";
   })();
 
