@@ -1,3 +1,8 @@
+import fridayAvatar from "../../../assets/characters/friday.jpg";
+import rameshAvatar from "../../../assets/characters/ramesh.jpg";
+import httpNotSecure from "../../../assets/encryption/http-not-secure.jpg";
+import httpPostcard from "../../../assets/encryption/http-postcard.jpg";
+import httpsSecure from "../../../assets/encryption/https-secure.jpg";
 import peekingMeme from "../../../assets/memes/peeking.gif";
 import sneakyHomerMeme from "../../../assets/memes/sneaky-homer.gif";
 import thisIsFineMeme from "../../../assets/memes/this-is-fine.gif";
@@ -6,61 +11,114 @@ import type { Chapter, QuizQuestion, Scene } from "../../story";
 const scenes: Scene[] = [
   [
     { from: "system", text: "cyber-concepts · encryption · chapter 01" },
-    { from: "friday", text: "ramesh. quick one. our contractor {cyan:Dev} needs the temporary admin password for the staging panel." },
-    { from: "friday", text: "i was about to paste it into the old login page. look:" },
-    { from: "system", text: "friday opens the address bar. something is missing.", visual: "http-vs-https" },
+    { from: "system", text: "before the first secret: meet the two people in this module again." },
   ],
   [
-    { from: "ramesh", text: "stop. stop stop stop. that left side. {red:http}. no padlock." },
-    { from: "friday", text: "so... the site still works? i can type the password and hit enter." },
-    { from: "ramesh", text: "it 'works' the same way shouting your bank pin across a crowded cafe 'works'. the waiter hears it. the next table hears it. the guy with headphones? maybe also." },
+    {
+      from: "system",
+      text: "[profile] friday · 23 · junior developer at chaibyte. good at shipping features. bad at spotting unsafe links. after nmap he can find devices... crypto is still new.",
+      image: fridayAvatar,
+      caption: "friday · the learner",
+    },
+    { from: "friday", text: "hi again. i write code. people still call me when wifi dies. i do not pretend i understand encryption yet." },
+  ],
+  [
+    {
+      from: "system",
+      text: "[profile] ramesh · 27 · ethical hacker. he breaks systems with permission for a living, then teaches teams how to lock them properly. encryption is daily bread for him.",
+      image: rameshAvatar,
+      caption: "ramesh · the expert",
+    },
+    { from: "ramesh", text: "friday. if you are about to send a password over a weird looking link, stop and call me first." },
+    { from: "friday", text: "...about that." },
+  ],
+  [
+    { from: "friday", text: "our contractor {cyan:Dev} needs the temporary admin password for the staging panel. i found the old login page and was about to paste it." },
+    { from: "friday", text: "look at my screen. is this fine?" },
+    {
+      from: "system",
+      text: "friday's browser. read the address bar carefully.",
+      image: httpNotSecure,
+      caption: "http://... · Not Secure · no padlock",
+      illustration: true,
+    },
+  ],
+  [
+    { from: "ramesh", text: "stop. stop stop stop. that red warning. {red:Not Secure}. and the url starts with {red:http}, not https." },
+    { from: "friday", text: "but the page loads. the form works. i can type the password and hit enter." },
+    { from: "ramesh", text: "it 'works' the same way shouting your bank pin across a crowded cafe 'works'. the waiter hears it. the next table hears it." },
     { from: "friday", image: thisIsFineMeme, caption: "friday, one second before ramesh grabbed the mouse" },
   ],
   [
-    { from: "friday", text: "ok but it's just our staging site. what's the worst that happens?" },
-    { from: "ramesh", text: "imagine the message is something sensitive. a {pink:bank instruction}. a {red:password}. a one-time code. anything you would not read out loud on the metro." },
-    { from: "friday", text: "and that message has to travel across a network we do not control..." },
-    { from: "ramesh", text: "exactly. your wifi to the coffee shop router. the coffee shop to the ISP. the ISP across the public internet. then somehow to Dev's office. we own maybe one hop of that." },
+    { from: "friday", text: "ok show me the safe version so i know what i should have opened." },
+    {
+      from: "system",
+      text: "same site idea, but locked.",
+      image: httpsSecure,
+      caption: "https://... · padlock on · this is what you want",
+      illustration: true,
+    },
+    { from: "ramesh", text: "see the difference? {green:https} + padlock. that is the browser telling you the connection is wrapped. we will learn how that wrap works. first: why http is dangerous." },
+    { from: "system", text: "side by side, the rule is simple.", visual: "http-vs-https" },
   ],
   [
-    { from: "friday", text: "so draw it. i need to see the danger." },
+    { from: "friday", text: "it's just our staging site though. what's the worst that happens?" },
+    { from: "ramesh", text: "imagine the message is something sensitive. a {pink:bank instruction}. a {red:password}. a one-time code. anything you would not read out loud on the metro." },
+    { from: "friday", text: "and that message has to travel across a network we do not control?" },
+    { from: "ramesh", text: "yes. your wifi to the coffee shop router. the coffee shop to the ISP. the ISP across the public internet. then to Dev's office. we own maybe one hop of that." },
+  ],
+  [
+    { from: "friday", text: "i still don't get how someone in the middle reads it. can you draw it?" },
     { from: "ramesh", text: "three networks. yours. the middle we cannot trust. Dev's. watch the pink packet." },
     { from: "system", text: "a private message crossing an open middle.", visual: "internet-path" },
   ],
   [
-    { from: "friday", text: "wait. the person in the middle... they can just {red:copy} the packet? they don't even have to stop it?" },
+    { from: "friday", text: "wait. the person in the middle... they can just {red:copy} the packet? they don't even stop it?" },
     { from: "ramesh", text: "yep. that's called {orange:eavesdropping} or packet sniffing. the message still arrives. Dev gets it. you think everything is fine. and a stranger already read it." },
+    {
+      from: "system",
+      text: "http is basically a postcard. anyone along the path can read the writing.",
+      image: httpPostcard,
+      caption: "plaintext on the wire = an open postcard",
+      illustration: true,
+    },
     { from: "friday", image: peekingMeme, caption: "the attacker, politely reading your password" },
   ],
   [
-    { from: "friday", text: "what tool do they even use? is this like movie hacking?" },
-    { from: "ramesh", text: "no cape required. free tools. {yellow:wireshark} is the famous one. {yellow:tcpdump} on the command line. on a public wifi, a cheap wifi adapter in monitor mode. that's it." },
+    { from: "friday", text: "what tool do they even use? is this movie stuff?" },
+    { from: "ramesh", text: "no cape required. free tools. {yellow:wireshark} is the famous one. {yellow:tcpdump} on the command line. on public wifi, a cheap adapter in monitor mode. that's it." },
     { from: "ramesh", text: "want to see what their screen looks like when you send that password over {red:http}?" },
-    { from: "friday", text: "...do i?" },
-    { from: "ramesh", text: "yes. curiosity is how we learn. look:" },
+    { from: "friday", text: "...do i have to?" },
+    { from: "ramesh", text: "yes. look:" },
     { from: "system", text: "the attacker's wireshark window.", visual: "wireshark-http" },
   ],
   [
-    { from: "friday", text: "USERNAME. PASSWORD. OTP. sitting there. in plain letters." },
+    { from: "friday", text: "USERNAME. PASSWORD. OTP. sitting there. in plain letters. i almost sent that." },
     { from: "ramesh", text: "readable text. that's the whole problem. if you send a message as plaintext across a network you don't control, {red:anyone who intercepts it can simply read it}." },
-    { from: "friday", text: "so how do banks... how does anything... how do i log into gmail from this cafe??" },
-    { from: "ramesh", text: "curious already. good. the answer has a name: {green:encryption}." },
+    { from: "friday", text: "so how do banks do this? how do i log into gmail from a cafe??" },
+    { from: "ramesh", text: "good. that question is the door into this whole module. the answer has a name: {green:encryption}." },
     { from: "ramesh", text: "it scrambles the message into something unreadable before it leaves your laptop. even if someone intercepts it, all they see is meaningless characters. noise." },
     { from: "friday", image: sneakyHomerMeme, caption: "friday's password, disappearing into the noise" },
   ],
   [
     { from: "friday", text: "and only Dev can turn it back?" },
-    { from: "ramesh", text: "only the intended receiver. to everyone else: garbage. next chapter we open that black box. plaintext, ciphertext, keys. the whole machine." },
+    { from: "ramesh", text: "only the intended receiver. to everyone else: garbage. next chapter i'll open that black box for you. plaintext, ciphertext, keys. slow and clear." },
     { from: "system", text: "chapter 1 complete. next: what is encryption?" },
   ],
 ];
 
 const quiz: QuizQuestion[] = [
   {
-    question: "what does a missing padlock / 'http' in the address bar mean?",
-    options: ["the site is faster", "the connection sends data as readable text", "the site is offline", "your wifi is broken"],
+    question: "what does a missing padlock / 'http' / 'Not Secure' in the address bar mean?",
+    options: ["the site is faster", "the connection can send data as readable text", "the site is offline", "your wifi is broken"],
     answer: 1,
     explanation: "http has no encryption. anything you type can travel as readable plaintext.",
+  },
+  {
+    question: "in this story, who is the expert teaching encryption?",
+    options: ["friday", "ramesh", "Dev", "the isp"],
+    answer: 1,
+    explanation: "ramesh is the ethical hacker. friday is the junior learning.",
   },
   {
     question: "why is 'the middle network' dangerous?",
@@ -92,6 +150,12 @@ const quiz: QuizQuestion[] = [
     explanation: "the form fields were sitting in the packet as plaintext.",
   },
   {
+    question: "ramesh compared http to what everyday object?",
+    options: ["a locked safe", "an open postcard", "a vpn tunnel", "a firewall"],
+    answer: 1,
+    explanation: "anyone along the path can read the writing on a postcard.",
+  },
+  {
     question: "what does encryption do to a sensitive message before it travels?",
     options: [
       "deletes it",
@@ -101,18 +165,6 @@ const quiz: QuizQuestion[] = [
     ],
     answer: 1,
     explanation: "encryption turns readable plaintext into ciphertext that looks like noise without the key.",
-  },
-  {
-    question: "after encryption, what does an interceptor usually see?",
-    options: ["the password clearly", "meaningless characters / noise", "your home address only", "a thank-you note"],
-    answer: 1,
-    explanation: "without the right key, ciphertext is useless noise.",
-  },
-  {
-    question: "who should be able to turn the scrambled message back into the original?",
-    options: ["anyone on the wifi", "only the intended receiver (with the right secret)", "only the isp", "google"],
-    answer: 1,
-    explanation: "that's the point: only the receiver can decrypt it.",
   },
   {
     question: "which real-world place is a classic example of an untrusted middle network?",
@@ -137,39 +189,43 @@ const notes = `# chapter 01 · the open postcard
 
 > offtrck · encryption module · study notes
 
+## the cast
+| person | role |
+|---|---|
+| **friday** | junior developer. learner. does not know encryption yet. |
+| **ramesh** | ethical hacker. expert. teaches how secrets survive the internet. |
+
 ## the story
-friday almost pasted a temporary admin password into an old **http** staging login for contractor Dev. ramesh stopped him: no padlock means the message can travel as readable text across networks they do not control.
+friday almost pasted a temporary admin password into an old **http** staging login for contractor Dev. the browser showed **Not Secure**. ramesh stopped him.
 
 ## http vs https
 | | http | https |
 |---|---|---|
-| address bar | \`http://...\` often "not secure" | \`https://...\` with a padlock |
+| address bar | \`http://...\` + often "Not Secure" | \`https://...\` with a padlock |
 | data on the wire | plaintext (readable) | ciphertext (scrambled) |
 | eavesdropper | can read passwords, cookies, forms | sees noise |
-| real use | almost never for logins/payments | the default for the modern web |
 
-**real world:** browsers now warn loudly on http pages that ask for passwords. banks, email, and shopping should always show https.
+**real world:** browsers warn on http pages that ask for passwords. banks, email, and shopping should always show https.
 
 ## the path you don't control
-a message from friday to Dev typically crosses:
-1. friday's device + local wifi/router (maybe trusted)
-2. **ISP / public internet / coffee-shop uplink** (untrusted middle)
+1. friday's device + local wifi (maybe trusted)
+2. **ISP / public internet / cafe uplink** (untrusted middle)
 3. Dev's network (maybe trusted)
 
-classic risky middles: airport wifi, hotel wifi, cafe wifi, a compromised router, a fake hotspot named "Free Airport WiFi".
+risky middles: airport wifi, hotel wifi, cafe wifi, fake hotspots.
 
 ## eavesdropping
-- the attacker **copies** packets without necessarily blocking them
-- the receiver still gets the message, so victims often notice nothing
-- tools: **Wireshark**, **tcpdump**, remote capture on a router, wifi monitor mode
+- attacker **copies** packets without necessarily blocking them
+- tools: **Wireshark**, **tcpdump**
+- http is like an **open postcard**
 
 ## what encryption changes
-encryption scrambles the message *before* it leaves the sender. interceptors still see packets, but the contents look like random bytes. only someone with the right secret can turn them back into the original message.
+scrambles the message *before* it leaves the sender. interceptors still see packets, but contents look like random bytes.
 
 ## remember
+- friday asks, ramesh explains
 - sensitive data on http is a postcard
-- the danger is the path you don't own
-- encryption turns the postcard into a locked box
+- look for the padlock
 `;
 
 export const encryptionChapterOne: Chapter = {

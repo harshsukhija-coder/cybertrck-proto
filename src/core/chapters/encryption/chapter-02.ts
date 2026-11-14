@@ -7,7 +7,7 @@ const scenes: Scene[] = [
   [
     { from: "system", text: "chapter 02 · what is encryption?" },
     { from: "friday", text: "ok. encryption scrambles stuff. but... how? is it just random nonsense?" },
-    { from: "ramesh", text: "curious question. if it were random, even Dev couldn't read it. random is a shredder. encryption is a lock." },
+    { from: "ramesh", text: "no. if it were random, even Dev couldn't read it. random is a shredder. encryption is a lock." },
     { from: "friday", text: "a lock with a key?" },
     { from: "ramesh", text: "exactly. let's name the pieces." },
   ],
@@ -55,9 +55,9 @@ const scenes: Scene[] = [
     { from: "friday", image: mindBlownMeme, caption: "friday realising his pizza order was also ciphertext" },
   ],
   [
-    { from: "friday", text: "one more curiosity. if someone steals the ciphertext but not the key... we are fine?" },
-    { from: "ramesh", text: "usually yes. if they steal the key, the lock is useless. that's why keys live in password managers, secure enclaves, hardware tokens, and short-lived sessions." },
-    { from: "ramesh", text: "next we invent a tiny encryption algorithm together. caesar's cipher. then smash it. then look at why modern crypto does not smash so easily." },
+    { from: "friday", text: "one more dumb question. if someone steals the ciphertext but not the key... we are fine?" },
+    { from: "ramesh", text: "not dumb. usually yes. if they steal the key, the lock is useless. that's why keys live in password managers, secure enclaves, hardware tokens, and short-lived sessions." },
+    { from: "ramesh", text: "next i'll show you a tiny encryption algorithm. caesar's cipher. then we smash it. then you see why modern crypto does not smash so easily." },
     { from: "system", text: "chapter 2 complete. next: from caesar to modern keys." },
   ],
 ];

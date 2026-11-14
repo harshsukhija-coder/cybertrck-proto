@@ -17,12 +17,12 @@ const scenes: Scene[] = [
     { from: "system", text: "A-Z mapped to D-C with key = 3.", visual: "caesar-wheel" },
   ],
   [
-    { from: "friday", text: "plaintext {cyan:ATTACK AT DAWN} becomes {pink:DWWDFN DW GDZQ}. i can reverse it by shifting back 3." },
-    { from: "ramesh", text: "you just did encryption and decryption. the {yellow:key} is the number 3. change the key to 5, and the whole mapping changes." },
-    { from: "friday", text: "so the algorithm is 'shift by N'. the key is N." },
-    { from: "ramesh", text: "perfect. now the curiosity that kills toy ciphers: how many possible N values exist?" },
-    { from: "friday", text: "uh. 25? because 0 does nothing and 26 is a full loop back to the start." },
-    { from: "ramesh", text: "and 25 is nothing. watch someone break it." },
+    { from: "friday", text: "so... {cyan:ATTACK AT DAWN} turns into {pink:DWWDFN DW GDZQ}? and i undo it by shifting back?" },
+    { from: "ramesh", text: "yes. that is encryption and decryption. the {yellow:key} is the number 3. change the key to 5, and the whole mapping changes." },
+    { from: "friday", text: "so the algorithm is 'shift by N'... and the key is just N?" },
+    { from: "ramesh", text: "exactly. now the question that kills toy ciphers: how many possible N values exist?" },
+    { from: "friday", text: "uh. 25? because 0 does nothing and 26 is a full loop back to the start?" },
+    { from: "ramesh", text: "yes. and 25 is nothing. watch me break it." },
     { from: "system", text: "brute forcing caesar.", visual: "caesar-crack" },
   ],
   [
@@ -46,8 +46,8 @@ const scenes: Scene[] = [
   ],
   [
     { from: "ramesh", text: "modern algorithms (AES, ChaCha20) also scramble in complex rounds, not one alphabet slide. but the headline remains: {yellow:large keys + enormous keyspace}." },
-    { from: "friday", text: "ok. so we have strong locks. next curiosity: who holds the key when two strangers talk on the internet?" },
-    { from: "ramesh", text: "that question splits encryption into two big families. symmetric and asymmetric. next chapter." },
+    { from: "friday", text: "ok. strong locks. but... who holds the key when two strangers talk on the internet? i don't get that part." },
+    { from: "ramesh", text: "that question splits encryption into two big families. symmetric and asymmetric. next chapter. i'll lead." },
     { from: "system", text: "chapter 3 complete. next: shared secrets and the key exchange problem." },
   ],
 ];

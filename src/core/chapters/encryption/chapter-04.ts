@@ -13,8 +13,8 @@ const scenes: Scene[] = [
   ],
   [
     { from: "system", text: "one key · two laptops · ciphertext in the middle.", visual: "symmetric-flow" },
-    { from: "friday", text: "friday locks with KEY. internet sees pink noise. Dev unlocks with the same KEY." },
-    { from: "ramesh", text: "yes. AES is the famous modern symmetric cipher. your https downloads, your disk encryption, a lot of vpn traffic inside the tunnel: symmetric is doing the heavy lifting." },
+    { from: "friday", text: "so i lock with KEY... internet sees pink noise... Dev unlocks with the same KEY?" },
+    { from: "ramesh", text: "you've got it. AES is the famous modern symmetric cipher. your https downloads, your disk encryption, a lot of vpn traffic inside the tunnel: symmetric is doing the heavy lifting." },
   ],
   [
     { from: "friday", text: "why do people love it so much?" },
