@@ -34,6 +34,22 @@ export const ToolsFolderIcon = (props: IconProps) => (
   </svg>
 );
 
+export const ConceptsFolderIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <path d="M12 10.5a2 2 0 0 0-1.2 3.6V15h2.4v-.9a2 2 0 0 0-1.2-3.6z" opacity="0.8" />
+    <path d="M11.2 16.5h1.6" opacity="0.8" />
+  </svg>
+);
+
+export const EncryptionIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="4" y="10" width="16" height="11" rx="2" />
+    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    <path d="M8 15.5h1M11 15.5h1M14 15.5h2" opacity="0.8" />
+  </svg>
+);
+
 export const LockIcon = (props: IconProps) => (
   <svg {...base} {...props}>
     <rect x="5" y="11" width="14" height="10" rx="2" />

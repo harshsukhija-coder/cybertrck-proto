@@ -1,8 +1,8 @@
-import knockKnockMeme from "../../assets/memes/knock-knock.gif";
-import sneakyHomerMeme from "../../assets/memes/sneaky-homer.gif";
-import surprisedPikachuMeme from "../../assets/memes/surprised-pikachu.gif";
-import waitingSkeletonMeme from "../../assets/memes/waiting-skeleton.gif";
-import type { Chapter, QuizQuestion, Scene } from "../story";
+import knockKnockMeme from "../../../assets/memes/knock-knock.gif";
+import sneakyHomerMeme from "../../../assets/memes/sneaky-homer.gif";
+import surprisedPikachuMeme from "../../../assets/memes/surprised-pikachu.gif";
+import waitingSkeletonMeme from "../../../assets/memes/waiting-skeleton.gif";
+import type { Chapter, QuizQuestion, Scene } from "../../story";
 
 const scenes: Scene[] = [
   [

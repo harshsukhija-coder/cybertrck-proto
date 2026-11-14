@@ -1,9 +1,9 @@
-import csiSunglassesMeme from "../../assets/memes/csi-sunglasses.gif";
-import detectivePikachuMeme from "../../assets/memes/detective-pikachu.gif";
-import hackermanMeme from "../../assets/memes/hackerman.gif";
-import imInMeme from "../../assets/memes/im-in.gif";
-import shutItDownMeme from "../../assets/memes/shut-it-down.gif";
-import type { Chapter, QuizQuestion, Scene } from "../story";
+import csiSunglassesMeme from "../../../assets/memes/csi-sunglasses.gif";
+import detectivePikachuMeme from "../../../assets/memes/detective-pikachu.gif";
+import hackermanMeme from "../../../assets/memes/hackerman.gif";
+import imInMeme from "../../../assets/memes/im-in.gif";
+import shutItDownMeme from "../../../assets/memes/shut-it-down.gif";
+import type { Chapter, QuizQuestion, Scene } from "../../story";
 
 const scenes: Scene[] = [
   [

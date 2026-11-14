@@ -1,7 +1,7 @@
-import anybodyOutThereMeme from "../../assets/memes/anybody-out-there.gif";
-import detectivePikachuMeme from "../../assets/memes/detective-pikachu.gif";
-import surprisedPikachuMeme from "../../assets/memes/surprised-pikachu.gif";
-import type { Chapter, QuizQuestion, Scene } from "../story";
+import anybodyOutThereMeme from "../../../assets/memes/anybody-out-there.gif";
+import detectivePikachuMeme from "../../../assets/memes/detective-pikachu.gif";
+import surprisedPikachuMeme from "../../../assets/memes/surprised-pikachu.gif";
+import type { Chapter, QuizQuestion, Scene } from "../../story";
 
 const scenes: Scene[] = [
   [

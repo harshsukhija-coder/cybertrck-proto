@@ -1,6 +1,6 @@
-import mindBlownMeme from "../../assets/memes/mind-blown.gif";
-import sweatingMeme from "../../assets/memes/sweating.gif";
-import type { Chapter, ChoiceScene, QuizQuestion, Scene } from "../story";
+import mindBlownMeme from "../../../assets/memes/mind-blown.gif";
+import sweatingMeme from "../../../assets/memes/sweating.gif";
+import type { Chapter, ChoiceScene, QuizQuestion, Scene } from "../../story";
 
 const OS_OPTIONS = ["windows", "macos", "linux"];
 

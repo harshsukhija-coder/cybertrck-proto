@@ -1,4 +1,4 @@
-import { chapters, type Choices } from "./story";
+import type { Choices, Course } from "./story";
 
 export type SavedPhase = "story" | "quiz" | "failed" | "passed";
 
@@ -12,10 +12,12 @@ export type Progress = {
   choices: Choices;
 };
 
-const storageKey = (username: string) => `offtrck:progress:${username}`;
+// nmap keeps the original key so existing saves still resume
+const storageKey = (course: Course, username: string) =>
+  course.id === "nmap" ? `offtrck:progress:${username}` : `offtrck:progress:${course.id}:${username}`;
 
-const isValid = (progress: Progress) => {
-  const chapter = chapters[progress.chapterIndex];
+const isValid = (course: Course, progress: Progress) => {
+  const chapter = course.chapters[progress.chapterIndex];
   if (!chapter) return false;
   if (progress.nextScene < 1 || progress.nextScene > chapter.scenes.length) return false;
   if (progress.phase === "quiz" || progress.phase === "failed") {
@@ -25,12 +27,13 @@ const isValid = (progress: Progress) => {
   return true;
 };
 
-export const loadProgress = (username: string): Progress | null => {
+export const loadProgress = (course: Course, username: string): Progress | null => {
   try {
-    const raw = localStorage.getItem(storageKey(username));
+    const raw = localStorage.getItem(storageKey(course, username));
     if (!raw) return null;
     const stored = JSON.parse(raw) as Progress;
     const progress = { ...stored, choices: stored.choices ?? {} };
+    const { chapters } = course;
     // A passed quiz resumes at the start of the next chapter; the last chapter stays "passed" so its downloads remain
     if (progress.phase === "passed") {
       if (chapters[progress.chapterIndex + 1]) {
@@ -38,23 +41,23 @@ export const loadProgress = (username: string): Progress | null => {
       }
       return chapters[progress.chapterIndex] ? { ...progress, nextScene: chapters[progress.chapterIndex].scenes.length } : null;
     }
-    return isValid(progress) ? progress : null;
+    return isValid(course, progress) ? progress : null;
   } catch {
     return null;
   }
 };
 
-export const saveProgress = (username: string, progress: Progress) => {
+export const saveProgress = (course: Course, username: string, progress: Progress) => {
   try {
-    localStorage.setItem(storageKey(username), JSON.stringify(progress));
+    localStorage.setItem(storageKey(course, username), JSON.stringify(progress));
   } catch {
     // Storage can be full or blocked (private mode); progress just won't persist
   }
 };
 
-export const clearProgress = (username: string) => {
+export const clearProgress = (course: Course, username: string) => {
   try {
-    localStorage.removeItem(storageKey(username));
+    localStorage.removeItem(storageKey(course, username));
   } catch {
     // Same as above
   }

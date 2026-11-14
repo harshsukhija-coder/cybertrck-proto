@@ -1,10 +1,10 @@
 import { downloadText, notesFile, quizFile } from "./downloads";
 import { vivid } from "./palette";
 import {
-  chapters,
   parseHighlights,
   speakers,
   type Callout,
+  type Course,
   type StoryMessage,
   type TerminalBlock,
 } from "./story";
@@ -73,8 +73,8 @@ const CalloutBox = ({ callout }: { callout: Callout }) => {
   );
 };
 
-const DownloadCard = ({ chapterIndex }: { chapterIndex: number }) => {
-  const chapter = chapters[chapterIndex];
+const DownloadCard = ({ course, chapterIndex }: { course: Course; chapterIndex: number }) => {
+  const chapter = course.chapters[chapterIndex];
   const save = (file: { name: string; text: string }) => (event: React.MouseEvent) => {
     event.stopPropagation();
     downloadText(file);
@@ -91,14 +91,14 @@ const DownloadCard = ({ chapterIndex }: { chapterIndex: number }) => {
         <button
           className={buttonClass}
           style={{ color: vivid.green, borderColor: `${vivid.green}66`, backgroundColor: `${vivid.green}14` }}
-          onClick={save(notesFile(chapter))}
+          onClick={save(notesFile(course, chapter))}
         >
           ↓ download notes .md
         </button>
         <button
           className={buttonClass}
           style={{ color: vivid.yellow, borderColor: `${vivid.yellow}66`, backgroundColor: `${vivid.yellow}14` }}
-          onClick={save(quizFile(chapter))}
+          onClick={save(quizFile(course, chapter))}
         >
           ↓ download quiz .md
         </button>
@@ -108,11 +108,12 @@ const DownloadCard = ({ chapterIndex }: { chapterIndex: number }) => {
 };
 
 type MessageBlockProps = {
+  course: Course;
   message: StoryMessage;
   time: string;
 };
 
-const MessageBlock = ({ message, time }: MessageBlockProps) => {
+const MessageBlock = ({ course, message, time }: MessageBlockProps) => {
   const speaker = speakers[message.from];
   const isUser = message.from === "you";
 
@@ -145,14 +146,14 @@ const MessageBlock = ({ message, time }: MessageBlockProps) => {
           {message.callout && <CalloutBox callout={message.callout} />}
           {message.terminal && <Terminal terminal={message.terminal} />}
           {message.visual && <Visual name={message.visual} />}
-          {message.downloads !== undefined && <DownloadCard chapterIndex={message.downloads} />}
+          {message.downloads !== undefined && <DownloadCard course={course} chapterIndex={message.downloads} />}
           {message.image && (
-            <figure className="mt-2 w-fit">
-              {/* Fixed height so the block doesn't jump when the gif finishes loading */}
+            <figure className={`mt-2 ${message.illustration ? "w-full max-w-xl" : "w-fit"}`}>
+              {/* Fixed height / aspect so the block doesn't jump when the image finishes loading */}
               <img
                 src={message.image}
                 alt={message.caption ?? ""}
-                className="h-44 w-auto rounded border border-neon/15"
+                className={`rounded border border-neon/15 ${message.illustration ? "aspect-video w-full object-cover" : "h-44 w-auto"}`}
               />
               {message.caption && (
                 <figcaption className="mt-1 text-xs italic text-neon/40">{message.caption}</figcaption>

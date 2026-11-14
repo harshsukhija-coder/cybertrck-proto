@@ -1,9 +1,9 @@
-import confusedMeme from "../../assets/memes/confused.gif";
-import hackermanMeme from "../../assets/memes/hackerman.gif";
-import thisIsFineMeme from "../../assets/memes/this-is-fine.gif";
-import toyLaptopHackerMeme from "../../assets/memes/toy-laptop-hacker.gif";
-import turnItOffAndOnMeme from "../../assets/memes/turn-it-off-and-on.gif";
-import type { Chapter, QuizQuestion, Scene } from "../story";
+import confusedMeme from "../../../assets/memes/confused.gif";
+import hackermanMeme from "../../../assets/memes/hackerman.gif";
+import thisIsFineMeme from "../../../assets/memes/this-is-fine.gif";
+import toyLaptopHackerMeme from "../../../assets/memes/toy-laptop-hacker.gif";
+import turnItOffAndOnMeme from "../../../assets/memes/turn-it-off-and-on.gif";
+import type { Chapter, QuizQuestion, Scene } from "../../story";
 
 const scenes: Scene[] = [
   [

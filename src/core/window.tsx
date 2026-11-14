@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 // import { useAsciiText } from 'react-ascii-text';
 import Draggable from "react-draggable";
-import { NmapIcon } from "../icons/DesktopIcons";
 import MessageBlock from "./message-block";
 import { loadProgress, saveProgress, type Progress } from "./progress";
 import {
-  chapters,
   choiceOptionsMessage,
   isChoiceScene,
   PASS_SCORE,
   pickedMessage,
   playedScene,
   type Choices,
+  type Course,
   type QuizQuestion,
   type StoryMessage,
 } from "./story";
@@ -34,18 +33,18 @@ const questionMessage = (quiz: QuizQuestion[], index: number): StoryMessage => {
 };
 
 // Rebuilds the conversation up to the saved point, so a resumed session looks like it never stopped
-const passedMessages = (chapterIndex: number): StoryMessage[] => {
-  const next = chapters[chapterIndex + 1];
+const passedMessages = (course: Course, chapterIndex: number): StoryMessage[] => {
+  const next = course.chapters[chapterIndex + 1];
   return [
     { from: "system", downloads: chapterIndex },
     next
       ? { from: "ramesh", text: `grab the notes if you want to go deeper. press enter when you're ready for ${next.title}: ${next.subtitle}.` }
-      : { from: "ramesh", text: "that's the whole nmap module, friday. and you. type 'notes' anytime to download any chapter again." },
+      : { from: "ramesh", text: `that's the whole ${course.moduleName} module, friday. and you. type 'notes' anytime to download any chapter again.` },
   ];
 };
 
-const resumedHistory = (progress: Progress): StoryMessage[] => {
-  const chapter = chapters[progress.chapterIndex];
+const resumedHistory = (course: Course, progress: Progress): StoryMessage[] => {
+  const chapter = course.chapters[progress.chapterIndex];
   const history = chapter.scenes.slice(0, progress.nextScene).flatMap(scene => playedScene(scene, progress.choices));
   const restored: StoryMessage = { from: "system", text: `session restored · ${chapter.title} · ${chapter.subtitle}` };
 
@@ -60,27 +59,28 @@ const resumedHistory = (progress: Progress): StoryMessage[] => {
   if (progress.phase === "failed") {
     return [...history, restored, { from: "ramesh", text: "type 'retry' to take the quiz again, or 'restart' to replay the chapter." }];
   }
-  if (progress.phase === "passed") return [...history, restored, ...passedMessages(progress.chapterIndex)];
+  if (progress.phase === "passed") return [...history, restored, ...passedMessages(course, progress.chapterIndex)];
   return [...history, restored];
 };
 
 type WindowProps = {
-  title: string;
+  course: Course;
   username: string;
   minimized: boolean;
   onMinimize: () => void;
   onClose: () => void;
 };
 
-const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps) => {
+const Window = ({ course, username, minimized, onMinimize, onClose }: WindowProps) => {
+  const { chapters, title, Icon } = course;
   const windowRef = useRef(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const timers = useRef<number[]>([]);
 
   // Resume from local storage if this user has played before, otherwise the intro scene plays on mount
-  const [saved] = useState(() => loadProgress(username));
+  const [saved] = useState(() => loadProgress(course, username));
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    saved ? resumedHistory(saved).map((message, id) => ({ ...message, id, time: currentTime() })) : [],
+    saved ? resumedHistory(course, saved).map((message, id) => ({ ...message, id, time: currentTime() })) : [],
   );
   const nextId = useRef(messages.length);
   const [chapterIndex, setChapterIndex] = useState(saved?.chapterIndex ?? 0);
@@ -136,10 +136,10 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
       timers.current.forEach(clearTimeout);
       timers.current = [];
     };
-  }, [reveal, saved]);
+  }, [reveal, saved, chapters]);
 
   useEffect(() => {
-    saveProgress(username, {
+    saveProgress(course, username, {
       chapterIndex,
       nextScene,
       // An unanswered choice is simply asked again on resume
@@ -148,7 +148,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
       correctCount,
       choices,
     });
-  }, [username, chapterIndex, nextScene, phase, quizIndex, correctCount, choices]);
+  }, [course, username, chapterIndex, nextScene, phase, quizIndex, correctCount, choices]);
 
   // Coming back from minimized should put the cursor straight back in the input
   useEffect(() => {
@@ -251,7 +251,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
     const result = `score: ${Math.round(score * 100)}% (${correct}/${quiz.length}).`;
     if (score >= PASS_SCORE) {
       setPhase("passed");
-      say([feedback, { from: "system", text: `${result} access granted.` }, ...passedMessages(chapterIndex)]);
+      say([feedback, { from: "system", text: `${result} access granted.` }, ...passedMessages(course, chapterIndex)]);
       return;
     }
     setPhase("failed");
@@ -370,12 +370,12 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
           {/* Header */}
           <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-3 text-xs active:cursor-grabbing">
             <div className="flex items-center gap-2">
-              <NmapIcon className="h-4 w-4 text-neon" />
+              <Icon className="h-4 w-4 text-neon" />
               <span className="font-semibold text-neon">{title}</span>
               <span className="text-neon/40">{chapter.title} · {chapter.subtitle}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="mr-2 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">target 192.168.1.0/24</span>
+              <span className="mr-2 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">{course.badge}</span>
               <button
                 className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
                 onClick={handleWindowButton(onMinimize)}
@@ -400,7 +400,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
           <div className="thin-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto">
             <div>
               {messages.map(message => (
-                <MessageBlock key={message.id} message={message} time={message.time} />
+                <MessageBlock key={message.id} course={course} message={message} time={message.time} />
               ))}
             </div>
           </div>
@@ -409,6 +409,7 @@ const Window = ({ title, username, minimized, onMinimize, onClose }: WindowProps
             onSubmit={handleSubmit}
             busy={busy}
             placeholder={placeholder}
+            path={`~/${course.id}`}
           />
         </div>
       </div>

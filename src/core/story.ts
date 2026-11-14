@@ -1,10 +1,6 @@
+import type { ComponentType, SVGProps } from "react";
 import fridayAvatar from "../assets/characters/friday.jpg";
 import rameshAvatar from "../assets/characters/ramesh.jpg";
-import { chapterFive } from "./chapters/chapter-05";
-import { chapterFour } from "./chapters/chapter-04";
-import { chapterOne } from "./chapters/chapter-01";
-import { chapterThree } from "./chapters/chapter-03";
-import { chapterTwo } from "./chapters/chapter-02";
 import type { VividColor } from "./palette";
 
 export type Speaker = "system" | "friday" | "ramesh" | "you";
@@ -21,7 +17,22 @@ export type VisualKey =
   | "handshake"
   | "port-coverage"
   | "os-fingerprint"
-  | "recon-pipeline";
+  | "recon-pipeline"
+  | "http-vs-https"
+  | "internet-path"
+  | "wireshark-http"
+  | "wireshark-tls"
+  | "encrypt-flow"
+  | "caesar-wheel"
+  | "caesar-crack"
+  | "key-space"
+  | "symmetric-flow"
+  | "key-exchange-problem"
+  | "key-pair"
+  | "padlock-box"
+  | "speed-race"
+  | "https-handshake"
+  | "session-keys";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {
@@ -42,6 +53,8 @@ export type StoryMessage = {
   text?: string;
   image?: string;
   caption?: string;
+  // Shows the image wide (scene illustrations) instead of meme-sized
+  illustration?: boolean;
   terminal?: TerminalBlock;
   visual?: VisualKey;
   callout?: Callout;
@@ -75,6 +88,16 @@ export type Chapter = {
 };
 
 export type Choices = Record<string, number>;
+
+export type Course = {
+  id: string;
+  title: string;
+  // Small pill in the window header, e.g. the scan target
+  badge: string;
+  moduleName: string;
+  Icon: ComponentType<SVGProps<SVGSVGElement>>;
+  chapters: Chapter[];
+};
 
 export const PASS_SCORE = 0.9;
 
@@ -122,5 +145,3 @@ export const playedScene = (scene: Scene, choices: Choices): StoryMessage[] => {
   if (picked === undefined || !scene.options[picked]) return scene.prompt;
   return [...scene.prompt, pickedMessage(scene, picked), ...scene.options[picked].messages];
 };
-
-export const chapters: Chapter[] = [chapterOne, chapterTwo, chapterThree, chapterFour, chapterFive];

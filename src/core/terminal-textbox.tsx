@@ -6,11 +6,13 @@ type TerminalTextBoxProps = {
   onSubmit: (text: string) => void;
   busy?: boolean;
   placeholder?: string;
+  // Shown next to the prompt, e.g. ~/encryption
+  path?: string;
 };
 
 const NUDGE_MS = 1800;
 
-const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: TerminalTextBoxProps) => {
+const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder, path = "~/nmap" }: TerminalTextBoxProps) => {
 
   const [value, setValue] = useState("");
   // Flashes a reminder when someone types while the story is still playing
@@ -58,7 +60,7 @@ const TerminalTextBox = ({ inputRef, onSubmit, busy = false, placeholder }: Term
     <div className="shrink-0 border-t border-neon/15 px-3 py-2 font-jetbrains">
       <div className="mb-1.5 flex items-center gap-2 text-xs">
         <span className="flex items-center gap-1 rounded border border-neon/25 bg-neon/[0.06] px-1.5 py-0.5 text-neon">
-          <CommandIcon /> ~/nmap
+          <CommandIcon /> {path}
         </span>
         <span className="text-neon/40">friday@startup</span>
         {busy && <span className="text-neon/60">receiving<span className="animate-blink">...</span></span>}
