@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from "react";
-import { ConceptsFolderIcon, EncryptionIcon, LockIcon, NmapIcon, ToolsFolderIcon, WifiIcon } from "../icons/DesktopIcons";
+import { ConceptsFolderIcon, EncryptionIcon, LockIcon, NmapIcon, ToolsFolderIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
 
 export type FolderItem = {
   id: string;
@@ -64,13 +64,7 @@ export const cyberConcepts: Folder = {
       description: "how sites store passwords without knowing them",
       lockedMessage: "hashing is locked. finish encryption first, it's the next concept.",
     },
-    {
-      id: "vpn",
-      label: "vpn",
-      Icon: LockIcon,
-      description: "private tunnels over public networks",
-      lockedMessage: "vpn is locked. ramesh: 'you need encryption before tunnels make sense.'",
-    },
+    { id: "vpn", label: "vpn", Icon: VpnIcon, description: "encrypted tunnels · what they hide and what they don't" },
     {
       id: "firewalls",
       label: "firewalls",

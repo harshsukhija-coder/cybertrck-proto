@@ -30,6 +30,15 @@ import {
   WifiDefense,
   WifiHandshake,
 } from "./wifi-visuals";
+import {
+  GlassVsPipe,
+  IpMask,
+  TrafficLeaks,
+  VpnLimits,
+  VpnRecap,
+  VpnTunnelFlow,
+  VpnVsProxy,
+} from "./vpn-visuals";
 
 const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "office-network": OfficeNetwork,
@@ -68,6 +77,13 @@ const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "rockyou-crack": RockyouCrack,
   "wifi-defense": WifiDefense,
   "smarter-neighbor": SmarterNeighbor,
+  "traffic-leaks": TrafficLeaks,
+  "glass-vs-pipe": GlassVsPipe,
+  "vpn-tunnel-flow": VpnTunnelFlow,
+  "ip-mask": IpMask,
+  "vpn-limits": VpnLimits,
+  "vpn-vs-proxy": VpnVsProxy,
+  "vpn-recap": VpnRecap,
 };
 
 const Visual = ({ name }: { name: VisualKey }) => {

@@ -1,4 +1,4 @@
-import { EncryptionIcon, NmapIcon, WifiIcon } from "../icons/DesktopIcons";
+import { EncryptionIcon, NmapIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
 import { encryptionChapterFive } from "./chapters/encryption/chapter-05";
 import { encryptionChapterFour } from "./chapters/encryption/chapter-04";
 import { encryptionChapterOne } from "./chapters/encryption/chapter-01";
@@ -9,6 +9,11 @@ import { chapterFour } from "./chapters/nmap/chapter-04";
 import { chapterOne } from "./chapters/nmap/chapter-01";
 import { chapterThree } from "./chapters/nmap/chapter-03";
 import { chapterTwo } from "./chapters/nmap/chapter-02";
+import { vpnChapterFive } from "./chapters/vpn/chapter-05";
+import { vpnChapterFour } from "./chapters/vpn/chapter-04";
+import { vpnChapterOne } from "./chapters/vpn/chapter-01";
+import { vpnChapterThree } from "./chapters/vpn/chapter-03";
+import { vpnChapterTwo } from "./chapters/vpn/chapter-02";
 import { wifiChapterFive } from "./chapters/wifi/chapter-05";
 import { wifiChapterFour } from "./chapters/wifi/chapter-04";
 import { wifiChapterOne } from "./chapters/wifi/chapter-01";
@@ -41,4 +46,13 @@ export const wifiCourse: Course = {
   moduleName: "wifi",
   Icon: WifiIcon,
   chapters: [wifiChapterOne, wifiChapterTwo, wifiChapterThree, wifiChapterFour, wifiChapterFive],
+};
+
+export const vpnCourse: Course = {
+  id: "vpn",
+  title: "vpn",
+  badge: "tunnel: encrypted",
+  moduleName: "vpn",
+  Icon: VpnIcon,
+  chapters: [vpnChapterOne, vpnChapterTwo, vpnChapterThree, vpnChapterFour, vpnChapterFive],
 };

@@ -59,6 +59,16 @@ export const WifiIcon = (props: IconProps) => (
   </svg>
 );
 
+export const VpnIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M4 12h4" />
+    <path d="M16 12h4" />
+    <rect x="8" y="8" width="8" height="8" rx="2" />
+    <path d="M10 12h4" opacity="0.7" />
+    <path d="M12 4v2M12 18v2" opacity="0.5" />
+  </svg>
+);
+
 export const LockIcon = (props: IconProps) => (
   <svg {...base} {...props}>
     <rect x="5" y="11" width="14" height="10" rx="2" />

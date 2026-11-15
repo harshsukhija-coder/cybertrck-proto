@@ -41,7 +41,14 @@ export type VisualKey =
   | "handshake-caught"
   | "rockyou-crack"
   | "wifi-defense"
-  | "smarter-neighbor";
+  | "smarter-neighbor"
+  | "traffic-leaks"
+  | "glass-vs-pipe"
+  | "vpn-tunnel-flow"
+  | "ip-mask"
+  | "vpn-limits"
+  | "vpn-vs-proxy"
+  | "vpn-recap";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {
