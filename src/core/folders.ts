@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from "react";
-import { ConceptsFolderIcon, EncryptionIcon, LockIcon, NmapIcon, ToolsFolderIcon } from "../icons/DesktopIcons";
+import { ConceptsFolderIcon, EncryptionIcon, LockIcon, NmapIcon, ToolsFolderIcon, WifiIcon } from "../icons/DesktopIcons";
 
 export type FolderItem = {
   id: string;
@@ -56,6 +56,7 @@ export const cyberConcepts: Folder = {
   Icon: ConceptsFolderIcon,
   items: [
     { id: "encryption", label: "encryption", Icon: EncryptionIcon, description: "how secrets survive the internet · http -> https" },
+    { id: "wifi", label: "wifi passwords", Icon: WifiIcon, description: "how weak wi-fi gets cracked · aircrack-ng story" },
     {
       id: "hashing",
       label: "hashing",

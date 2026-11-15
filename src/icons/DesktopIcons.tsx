@@ -50,6 +50,15 @@ export const EncryptionIcon = (props: IconProps) => (
   </svg>
 );
 
+export const WifiIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M5 9.5a9 9 0 0 1 14 0" />
+    <path d="M7.8 12.5a5.5 5.5 0 0 1 8.4 0" />
+    <path d="M10.5 15.4a2.2 2.2 0 0 1 3 0" />
+    <circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 export const LockIcon = (props: IconProps) => (
   <svg {...base} {...props}>
     <rect x="5" y="11" width="14" height="10" rx="2" />

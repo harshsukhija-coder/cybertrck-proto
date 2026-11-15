@@ -32,7 +32,16 @@ export type VisualKey =
   | "padlock-box"
   | "speed-race"
   | "https-handshake"
-  | "session-keys";
+  | "session-keys"
+  | "wifi-handshake"
+  | "monitor-mode"
+  | "airodump-scan"
+  | "target-lock"
+  | "deauth-kick"
+  | "handshake-caught"
+  | "rockyou-crack"
+  | "wifi-defense"
+  | "smarter-neighbor";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {

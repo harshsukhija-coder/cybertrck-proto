@@ -19,6 +19,17 @@ import {
 } from "./encryption-visuals";
 import { Broadcast, NetworkDiagram, OfficeNetwork, PacketJourney } from "./network-visuals";
 import { Handshake, OsFingerprint, PortCoverage, PortDoors, ReconPipeline } from "./scan-visuals";
+import {
+  AirodumpScan,
+  DeauthKick,
+  HandshakeCaught,
+  MonitorMode,
+  RockyouCrack,
+  SmarterNeighbor,
+  TargetLock,
+  WifiDefense,
+  WifiHandshake,
+} from "./wifi-visuals";
 
 const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "office-network": OfficeNetwork,
@@ -48,6 +59,15 @@ const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "speed-race": SpeedRace,
   "https-handshake": HttpsHandshake,
   "session-keys": SessionKeys,
+  "wifi-handshake": WifiHandshake,
+  "monitor-mode": MonitorMode,
+  "airodump-scan": AirodumpScan,
+  "target-lock": TargetLock,
+  "deauth-kick": DeauthKick,
+  "handshake-caught": HandshakeCaught,
+  "rockyou-crack": RockyouCrack,
+  "wifi-defense": WifiDefense,
+  "smarter-neighbor": SmarterNeighbor,
 };
 
 const Visual = ({ name }: { name: VisualKey }) => {

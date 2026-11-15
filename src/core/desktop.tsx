@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
-import { encryptionCourse, nmapCourse } from "./courses";
+import { encryptionCourse, nmapCourse, wifiCourse } from "./courses";
 import DesktopWidgets from "./desktop-widgets";
 import FolderWindow from "./folder-window";
 import { cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
@@ -51,6 +51,7 @@ const windowDefs: WindowDef[] = [
   { id: "cyber-concepts", label: "cyber-concepts", folder: cyberConcepts, offset: "-translate-y-6 md:-translate-x-10 md:-translate-y-8" },
   { id: "nmap", label: "nMap", course: nmapCourse, offset: "" },
   { id: "encryption", label: "encryption", course: encryptionCourse, offset: "md:translate-x-4 md:translate-y-3" },
+  { id: "wifi", label: "wifi passwords", course: wifiCourse, offset: "md:translate-x-8 md:translate-y-6" },
 ];
 
 type DesktopProps = {

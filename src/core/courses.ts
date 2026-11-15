@@ -1,4 +1,4 @@
-import { EncryptionIcon, NmapIcon } from "../icons/DesktopIcons";
+import { EncryptionIcon, NmapIcon, WifiIcon } from "../icons/DesktopIcons";
 import { encryptionChapterFive } from "./chapters/encryption/chapter-05";
 import { encryptionChapterFour } from "./chapters/encryption/chapter-04";
 import { encryptionChapterOne } from "./chapters/encryption/chapter-01";
@@ -9,6 +9,11 @@ import { chapterFour } from "./chapters/nmap/chapter-04";
 import { chapterOne } from "./chapters/nmap/chapter-01";
 import { chapterThree } from "./chapters/nmap/chapter-03";
 import { chapterTwo } from "./chapters/nmap/chapter-02";
+import { wifiChapterFive } from "./chapters/wifi/chapter-05";
+import { wifiChapterFour } from "./chapters/wifi/chapter-04";
+import { wifiChapterOne } from "./chapters/wifi/chapter-01";
+import { wifiChapterThree } from "./chapters/wifi/chapter-03";
+import { wifiChapterTwo } from "./chapters/wifi/chapter-02";
 import type { Course } from "./story";
 
 export const nmapCourse: Course = {
@@ -27,4 +32,13 @@ export const encryptionCourse: Course = {
   moduleName: "encryption",
   Icon: EncryptionIcon,
   chapters: [encryptionChapterOne, encryptionChapterTwo, encryptionChapterThree, encryptionChapterFour, encryptionChapterFive],
+};
+
+export const wifiCourse: Course = {
+  id: "wifi",
+  title: "wifi passwords",
+  badge: "air: wpa2",
+  moduleName: "wifi",
+  Icon: WifiIcon,
+  chapters: [wifiChapterOne, wifiChapterTwo, wifiChapterThree, wifiChapterFour, wifiChapterFive],
 };
