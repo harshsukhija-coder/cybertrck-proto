@@ -162,31 +162,41 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
     if (!minimized) inputRef.current?.focus();
   }, [minimized]);
 
-  // Chat-style stickiness: follow new lines when near the bottom; otherwise count unread
+  // Chat-style stickiness: smoothly follow new lines when near the bottom
   useEffect(() => {
     const node = scrollRef.current;
     if (!node) return;
-    const frame = window.requestAnimationFrame(() => {
-      if (messages.length === 0) {
-        stickToBottom.current = true;
-        setUnreadBelow(0);
-        return;
-      }
-      if (stickToBottom.current) {
-        node.scrollTop = node.scrollHeight;
-        setUnreadBelow(0);
-        return;
-      }
-      setUnreadBelow(count => count + 1);
+
+    let outer = 0;
+    let inner = 0;
+    outer = window.requestAnimationFrame(() => {
+      // wait one more frame so message layout/height is settled
+      inner = window.requestAnimationFrame(() => {
+        if (messages.length === 0) {
+          stickToBottom.current = true;
+          setUnreadBelow(0);
+          return;
+        }
+        if (stickToBottom.current) {
+          node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+          setUnreadBelow(0);
+          return;
+        }
+        setUnreadBelow(count => count + 1);
+      });
     });
-    return () => window.cancelAnimationFrame(frame);
+
+    return () => {
+      window.cancelAnimationFrame(outer);
+      window.cancelAnimationFrame(inner);
+    };
   }, [messages]);
 
   const onThreadScroll = () => {
     const node = scrollRef.current;
     if (!node) return;
     const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
-    const atBottom = distance < 72;
+    const atBottom = distance < 96;
     stickToBottom.current = atBottom;
     if (atBottom) setUnreadBelow(0);
   };
@@ -196,7 +206,9 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
     if (!node) return;
     stickToBottom.current = true;
     setUnreadBelow(0);
-    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+    window.requestAnimationFrame(() => {
+      node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+    });
   };
 
   const chapterDone = nextScene >= chapter.scenes.length;
@@ -497,7 +509,7 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
           <div
             ref={scrollRef}
             onScroll={onThreadScroll}
-            className="thin-scrollbar absolute inset-0 overflow-y-auto overscroll-contain"
+            className="thin-scrollbar absolute inset-0 overflow-y-auto overscroll-contain scroll-smooth"
           >
             <div className="flex min-h-full flex-col justify-end">
               {messages.map(message => (
