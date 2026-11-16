@@ -24,6 +24,8 @@
     --animate-session-flash: session-flash 1.2s ease-out both;
     --animate-wifi-bars: wifi-bars 1.1s ease-in-out infinite;
     --animate-packet-slip: packet-slip 2.8s ease-in-out infinite;
+    --animate-orbit-spin: orbit-spin 14s linear infinite;
+    --animate-scan-sweep: scan-sweep 4.5s ease-in-out infinite;
 
     @keyframes glitch {
         0%, 100% { transform: none; clip-path: none; filter: none; }
@@ -129,6 +131,18 @@
     @keyframes packet-slip {
         0%, 100% { transform: translateX(0); opacity: 0.7; }
         50% { transform: translateX(6px); opacity: 1; }
+    }
+
+    @keyframes orbit-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes scan-sweep {
+        0%, 100% { transform: translateY(-30%); opacity: 0; }
+        15% { opacity: 0.35; }
+        50% { transform: translateY(130%); opacity: 0.2; }
+        85% { opacity: 0; }
     }
 }
 
