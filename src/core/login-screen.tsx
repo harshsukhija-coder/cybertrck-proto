@@ -97,10 +97,6 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
     setInput("");
     setForm({ username: "", email: "", password: "" });
     setDone(false);
-    window.setTimeout(() => {
-      if (isMobile) userRef.current?.focus();
-      else inputRef.current?.focus();
-    }, 30);
   };
 
   const field =
@@ -149,7 +145,6 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
                     autoCapitalize="off"
                     autoCorrect="off"
                     spellCheck={false}
-                    autoFocus
                     placeholder="username"
                     className={field}
                   />
@@ -264,7 +259,6 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
                         autoCapitalize="off"
                         autoCorrect="off"
                         spellCheck={false}
-                        autoFocus
                         aria-label={step.prompt}
                         className="absolute h-px w-px opacity-0"
                       />
