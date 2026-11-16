@@ -1,9 +1,12 @@
 import type { ComponentType, SVGProps } from "react";
+import bobAvatar from "../assets/characters/bob.jpg";
 import fridayAvatar from "../assets/characters/friday.jpg";
+import kimAvatar from "../assets/characters/kim.jpg";
 import rameshAvatar from "../assets/characters/ramesh.jpg";
+import sallyAvatar from "../assets/characters/sally.jpg";
 import type { VividColor } from "./palette";
 
-export type Speaker = "system" | "friday" | "ramesh" | "you";
+export type Speaker = "system" | "friday" | "ramesh" | "kim" | "sally" | "bob" | "you";
 
 export type VisualKey =
   | "office-network"
@@ -48,7 +51,11 @@ export type VisualKey =
   | "ip-mask"
   | "vpn-limits"
   | "vpn-vs-proxy"
-  | "vpn-recap";
+  | "vpn-recap"
+  | "trojan-package"
+  | "extension-trick"
+  | "reverse-shell"
+  | "trojan-defense";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {
@@ -56,6 +63,21 @@ export type TerminalBlock = {
   output?: string;
   prompt?: string;
   title?: string;
+};
+
+export type SallyScreen = {
+  title?: string;
+  mode: "idle" | "mail" | "downloads" | "opened";
+  email?: { from: string; subject: string; body: string; attachment: string };
+  files?: { name: string; icon: "image" | "exe"; selected?: boolean }[];
+  hideExtensions?: boolean;
+  note?: string;
+};
+
+// Side-by-side: Kim's Kali terminal + Sally's Windows desktop
+export type DualView = {
+  kim?: TerminalBlock;
+  sally?: SallyScreen;
 };
 
 export type Callout = {
@@ -72,6 +94,7 @@ export type StoryMessage = {
   // Shows the image wide (scene illustrations) instead of meme-sized
   illustration?: boolean;
   terminal?: TerminalBlock;
+  dual?: DualView;
   visual?: VisualKey;
   callout?: Callout;
   // Index of the chapter whose notes + quiz can be downloaded from this message
@@ -121,6 +144,9 @@ export const speakers: Record<Speaker, { name: string; color: string; avatar?: s
   system: { name: "system", color: "#3DDC84" },
   friday: { name: "friday", color: "#C9A35A", avatar: fridayAvatar },
   ramesh: { name: "ramesh", color: "#6FA8B8", avatar: rameshAvatar },
+  kim: { name: "kim", color: "#3DDC84", avatar: kimAvatar },
+  sally: { name: "sally", color: "#8EC7FF", avatar: sallyAvatar },
+  bob: { name: "bob", color: "#FFD23F", avatar: bobAvatar },
   you: { name: "you", color: "#A1A8B0" },
 };
 

@@ -1,3 +1,4 @@
+import DualScreen from "./dual-screen";
 import { downloadText, notesFile, quizFile } from "./downloads";
 import { vivid } from "./palette";
 import {
@@ -145,6 +146,7 @@ const MessageBlock = ({ course, message, time }: MessageBlockProps) => {
           )}
           {message.callout && <CalloutBox callout={message.callout} />}
           {message.terminal && <Terminal terminal={message.terminal} />}
+          {message.dual && <DualScreen dual={message.dual} />}
           {message.visual && <Visual name={message.visual} />}
           {message.downloads !== undefined && <DownloadCard course={course} chapterIndex={message.downloads} />}
           {message.image && (

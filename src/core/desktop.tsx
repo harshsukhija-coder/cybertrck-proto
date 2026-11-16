@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
-import { ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
-import { encryptionCourse, nmapCourse, vpnCourse, wifiCourse } from "./courses";
+import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
+import { encryptionCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
 import DesktopWidgets from "./desktop-widgets";
 import FolderWindow from "./folder-window";
-import { cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
+import { cyberAttacks, cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
 import type { Course } from "./story";
 import { useClock } from "./use-clock";
 import { useNetworkStatus } from "./use-network-status";
@@ -20,8 +20,9 @@ type DesktopApp = {
 const apps: DesktopApp[] = [
   { id: "cyber-tools", label: "cyber-tools", Icon: ToolsFolderIcon },
   { id: "cyber-concepts", label: "cyber-concepts", Icon: ConceptsFolderIcon },
+  { id: "cyber-attacks", label: "cyber-attacks", Icon: AttacksFolderIcon },
   { id: "terminal", label: "terminal", Icon: TerminalIcon, message: "bash: permission denied. finish nMap first." },
-  { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 3 folders, 0 secrets (so far)." },
+  { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 4 folders, 0 secrets (so far)." },
   { id: "todo", label: "todo.txt", Icon: FileIcon, message: "todo.txt -> 1. learn nmap  2. don't get fired" },
   { id: "trash", label: "trash", Icon: TrashIcon, message: "trash is empty. friday is very clean." },
 ];
@@ -49,10 +50,12 @@ type WindowDef = {
 const windowDefs: WindowDef[] = [
   { id: "cyber-tools", label: "cyber-tools", folder: cyberTools, offset: "-translate-y-10 md:-translate-x-24 md:-translate-y-16" },
   { id: "cyber-concepts", label: "cyber-concepts", folder: cyberConcepts, offset: "-translate-y-6 md:-translate-x-10 md:-translate-y-8" },
+  { id: "cyber-attacks", label: "cyber-attacks", folder: cyberAttacks, offset: "-translate-y-2 md:translate-x-2 md:-translate-y-4" },
   { id: "nmap", label: "nMap", course: nmapCourse, offset: "" },
   { id: "encryption", label: "encryption", course: encryptionCourse, offset: "md:translate-x-4 md:translate-y-3" },
   { id: "wifi", label: "wifi passwords", course: wifiCourse, offset: "md:translate-x-8 md:translate-y-6" },
   { id: "vpn", label: "vpn", course: vpnCourse, offset: "md:translate-x-12 md:translate-y-9" },
+  { id: "trojan", label: "image trojan", course: trojanCourse, offset: "md:translate-x-6 md:translate-y-12" },
 ];
 
 type DesktopProps = {
@@ -186,12 +189,6 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
         </div>
 
         <DesktopWidgets />
-
-        {openDefs.length === 0 && (
-          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm lg:left-[calc(50%-10.5rem)] text-neon/40">
-            double-click <span className="text-neon">cyber-tools</span> or <span className="text-neon">cyber-concepts</span> to start<span className="animate-blink">_</span>
-          </p>
-        )}
 
         {openDefs.map(def => {
           const state = stateOf(def.id);

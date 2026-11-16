@@ -1,5 +1,15 @@
 import type { ComponentType, SVGProps } from "react";
-import { ConceptsFolderIcon, EncryptionIcon, LockIcon, NmapIcon, ToolsFolderIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
+import {
+  AttacksFolderIcon,
+  ConceptsFolderIcon,
+  EncryptionIcon,
+  LockIcon,
+  NmapIcon,
+  ToolsFolderIcon,
+  TrojanIcon,
+  VpnIcon,
+  WifiIcon,
+} from "../icons/DesktopIcons";
 
 export type FolderItem = {
   id: string;
@@ -44,7 +54,7 @@ export const cyberTools: Folder = {
       label: "metasploit",
       Icon: LockIcon,
       description: "exploit framework",
-      lockedMessage: "metasploit is locked. friday is not ready for this one yet.",
+      lockedMessage: "metasploit is locked. study image trojan in cyber-attacks first.",
     },
   ],
 };
@@ -71,6 +81,35 @@ export const cyberConcepts: Folder = {
       Icon: LockIcon,
       description: "deciding who gets in",
       lockedMessage: "firewalls is locked. coming soon.",
+    },
+  ],
+};
+
+export const cyberAttacks: Folder = {
+  id: "cyber-attacks",
+  label: "cyber-attacks",
+  path: "/home/friday/cyber-attacks",
+  Icon: AttacksFolderIcon,
+  items: [
+    {
+      id: "trojan",
+      label: "image trojan",
+      Icon: TrojanIcon,
+      description: "fake jpeg · reverse shell · social engineering",
+    },
+    {
+      id: "phishing",
+      label: "phishing",
+      Icon: LockIcon,
+      description: "fake login pages",
+      lockedMessage: "phishing is locked. finish image trojan first.",
+    },
+    {
+      id: "ransomware",
+      label: "ransomware",
+      Icon: LockIcon,
+      description: "files held hostage",
+      lockedMessage: "ransomware is locked. coming soon.",
     },
   ],
 };

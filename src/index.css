@@ -19,6 +19,9 @@
     --animate-line-in: line-in 120ms ease-out both;
     --animate-glitch: glitch 0.9s steps(1) infinite;
     --animate-wallpaper-drift: wallpaper-drift 28s ease-in-out alternate infinite;
+    --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
+    --animate-soft-bounce: soft-bounce 1.4s ease-in-out infinite;
+    --animate-session-flash: session-flash 1.2s ease-out both;
 
     @keyframes glitch {
         0%, 100% { transform: none; clip-path: none; filter: none; }
@@ -89,6 +92,22 @@
         to {
             transform: scale(1.12) translate3d(-2%, 1.5%, 0);
         }
+    }
+
+    @keyframes pulse-ring {
+        0% { box-shadow: 0 0 0 0 rgba(255, 93, 115, 0.45); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 93, 115, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 93, 115, 0); }
+    }
+
+    @keyframes soft-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+
+    @keyframes session-flash {
+        0% { background-color: rgba(61, 220, 132, 0.35); }
+        100% { background-color: transparent; }
     }
 }
 

@@ -1,4 +1,4 @@
-import { EncryptionIcon, NmapIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
+import { EncryptionIcon, NmapIcon, TrojanIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
 import { encryptionChapterFive } from "./chapters/encryption/chapter-05";
 import { encryptionChapterFour } from "./chapters/encryption/chapter-04";
 import { encryptionChapterOne } from "./chapters/encryption/chapter-01";
@@ -9,6 +9,11 @@ import { chapterFour } from "./chapters/nmap/chapter-04";
 import { chapterOne } from "./chapters/nmap/chapter-01";
 import { chapterThree } from "./chapters/nmap/chapter-03";
 import { chapterTwo } from "./chapters/nmap/chapter-02";
+import { trojanChapterFive } from "./chapters/trojan/chapter-05";
+import { trojanChapterFour } from "./chapters/trojan/chapter-04";
+import { trojanChapterOne } from "./chapters/trojan/chapter-01";
+import { trojanChapterThree } from "./chapters/trojan/chapter-03";
+import { trojanChapterTwo } from "./chapters/trojan/chapter-02";
 import { vpnChapterFive } from "./chapters/vpn/chapter-05";
 import { vpnChapterFour } from "./chapters/vpn/chapter-04";
 import { vpnChapterOne } from "./chapters/vpn/chapter-01";
@@ -55,4 +60,13 @@ export const vpnCourse: Course = {
   moduleName: "vpn",
   Icon: VpnIcon,
   chapters: [vpnChapterOne, vpnChapterTwo, vpnChapterThree, vpnChapterFour, vpnChapterFive],
+};
+
+export const trojanCourse: Course = {
+  id: "trojan",
+  title: "image trojan",
+  badge: "payload: reverse_tcp",
+  moduleName: "trojan",
+  Icon: TrojanIcon,
+  chapters: [trojanChapterOne, trojanChapterTwo, trojanChapterThree, trojanChapterFour, trojanChapterFive],
 };

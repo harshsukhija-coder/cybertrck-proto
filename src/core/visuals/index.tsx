@@ -31,6 +31,12 @@ import {
   WifiHandshake,
 } from "./wifi-visuals";
 import {
+  ExtensionTrick,
+  ReverseShell,
+  TrojanDefense,
+  TrojanPackage,
+} from "./trojan-visuals";
+import {
   GlassVsPipe,
   IpMask,
   TrafficLeaks,
@@ -84,6 +90,10 @@ const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "vpn-limits": VpnLimits,
   "vpn-vs-proxy": VpnVsProxy,
   "vpn-recap": VpnRecap,
+  "trojan-package": TrojanPackage,
+  "extension-trick": ExtensionTrick,
+  "reverse-shell": ReverseShell,
+  "trojan-defense": TrojanDefense,
 };
 
 const Visual = ({ name }: { name: VisualKey }) => {
