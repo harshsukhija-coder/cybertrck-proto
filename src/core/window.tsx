@@ -15,6 +15,7 @@ import {
   type StoryMessage,
 } from "./story";
 import TerminalTextBox from "./terminal-textbox";
+import { useKeyboardInset } from "./use-media";
 
 const MESSAGE_GAP_MS = 650;
 const GLITCH_MS = 1800;
@@ -67,15 +68,17 @@ type WindowProps = {
   course: Course;
   username: string;
   minimized: boolean;
+  mobile?: boolean;
   onMinimize: () => void;
   onClose: () => void;
 };
 
-const Window = ({ course, username, minimized, onMinimize, onClose }: WindowProps) => {
+const Window = ({ course, username, minimized, mobile = false, onMinimize, onClose }: WindowProps) => {
   const { chapters, title, Icon } = course;
   const windowRef = useRef(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const timers = useRef<number[]>([]);
+  const keyboardInset = useKeyboardInset();
 
   // Resume from local storage if this user has played before, otherwise the intro scene plays on mount
   const [saved] = useState(() => loadProgress(course, username));
@@ -341,8 +344,48 @@ const Window = ({ course, username, minimized, onMinimize, onClose }: WindowProp
     return "type 'restart' to replay this chapter";
   })();
 
+  const mobileActions = (() => {
+    if (busy) return [];
+    if (phase === "choice") {
+      const scene = chapter.scenes[nextScene];
+      if (!isChoiceScene(scene)) return [];
+      return scene.options.map((option, i) => ({
+        label: `${i + 1}`,
+        value: String(i + 1),
+        primary: false,
+        hint: option.label,
+      }));
+    }
+    if (phase === "quiz" && quiz[quizIndex]) {
+      return quiz[quizIndex].options.map((option, i) => ({
+        label: `${i + 1}`,
+        value: String(i + 1),
+        primary: false,
+        hint: option,
+      }));
+    }
+    if (phase === "failed") {
+      return [
+        { label: "retry", value: "retry", primary: true },
+        { label: "restart", value: "restart" },
+      ];
+    }
+    if (phase === "passed") {
+      return upcomingChapter
+        ? [{ label: "next ▸", value: "", primary: true }]
+        : [
+            { label: "notes", value: "notes", primary: true },
+            { label: "reset", value: "reset" },
+          ];
+    }
+    if (!chapterDone) return [{ label: "continue ▸", value: "", primary: true }];
+    if (chapter.quiz) return [{ label: "quiz ▸", value: "", primary: true }];
+    return [{ label: "restart", value: "restart", primary: true }];
+  })();
+
   // Clicking anywhere on the window puts the cursor back in the input, unless the user is selecting text
   const focusInput = () => {
+    if (mobile) return;
     if (window.getSelection()?.toString()) return;
     inputRef.current?.focus();
   };
@@ -352,30 +395,55 @@ const Window = ({ course, username, minimized, onMinimize, onClose }: WindowProp
     action();
   };
 
-  return (
-    <Draggable nodeRef={windowRef} handle=".window-handle" cancel=".window-button">
-      <div className={`pointer-events-auto w-[min(48rem,92vw)] ${minimized ? "hidden" : ""}`} ref={windowRef} onClick={focusInput}>
-        <div className={`relative flex h-[min(75vh,44rem)] flex-col overflow-hidden rounded-lg border border-neon/20 bg-panel ${phase === "glitch" ? "animate-glitch" : "animate-window-open"}`}>
-          {phase === "glitch" && upcomingChapter && (
-            <div className="absolute inset-0 z-10 grid place-items-center bg-black/90">
-              <div className="glitch-noise absolute inset-0" />
-              <div className="relative text-center">
-                <p className="glitch-text text-4xl font-bold tracking-[0.3em] text-neon uppercase" data-text={upcomingChapter.title}>
-                  {upcomingChapter.title}
-                </p>
-                <p className="mt-3 text-sm tracking-widest text-neon/60">{upcomingChapter.subtitle}</p>
-              </div>
+  const shell = (
+    <div
+      className={`pointer-events-auto ${mobile ? `h-full w-full ${minimized ? "hidden" : ""}` : `w-[min(48rem,92vw)] ${minimized ? "hidden" : ""}`}`}
+      ref={windowRef}
+      onClick={focusInput}
+      style={mobile && keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
+    >
+      <div
+        className={`relative flex flex-col overflow-hidden border-neon/20 bg-panel ${
+          mobile
+            ? `h-full border-t ${phase === "glitch" ? "animate-glitch" : "animate-screen-push"}`
+            : `h-[min(75vh,44rem)] rounded-lg border ${phase === "glitch" ? "animate-glitch" : "animate-window-open"}`
+        }`}
+      >
+        {phase === "glitch" && upcomingChapter && (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-black/90">
+            <div className="glitch-noise absolute inset-0" />
+            <div className="relative px-4 text-center">
+              <p className="glitch-text text-3xl font-bold tracking-[0.3em] text-neon uppercase sm:text-4xl" data-text={upcomingChapter.title}>
+                {upcomingChapter.title}
+              </p>
+              <p className="mt-3 text-sm tracking-widest text-neon/60">{upcomingChapter.subtitle}</p>
             </div>
-          )}
-          {/* Header */}
-          <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-3 text-xs active:cursor-grabbing">
-            <div className="flex items-center gap-2">
-              <Icon className="h-4 w-4 text-neon" />
-              <span className="font-semibold text-neon">{title}</span>
-              <span className="text-neon/40">{chapter.title} · {chapter.subtitle}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="mr-2 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">{course.badge}</span>
+          </div>
+        )}
+        {/* Header */}
+        <div
+          className={`flex h-8 shrink-0 items-center justify-between gap-1.5 border-b border-neon/15 bg-neon/[0.04] px-2 text-[11px] md:h-10 md:gap-2 md:px-3 md:text-xs ${
+            mobile ? "" : "window-handle cursor-grab active:cursor-grabbing"
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-1.5">
+            {mobile && (
+              <button
+                type="button"
+                className="window-button grid h-5 w-5 shrink-0 place-items-center rounded text-[11px] leading-none text-neon/70 hover:bg-neon/10 hover:text-neon"
+                onClick={handleWindowButton(onClose)}
+                aria-label="back"
+              >
+                ←
+              </button>
+            )}
+            <Icon className="h-3.5 w-3.5 shrink-0 text-neon md:h-4 md:w-4" />
+            <span className="truncate font-semibold text-neon">{title}</span>
+            <span className="hidden truncate text-neon/40 md:inline">{chapter.title} · {chapter.subtitle}</span>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <span className="mr-1 hidden rounded border border-neon/20 px-1.5 py-0.5 text-neon/60 sm:inline">{course.badge}</span>
+            {!mobile && (
               <button
                 className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
                 onClick={handleWindowButton(onMinimize)}
@@ -383,36 +451,41 @@ const Window = ({ course, username, minimized, onMinimize, onClose }: WindowProp
               >
                 —
               </button>
-              <button
-                className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-danger hover:text-white"
-                onClick={handleWindowButton(onClose)}
-                aria-label="close"
-              >
-                ✕
-              </button>
-            </div>
+            )}
+            <button
+              className="window-button grid h-5 w-5 place-items-center rounded text-[10px] leading-none text-neon/50 hover:bg-danger hover:text-white md:h-6 md:w-6 md:text-xs"
+              onClick={handleWindowButton(onClose)}
+              aria-label="close"
+            >
+              ✕
+            </button>
           </div>
-          {/* Body */}
-          {/*<div className="px-2 py-1">
-            <pre ref={asciiTextRef}></pre>
-          </div>*/}
-          {/* column-reverse keeps the list pinned to the bottom as new messages grow in */}
-          <div className="thin-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto">
-            <div>
-              {messages.map(message => (
-                <MessageBlock key={message.id} course={course} message={message} time={message.time} />
-              ))}
-            </div>
-          </div>
-          <TerminalTextBox
-            inputRef={inputRef}
-            onSubmit={handleSubmit}
-            busy={busy}
-            placeholder={placeholder}
-            path={`~/${course.id}`}
-          />
         </div>
+        {/* column-reverse keeps the list pinned to the bottom as new messages grow in */}
+        <div className="thin-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto overscroll-contain">
+          <div>
+            {messages.map(message => (
+              <MessageBlock key={message.id} course={course} message={message} time={message.time} />
+            ))}
+          </div>
+        </div>
+        <TerminalTextBox
+          inputRef={inputRef}
+          onSubmit={handleSubmit}
+          busy={busy}
+          placeholder={placeholder}
+          path={`~/${course.id}`}
+          mobileActions={mobileActions}
+        />
       </div>
+    </div>
+  );
+
+  if (mobile) return shell;
+
+  return (
+    <Draggable nodeRef={windowRef} handle=".window-handle" cancel=".window-button">
+      {shell}
     </Draggable>
   );
 };

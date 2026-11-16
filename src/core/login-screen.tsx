@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import loginWallpaper from "../assets/backgrounds/login-wallpaper.jpg";
 import { useClock } from "./use-clock";
+import { useIsMobile, useKeyboardInset } from "./use-media";
 
 const LINE_DELAY_MS = 90;
 const WELCOME_DELAY_MS = 900;
@@ -34,6 +35,8 @@ const promptDelay = (bootLog.length + 1) * LINE_DELAY_MS;
 
 const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
   const now = useClock();
+  const isMobile = useIsMobile();
+  const keyboardInset = useKeyboardInset();
   const inputRef = useRef<HTMLInputElement>(null);
   const welcomeTimer = useRef<number>(undefined);
 
@@ -45,79 +48,107 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
   const step = currentSteps[answers.length];
   const finished = !step;
   const username = answers[0]?.trim() || "guest";
+  const keyboardOpen = isMobile && keyboardInset > 0;
 
   useEffect(() => () => window.clearTimeout(welcomeTimer.current), []);
 
-  // Any credentials are accepted for now
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter" || finished) return;
-    event.preventDefault();
+  useEffect(() => {
+    if (!keyboardOpen) return;
+    window.setTimeout(() => {
+      inputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 40);
+  }, [keyboardOpen, answers.length, mode]);
+
+  const submitStep = () => {
+    if (finished) return;
     const nextAnswers = [...answers, input];
     setAnswers(nextAnswers);
     setInput("");
     if (nextAnswers.length === currentSteps.length) {
       welcomeTimer.current = window.setTimeout(() => onLogin(nextAnswers[0].trim() || "guest"), WELCOME_DELAY_MS);
+      inputRef.current?.blur();
+      return;
     }
+    window.setTimeout(() => inputRef.current?.focus(), 30);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter" || finished) return;
+    event.preventDefault();
+    submitStep();
+  };
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submitStep();
   };
 
   const switchMode = () => {
     setMode(mode === "login" ? "signup" : "login");
     setAnswers([]);
     setInput("");
-    inputRef.current?.focus();
+    window.setTimeout(() => inputRef.current?.focus(), 30);
   };
 
   return (
-    <div
-      className="relative h-dvh w-full overflow-hidden bg-void"
-      onClick={() => inputRef.current?.focus()}
-    >
-      {/* Wallpaper — full-bleed, slow drift; crop shifts by breakpoint */}
+    <div className="relative h-dvh w-full overflow-hidden bg-void">
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
         <img
           src={loginWallpaper}
           alt=""
-          className="animate-wallpaper-drift absolute inset-0 h-full w-full object-cover object-[28%_55%] sm:object-[32%_50%] lg:object-[22%_45%]"
+          className="animate-wallpaper-drift absolute inset-0 h-full w-full object-cover object-[30%_40%] sm:object-[32%_50%] lg:object-[22%_45%]"
         />
-        {/* Mobile: keep city/laptop readable, darken bottom for console */}
-        <div className="absolute inset-0 bg-linear-to-b from-black/55 via-black/25 to-black/85 md:hidden" />
-        {/* Desktop: soft left vignette, stronger right for console */}
+        <div className="absolute inset-0 bg-black/50 md:bg-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/55 via-transparent to-black/85 md:hidden" />
         <div className="absolute inset-0 hidden bg-linear-to-r from-black/15 via-black/35 to-black/80 md:block" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-black/40" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(rgba(61,220,132,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(61,220,132,0.5)_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/30" />
       </div>
 
-      {/* Chrome */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 p-4 sm:p-5 md:p-6">
-        <div className="pointer-events-auto text-sm font-semibold tracking-wide text-neon drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
-          ⌬ offtrck
-        </div>
-        <div className="pointer-events-none text-right drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
-          <p className="text-2xl font-extralight text-neon sm:text-3xl">
-            {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </p>
-          <p className="hidden text-xs text-neon/50 sm:block">
-            {now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-          <p className="text-[10px] text-neon/45 sm:hidden">
-            {now.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}
-          </p>
-        </div>
-      </header>
+      {!keyboardOpen && (
+        <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 md:px-6 md:pt-6">
+          <div className="text-sm font-semibold tracking-wide text-neon drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
+            ⌬ offtrck
+          </div>
+          <div className="text-right drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
+            <p className="text-2xl font-extralight text-neon md:text-3xl">
+              {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </p>
+            <p className="text-[10px] text-neon/45 md:text-xs md:text-neon/50">
+              {now.toLocaleDateString([], {
+                weekday: isMobile ? "short" : "long",
+                day: "numeric",
+                month: isMobile ? "short" : "long",
+              })}
+            </p>
+          </div>
+        </header>
+      )}
 
-      <p className="pointer-events-none absolute bottom-5 left-6 z-10 hidden max-w-[16rem] text-xs leading-5 text-neon/40 lg:block">
-        every network reveals secrets, if you know how to listen.
-      </p>
+      <div
+        className="absolute inset-x-0 z-10 flex justify-center px-4 md:inset-0 md:items-center md:justify-end md:px-6 lg:pr-[8vw]"
+        style={{
+          top: keyboardOpen ? "max(0.5rem, env(safe-area-inset-top))" : undefined,
+          bottom: keyboardOpen ? keyboardInset + 8 : "max(1rem, env(safe-area-inset-bottom))",
+          alignItems: "flex-end",
+        }}
+      >
+        <div className={`w-full max-w-[20rem] md:max-w-xl md:w-[min(36rem,100%)] ${keyboardOpen ? "" : "mb-1 md:mb-0"}`}>
+          {!keyboardOpen && isMobile && (
+            <p className="mb-2.5 px-0.5 text-[11px] leading-4 text-neon/40">
+              every network reveals secrets,<br />if you know how to listen.
+            </p>
+          )}
 
-      {/* Login console — bottom sheet on phone, right panel on desktop */}
-      <div className="absolute inset-0 z-10 flex items-end justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-20 sm:px-4 md:items-center md:justify-end md:px-6 md:pb-6 md:pr-[min(6vw,4rem)] lg:pr-[8vw]">
-        <div className="flex w-full max-w-xl flex-col gap-2 md:w-[min(36rem,100%)]">
-          <div className="animate-window-open rounded-xl border border-neon/20 bg-black/70 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-md sm:rounded-md sm:p-5 md:bg-black/75">
-            <div className="thin-scrollbar max-h-[min(48dvh,26rem)] overflow-y-auto md:max-h-[min(70dvh,36rem)]">
-              {bootLog.map((line, i) => (
+          <form
+            onSubmit={handleSubmit}
+            onClick={() => inputRef.current?.focus()}
+            className="animate-window-open rounded-xl border border-neon/20 bg-black/78 p-3 shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md md:rounded-md md:bg-black/75 md:p-5"
+          >
+            {!isMobile &&
+              bootLog.map((line, i) => (
                 <p
                   key={line.text}
-                  className="animate-line-in text-[11px] leading-5 text-slate-400 sm:text-sm sm:leading-6"
+                  className="animate-line-in text-sm leading-6 text-slate-400"
                   style={{ animationDelay: `${i * LINE_DELAY_MS}ms` }}
                 >
                   [
@@ -130,80 +161,87 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
                 </p>
               ))}
 
-              <div className="animate-line-in" style={{ animationDelay: `${promptDelay}ms` }}>
-                <p className="mt-3 mb-3 text-[11px] text-slate-300 sm:mt-4 sm:mb-4 sm:text-sm">
-                  offtrck-os 1.0 offtrck tty1
+            <div className="animate-line-in" style={{ animationDelay: isMobile ? "0ms" : `${promptDelay}ms` }}>
+              <p className={`text-neon/35 ${isMobile ? "mb-2 text-[10px]" : "mt-4 mb-4 text-sm text-slate-300"}`}>
+                {isMobile ? "sign in" : "offtrck-os 1.0 · tty1"}
+              </p>
+
+              {answers.map((answer, i) => (
+                <p key={`${mode}-${i}`} className="text-[12px] leading-5 text-slate-200 md:text-sm md:leading-6">
+                  <span className="text-neon">{currentSteps[i].prompt}</span>{" "}
+                  {currentSteps[i].secret ? "••••" : answer}
                 </p>
+              ))}
 
-                {answers.map((answer, i) => (
-                  <p key={`${mode}-${i}`} className="text-[12px] leading-6 text-slate-200 sm:text-sm">
-                    <span className="text-neon">{currentSteps[i].prompt}</span>{" "}
-                    {currentSteps[i].secret ? "" : answer}
-                  </p>
-                ))}
-
-                {step ? (
-                  <p className="text-[12px] leading-6 text-slate-200 sm:text-sm">
-                    <span className="text-neon">{step.prompt}</span> {step.secret ? "" : input}
-                    <span className="animate-blink ml-px inline-block h-4 w-2 translate-y-0.5 bg-neon" />
-                  </p>
-                ) : (
-                  <>
-                    <p className="mt-2 text-[11px] text-slate-400 sm:text-sm">
-                      {mode === "login"
-                        ? `Last login: ${now.toDateString()} on tty1`
-                        : `useradd: account '${username}' created`}
-                    </p>
-                    <p className="text-sm text-neon sm:text-base">welcome to offtrck-os, {username}.</p>
-                  </>
-                )}
-
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={handleKeyDown}
-                  type={step?.secret ? "password" : "text"}
-                  autoComplete="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  autoFocus
-                  aria-label={step?.prompt ?? "console input"}
-                  className="absolute h-px w-px opacity-0"
-                />
-
-                {!finished && (
-                  <p className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-neon/10 pt-3 text-[11px] text-neon/40 sm:mt-6 sm:text-xs">
-                    <span>
-                      {mode === "login" ? "no account? " : "already have an account? "}
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          switchMode();
-                        }}
-                        className="text-neon/80 hover:text-neon hover:underline"
-                      >
-                        [ {mode === "login" ? "create account" : "back to login"} ]
-                      </button>
+              {step ? (
+                <label className="mt-1 block cursor-text">
+                  <span className="text-[12px] text-neon md:text-sm">{step.prompt} </span>
+                  {!isMobile && (
+                    <span className="text-sm text-slate-200">
+                      {step.secret ? "" : input}
+                      <span className="animate-blink ml-px inline-block h-4 w-2 translate-y-0.5 bg-neon" />
                     </span>
-                    <span>press enter ↵</span>
+                  )}
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    onKeyDown={handleKeyDown}
+                    type={step.secret ? "password" : step.key === "email" ? "email" : "text"}
+                    inputMode={step.key === "email" ? "email" : "text"}
+                    enterKeyHint="go"
+                    autoComplete="off"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoFocus
+                    aria-label={step.prompt}
+                    placeholder={isMobile ? (step.secret ? "password" : "username") : undefined}
+                    className={
+                      isMobile
+                        ? "mt-1.5 w-full rounded-md border border-neon/25 bg-black/60 px-2.5 py-2 text-slate-100 caret-neon outline-none placeholder:text-neon/30 focus:border-neon/50"
+                        : "absolute h-px w-px opacity-0"
+                    }
+                  />
+                </label>
+              ) : (
+                <>
+                  <p className="mt-2 text-[11px] text-slate-400 md:text-sm">
+                    {mode === "login"
+                      ? `Last login: ${now.toDateString()} on tty1`
+                      : `useradd: account '${username}' created`}
                   </p>
+                  <p className="text-sm text-neon">welcome to offtrck-os, {username}.</p>
+                </>
+              )}
+            </div>
+
+            {!finished && (
+              <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-neon/10 pt-2 text-[10px] text-neon/40 md:mt-5 md:pt-3 md:text-xs">
+                <button type="button" onClick={switchMode} className="text-neon/65 hover:text-neon hover:underline">
+                  {mode === "login" ? "create account" : "back to login"}
+                </button>
+                {isMobile ? (
+                  <button
+                    type="submit"
+                    className="rounded-md border border-neon/40 bg-neon/12 px-2.5 py-1 text-[11px] font-semibold text-neon"
+                  >
+                    continue
+                  </button>
+                ) : (
+                  <span>press enter ↵</span>
                 )}
               </div>
-            </div>
-          </div>
+            )}
+          </form>
 
-          <div className="flex items-center justify-between px-1 text-[11px] text-neon/45 sm:text-xs md:justify-end">
-            <p className="max-w-[14rem] leading-4 md:hidden">every network reveals secrets, if you know how to listen.</p>
-            <a
-              href="#/founders"
-              onClick={(event) => event.stopPropagation()}
-              className="shrink-0 text-neon/60 hover:text-neon hover:underline"
-            >
-              [ founders ]
-            </a>
-          </div>
+          {!keyboardOpen && (
+            <div className="mt-2 flex justify-end px-0.5 text-[10px] md:text-xs">
+              <a href="#/founders" className="text-neon/45 hover:text-neon hover:underline">
+                founders
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

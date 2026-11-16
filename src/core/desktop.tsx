@@ -6,6 +6,7 @@ import FolderWindow from "./folder-window";
 import { cyberAttacks, cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
 import type { Course } from "./story";
 import { useClock } from "./use-clock";
+import { useIsMobile } from "./use-media";
 import { useNetworkStatus } from "./use-network-status";
 import Window from "./window";
 
@@ -64,16 +65,39 @@ type DesktopProps = {
 };
 
 const Desktop = ({ username, onLogout }: DesktopProps) => {
+  const isMobile = useIsMobile();
   const [selected, setSelected] = useState<string | null>(null);
   const [windowStates, setWindowStates] = useState<Record<string, WindowState>>({});
   // Last id is the window in front
   const [stack, setStack] = useState<string[]>([]);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
+  const [navHidden, setNavHidden] = useState(false);
   const clock = formatClock(useClock());
   const { privateIp, online, mbps, testing, runSpeedTest } = useNetworkStatus();
   const toastTimer = useRef<number>(undefined);
+  const mainRef = useRef<HTMLElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  // Phone pattern: hide top bar while scrolling down, bring it back on scroll up
+  useEffect(() => {
+    if (!isMobile) return;
+    const node = mainRef.current;
+    if (!node) return;
+
+    const onScroll = () => {
+      const y = node.scrollTop;
+      const delta = y - lastScrollY.current;
+      if (y < 8) setNavHidden(false);
+      else if (delta > 6) setNavHidden(true);
+      else if (delta < -6) setNavHidden(false);
+      lastScrollY.current = y;
+    };
+
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => node.removeEventListener("scroll", onScroll);
+  }, [isMobile]);
 
   const showToast = (text: string) => {
     window.clearTimeout(toastTimer.current);
@@ -117,9 +141,12 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
   };
 
   const openDefs = windowDefs.filter(def => stateOf(def.id) !== "closed");
+  const visibleOpen = openDefs.filter(def => stateOf(def.id) === "open");
+  const mobileCovered = isMobile && visibleOpen.length > 0;
+  const hideNav = isMobile && (navHidden || mobileCovered);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-void select-none">
+    <div className="relative h-dvh w-full overflow-hidden bg-void select-none">
       {/* Wallpaper */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(61,220,132,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(61,220,132,0.035)_1px,transparent_1px)] bg-size-[40px_40px]" />
       <pre className="pointer-events-none absolute right-10 bottom-16 hidden text-xs lg:right-[23rem] leading-tight text-neon/15 md:block">
@@ -127,14 +154,18 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
         {"\n\nevery network reveals secrets,\nif you know how to listen."}
       </pre>
 
-      {/* Top panel */}
-      <header className="relative z-20 flex h-8 items-center justify-between border-b border-neon/15 bg-black/60 px-3 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="mr-2 font-semibold text-neon">⌬ offtrck</span>
+      {/* Top panel — slides away on scroll; fully tucks under fullscreen mobile screens */}
+      <header
+        className={`absolute inset-x-0 top-0 z-30 flex h-9 items-center justify-between gap-2 border-b border-neon/15 bg-black/75 px-2.5 text-[11px] backdrop-blur-md transition-transform duration-200 md:relative md:h-8 md:px-3 md:text-xs md:backdrop-blur-none ${
+          hideNav ? "-translate-y-full md:translate-y-0" : "translate-y-0"
+        }`}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+          <span className="mr-0.5 shrink-0 font-semibold text-neon">⌬ offtrck</span>
           {openDefs.map(def => (
             <button
               key={def.id}
-              className={`rounded px-2 py-0.5 transition-colors ${stateOf(def.id) === "open" ? "bg-neon/10 text-neon" : "text-neon/50 hover:bg-neon/5"}`}
+              className={`shrink-0 rounded px-1.5 py-0.5 transition-colors ${stateOf(def.id) === "open" ? "bg-neon/10 text-neon" : "text-neon/50 hover:bg-neon/5"}`}
               onClick={() => toggleTask(def.id)}
             >
               {def.label}
@@ -142,10 +173,10 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
           ))}
         </div>
         <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 xl:inline">{clock}</span>
-        <div className="flex items-center gap-4 text-neon/40">
+        <div className="flex shrink-0 items-center gap-1.5 text-neon/40 sm:gap-3">
           <span className="hidden text-neon/70 md:inline xl:hidden">{clock}</span>
           <button
-            className="rounded px-1 tabular-nums hover:bg-neon/10"
+            className="hidden rounded px-1 tabular-nums hover:bg-neon/10 sm:inline"
             onClick={runSpeedTest}
             title="click to test speed again"
           >
@@ -155,19 +186,29 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
               <>↓ <span className="text-neon/80">{testing && mbps === null ? "testing..." : mbps === null ? "--" : `${mbps.toFixed(1)} Mbps`}</span></>
             )}
           </button>
-          <span><span className="hidden sm:inline">wlan0 </span><span className="text-neon/80">{privateIp}</span></span>
-          <span className="hidden lg:inline">vpn <span className="text-danger">off</span></span>
-          <span className="hidden lg:inline">bat 87%</span>
-          <span className="text-neon/80">{username}</span>
-          <button className="rounded px-1.5 py-0.5 text-neon/50 hover:bg-neon/10 hover:text-neon" onClick={onLogout}>
+          <span className="hidden md:inline"><span className="hidden sm:inline">wlan0 </span><span className="text-neon/80">{privateIp}</span></span>
+          <span className="max-w-[4.5rem] truncate text-neon/80 sm:max-w-none">{username}</span>
+          <button className="rounded px-1 py-0.5 text-neon/50 hover:bg-neon/10 hover:text-neon" onClick={onLogout}>
             log out
           </button>
         </div>
       </header>
 
       {/* Desktop icons */}
-      <main className="relative z-10 h-[calc(100vh-2rem)]" onClick={() => setSelected(null)}>
-        <div className="flex w-fit flex-col flex-wrap gap-2 p-4">
+      <main
+        ref={mainRef}
+        className={`relative z-10 h-dvh overflow-y-auto overscroll-contain md:h-[calc(100dvh-2rem)] md:overflow-hidden md:pt-0 ${
+          mobileCovered ? "pt-0" : "pt-9"
+        }`}
+        onClick={() => !isMobile && setSelected(null)}
+      >
+        <div
+          className={
+            isMobile
+              ? "grid grid-cols-4 gap-2 p-3"
+              : "flex w-fit flex-col flex-wrap gap-2 p-4"
+          }
+        >
           {apps.map(app => {
             const isSelected = selected === app.id;
             return (
@@ -175,36 +216,48 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
                 key={app.id}
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (isMobile) {
+                    openApp(app);
+                    return;
+                  }
                   setSelected(app.id);
                 }}
-                onDoubleClick={() => openApp(app)}
+                onDoubleClick={() => !isMobile && openApp(app)}
                 onKeyDown={(event) => event.key === "Enter" && openApp(app)}
-                className={`group flex w-24 flex-col items-center gap-1.5 rounded-lg border p-2 outline-none transition-colors ${isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"}`}
+                className={`group flex flex-col items-center gap-1 rounded-lg border p-2 outline-none transition-colors md:w-24 md:gap-1.5 md:p-2 ${
+                  isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"
+                }`}
               >
-                <app.Icon className={`h-10 w-10 ${app.id.startsWith("cyber-") ? "text-neon" : "text-neon/50"}`} />
-                <span className={`rounded px-1 text-xs ${isSelected ? "bg-neon/20 text-neon" : "text-neon/70"}`}>{app.label}</span>
+                <app.Icon className={`h-7 w-7 md:h-10 md:w-10 ${app.id.startsWith("cyber-") ? "text-neon" : "text-neon/50"}`} />
+                <span className={`rounded px-0.5 text-center text-[9px] leading-tight md:text-xs ${isSelected ? "bg-neon/20 text-neon" : "text-neon/70"}`}>
+                  {app.label}
+                </span>
               </button>
             );
           })}
         </div>
 
-        <DesktopWidgets />
+        {!isMobile && <DesktopWidgets />}
 
-        {openDefs.map(def => {
-          const state = stateOf(def.id);
+        {visibleOpen.map(def => {
           const layer = stack.indexOf(def.id) + 10;
           return (
             <div
               key={def.id}
-              className="pointer-events-none absolute inset-0 flex items-center justify-center lg:pr-[21rem]"
+              className={
+                isMobile
+                  ? "pointer-events-none absolute inset-0"
+                  : "pointer-events-none absolute inset-0 flex items-center justify-center lg:pr-[21rem]"
+              }
               style={{ zIndex: layer }}
               onMouseDownCapture={() => raise(def.id)}
             >
-              <div className={def.offset}>
+              <div className={isMobile ? "h-full w-full" : def.offset}>
                 {def.folder ? (
                   <FolderWindow
                     folder={def.folder}
-                    minimized={state === "minimized"}
+                    minimized={false}
+                    mobile={isMobile}
                     onOpenItem={openFolderItem}
                     onMinimize={() => setWindowState(def.id, "minimized")}
                     onClose={() => setWindowState(def.id, "closed")}
@@ -213,7 +266,8 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
                   <Window
                     course={def.course}
                     username={username}
-                    minimized={state === "minimized"}
+                    minimized={false}
+                    mobile={isMobile}
                     onMinimize={() => setWindowState(def.id, "minimized")}
                     onClose={() => setWindowState(def.id, "closed")}
                   />
@@ -225,7 +279,10 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
       </main>
 
       {toast && (
-        <div key={toast.id} className="animate-toast absolute top-11 right-4 z-30 max-w-sm rounded border border-neon/20 bg-panel px-4 py-3 text-sm text-slate-300">
+        <div
+          key={toast.id}
+          className="animate-toast absolute top-11 right-2 left-2 z-50 mx-auto max-w-[18rem] rounded border border-neon/20 bg-panel px-2.5 py-1.5 text-[11px] leading-snug text-slate-300 md:top-11 md:right-4 md:left-auto md:mx-0 md:max-w-sm md:px-4 md:py-3 md:text-sm"
+        >
           <span className="text-neon/60">[notify]</span> {toast.text}
         </div>
       )}
