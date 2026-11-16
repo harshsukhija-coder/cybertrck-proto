@@ -22,11 +22,11 @@ type MobileBackHeaderProps = {
 
 export const MobileBackHeader = ({ title, icon, onBack }: MobileBackHeaderProps) => (
   <header className="shrink-0 border-b border-neon/15 bg-black/70 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-    <div className="flex h-11 items-center gap-1 px-1.5">
+    <div className="flex h-10 items-center gap-1 px-1.5">
       <button
         type="button"
         onClick={onBack}
-        className="window-button grid h-10 w-10 shrink-0 place-items-center rounded-xl text-neon active:bg-neon/10"
+        className="window-button grid h-9 w-9 shrink-0 place-items-center rounded-lg text-neon active:bg-neon/10"
         aria-label="back"
       >
         <BackArrow className="h-5 w-5" />

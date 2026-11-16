@@ -263,7 +263,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
             hideDesktopBar && !statusOpen ? "-translate-y-full" : "translate-y-0"
           }`}
         >
-          <div className="flex h-11 items-center gap-2 px-2.5">
+          <div className="flex h-10 items-center gap-2 px-2.5">
             <OfftrckBrand className="min-w-0 truncate text-[13px] leading-none tracking-wide" markClassName="h-3.5 w-3.5" />
 
             <button
@@ -271,7 +271,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
               aria-expanded={statusOpen}
               aria-label={statusOpen ? "close status" : "open status"}
               onClick={() => setStatusOpen(open => !open)}
-              className={`ml-auto inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 transition ${
+              className={`ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 transition ${
                 statusOpen ? "bg-neon/15 text-neon" : "text-neon/80 active:bg-neon/10"
               }`}
             >
@@ -321,7 +321,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
       <main
         ref={mainRef}
         className={`relative z-10 h-dvh overflow-y-auto overscroll-contain md:h-[calc(100dvh-2rem)] md:overflow-hidden md:pt-0 ${
-          mobileCovered ? "pt-0" : "pt-[calc(2.75rem+env(safe-area-inset-top))]"
+          mobileCovered ? "pt-0" : "pt-[calc(2.5rem+env(safe-area-inset-top))]"
         }`}
         onClick={() => {
           if (!isMobile) setSelected(null);

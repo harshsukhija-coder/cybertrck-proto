@@ -80,8 +80,6 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
-  const firstUnreadId = useRef<number | null>(null);
-  const ignoreScroll = useRef(false);
   const timers = useRef<number[]>([]);
   const keyboardInset = useKeyboardInset();
 
@@ -164,87 +162,41 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
     if (!minimized) inputRef.current?.focus();
   }, [minimized]);
 
-  const scrollMessageIntoView = (id: number) => {
-    const node = scrollRef.current;
-    if (!node) return;
-    const el = node.querySelector<HTMLElement>(`[data-msg-id="${id}"]`);
-    if (!el) {
-      node.scrollTop = node.scrollHeight;
-      return;
-    }
-    ignoreScroll.current = true;
-    el.scrollIntoView({ block: "start", behavior: "smooth" });
-    window.setTimeout(() => {
-      ignoreScroll.current = false;
-    }, 450);
-  };
-
-  // Follow new lines only while stuck to bottom; otherwise queue unread and stop
+  // Chat-style stickiness: follow new lines when near the bottom; otherwise count unread
   useEffect(() => {
     const node = scrollRef.current;
     if (!node) return;
     const frame = window.requestAnimationFrame(() => {
       if (messages.length === 0) {
         stickToBottom.current = true;
-        firstUnreadId.current = null;
         setUnreadBelow(0);
         return;
       }
-
-      const last = messages[messages.length - 1];
-
       if (stickToBottom.current) {
-        // Land on this message, then stop auto-scroll so the next one waits as unread
-        scrollMessageIntoView(last.id);
-        stickToBottom.current = false;
-        firstUnreadId.current = null;
+        node.scrollTop = node.scrollHeight;
         setUnreadBelow(0);
         return;
       }
-
-      if (firstUnreadId.current === null) firstUnreadId.current = last.id;
       setUnreadBelow(count => count + 1);
     });
     return () => window.cancelAnimationFrame(frame);
   }, [messages]);
 
   const onThreadScroll = () => {
-    if (ignoreScroll.current) return;
     const node = scrollRef.current;
     if (!node) return;
     const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
     const atBottom = distance < 72;
-    if (atBottom) {
-      stickToBottom.current = true;
-      firstUnreadId.current = null;
-      setUnreadBelow(0);
-    } else {
-      stickToBottom.current = false;
-    }
+    stickToBottom.current = atBottom;
+    if (atBottom) setUnreadBelow(0);
   };
 
-  // Advance one unread message at a time — never jump straight to the latest
-  const jumpToNextUnread = () => {
-    if (unreadBelow <= 0) return;
-
-    const targetId =
-      firstUnreadId.current ??
-      messages[Math.max(0, messages.length - unreadBelow)]?.id;
-    if (targetId == null) return;
-
-    scrollMessageIntoView(targetId);
-    stickToBottom.current = false;
-
-    const remaining = unreadBelow - 1;
-    if (remaining <= 0) {
-      firstUnreadId.current = null;
-      setUnreadBelow(0);
-      return;
-    }
-
-    const idx = messages.findIndex(message => message.id === targetId);
-    firstUnreadId.current = idx >= 0 ? messages[idx + 1]?.id ?? null : null;
-    setUnreadBelow(remaining);
+  const jumpToLatest = () => {
+    const node = scrollRef.current;
+    if (!node) return;
+    stickToBottom.current = true;
+    setUnreadBelow(0);
+    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
   };
 
   const chapterDone = nextScene >= chapter.scenes.length;
@@ -549,9 +501,7 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
           >
             <div className="flex min-h-full flex-col justify-end">
               {messages.map(message => (
-                <div key={message.id} data-msg-id={message.id}>
-                  <MessageBlock course={course} message={message} time={message.time} />
-                </div>
+                <MessageBlock key={message.id} course={course} message={message} time={message.time} />
               ))}
             </div>
           </div>
@@ -559,10 +509,10 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
           {unreadBelow > 0 && (
             <button
               type="button"
-              onClick={jumpToNextUnread}
+              onClick={jumpToLatest}
               className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-neon/40 bg-black/90 px-3 py-1.5 text-[11px] font-semibold text-neon shadow-[0_6px_20px_rgba(0,0,0,0.45)] backdrop-blur-sm"
             >
-              {unreadBelow === 1 ? "1 new message ↓" : `next · ${unreadBelow} new ↓`}
+              {unreadBelow === 1 ? "1 new message ↓" : `${unreadBelow} new ↓`}
             </button>
           )}
         </div>
