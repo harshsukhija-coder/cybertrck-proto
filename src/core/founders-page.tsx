@@ -2,13 +2,14 @@ import { useEffect, useState, type CSSProperties } from "react";
 import codeRain from "../assets/backgrounds/code-rain.jpg";
 import corgiHacker from "../assets/founders/corgi-hacker.jpg";
 import raccoonHacker from "../assets/founders/raccoon-hacker.jpg";
+import { OfftrckBrand } from "../icons/OfftrckMark";
 
 const SCRAMBLE_CHARS = "!<>-_\\/[]{}=+*^?#01";
 const SCRAMBLE_STEP_MS = 35;
 
-type Founder = { name: string; role: string; handle: string; image: string; caption: string; uid: number };
+type Member = { name: string; role: string; handle: string; image: string; caption: string; uid: number };
 
-const founders: Founder[] = [
+const team: Member[] = [
   {
     name: "Parikshit Chauhan",
     role: "Researcher",
@@ -56,8 +57,8 @@ const useScramble = (text: string, delayMs = 0) => {
   return display;
 };
 
-const FounderCard = ({ founder, index }: { founder: Founder; index: number }) => {
-  const name = useScramble(founder.name, 500 + index * 350);
+const MemberCard = ({ member, index }: { member: Member; index: number }) => {
+  const name = useScramble(member.name, 500 + index * 350);
   const record = String(index + 1).padStart(2, "0");
 
   return (
@@ -65,15 +66,15 @@ const FounderCard = ({ founder, index }: { founder: Founder; index: number }) =>
       className="group animate-line-in overflow-hidden rounded-lg border border-neon/20 bg-black/75 backdrop-blur-sm transition-colors hover:border-neon/50"
       style={{ animationDelay: `${300 + index * 250}ms` }}
     >
-      <div className="glitch-image h-60" style={{ "--glitch-img": `url(${founder.image})` } as CSSProperties}>
+      <div className="glitch-image h-60" style={{ "--glitch-img": `url(${member.image})` } as CSSProperties}>
         <img
-          src={founder.image}
-          alt={`${founder.name} (artist's impression)`}
+          src={member.image}
+          alt={`${member.name} (artist's impression)`}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="glitch-noise absolute inset-0 opacity-40" />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/10 to-transparent" />
-        <p className="absolute right-3 bottom-2 left-3 truncate text-[10px] text-neon/60 italic">{founder.caption}</p>
+        <p className="absolute right-3 bottom-2 left-3 truncate text-[10px] text-neon/60 italic">{member.caption}</p>
         <span className="absolute top-3 left-3 rounded border border-neon/30 bg-black/60 px-2 py-0.5 text-[10px] tracking-widest text-neon/80">
           RECORD {record}
         </span>
@@ -84,20 +85,20 @@ const FounderCard = ({ founder, index }: { founder: Founder; index: number }) =>
       </div>
 
       <div className="p-5">
-        <h2 className="glitch-hover text-2xl font-bold tracking-wider text-neon uppercase" data-text={founder.name}>
+        <h2 className="glitch-hover text-2xl font-bold tracking-wider text-neon uppercase" data-text={member.name}>
           {name}
         </h2>
-        <p className="mt-1 text-sm tracking-[0.3em] text-amber uppercase">{founder.role}</p>
+        <p className="mt-1 text-sm tracking-[0.3em] text-amber uppercase">{member.role}</p>
 
         <div className="mt-4 rounded border border-neon/10 bg-black/60 p-3 text-xs leading-5 text-slate-400">
           <p>
-            <span className="text-neon">$</span> id {founder.handle}
+            <span className="text-neon">$</span> id {member.handle}
           </p>
-          <p>uid={founder.uid}({founder.handle}) gid=1000(offtrck) groups=research</p>
+          <p>uid={member.uid}({member.handle}) gid=1000(offtrck) groups=research</p>
           <p>
-            <span className="text-neon">$</span> finger {founder.handle}
+            <span className="text-neon">$</span> finger {member.handle}
           </p>
-          <p>role: {founder.role.toLowerCase()} · access: root · status: <span className="text-neon">active</span></p>
+          <p>role: {member.role.toLowerCase()} · access: root · status: <span className="text-neon">active</span></p>
         </div>
       </div>
     </article>
@@ -106,14 +107,12 @@ const FounderCard = ({ founder, index }: { founder: Founder; index: number }) =>
 
 const FoundersPage = () => (
   <div className="relative min-h-screen w-full overflow-x-hidden bg-void">
-    {/* Background */}
     <img src={codeRain} alt="" className="fixed inset-0 h-full w-full object-cover opacity-30" />
     <div className="fixed inset-0 bg-linear-to-b from-black/80 via-black/60 to-black/95" />
     <div className="glitch-noise pointer-events-none fixed inset-0 opacity-50" />
 
-    {/* Top bar */}
     <header className="relative z-10 flex items-center justify-between px-6 py-5 text-sm">
-      <span className="font-semibold text-neon">⌬ offtrck</span>
+      <OfftrckBrand markClassName="h-4 w-4" />
       <a href="#/" className="text-xs text-neon/60 hover:text-neon hover:underline">
         [ ← back to login ]
       </a>
@@ -121,24 +120,24 @@ const FoundersPage = () => (
 
     <main className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 pt-6 pb-16 md:pt-12">
       <p className="animate-line-in text-xs text-neon/60 md:text-sm">
-        <span className="text-neon">root@offtrck</span>:~$ sudo cat /etc/offtrck/founders
+        <span className="text-neon">root@offtrck</span>:~$ sudo cat /etc/offtrck/team
         <span className="animate-blink ml-1 inline-block h-3.5 w-2 translate-y-0.5 bg-neon" />
       </p>
 
       <h1
         className="glitch-text animate-line-in mt-6 text-5xl font-extrabold tracking-[0.2em] text-neon uppercase md:text-7xl"
-        data-text="founders"
+        data-text="team"
         style={{ animationDelay: "120ms" }}
       >
-        founders
+        team
       </h1>
       <p className="animate-line-in mt-4 text-center text-sm text-neon/50" style={{ animationDelay: "200ms" }}>
-        the minds behind offtrck · {founders.length} records decrypted
+        the minds behind offtrck · {team.length} records decrypted
       </p>
 
       <div className="mt-10 grid w-full gap-6 md:grid-cols-2">
-        {founders.map((founder, index) => (
-          <FounderCard key={founder.handle} founder={founder} index={index} />
+        {team.map((member, index) => (
+          <MemberCard key={member.handle} member={member} index={index} />
         ))}
       </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
+import { OfftrckBrand } from "../icons/OfftrckMark";
 import { encryptionCourse, firewallCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
 import DesktopWidgets from "./desktop-widgets";
 import FolderWindow from "./folder-window";
@@ -73,7 +74,10 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
   const [stack, setStack] = useState<string[]>([]);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   const [navHidden, setNavHidden] = useState(false);
-  const clock = formatClock(useClock());
+  const [statusOpen, setStatusOpen] = useState(false);
+  const now = useClock();
+  const clock = formatClock(now);
+  const shortTime = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   const { privateIp, online, mbps, testing, runSpeedTest } = useNetworkStatus();
   const toastTimer = useRef<number>(undefined);
   const mainRef = useRef<HTMLElement>(null);
@@ -81,7 +85,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
-  // Phone pattern: hide top bar while scrolling down, bring it back on scroll up
+  // Phone pattern: collapse chrome while scrolling; status HUD pill stays reachable
   useEffect(() => {
     if (!isMobile) return;
     const node = mainRef.current;
@@ -91,8 +95,10 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
       const y = node.scrollTop;
       const delta = y - lastScrollY.current;
       if (y < 8) setNavHidden(false);
-      else if (delta > 6) setNavHidden(true);
-      else if (delta < -6) setNavHidden(false);
+      else if (delta > 6) {
+        setNavHidden(true);
+        setStatusOpen(false);
+      } else if (delta < -6) setNavHidden(false);
       lastScrollY.current = y;
     };
 
@@ -144,7 +150,70 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
   const openDefs = windowDefs.filter(def => stateOf(def.id) !== "closed");
   const visibleOpen = openDefs.filter(def => stateOf(def.id) === "open");
   const mobileCovered = isMobile && visibleOpen.length > 0;
-  const hideNav = isMobile && (navHidden || mobileCovered);
+  const hideDesktopBar = isMobile && (navHidden || mobileCovered);
+  const linkLabel = !online
+    ? "offline"
+    : testing && mbps === null
+      ? "testing…"
+      : mbps === null
+        ? "tap test"
+        : `${mbps.toFixed(1)} Mb/s`;
+
+  const statusPanel = (
+    <div className="space-y-3 px-1 pb-1 pt-2">
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="rounded-2xl border border-neon/20 bg-neon/[0.06] px-2 py-3">
+          <p className="text-[9px] tracking-[0.18em] text-neon/40 uppercase">time</p>
+          <p className="mt-1 text-[13px] font-semibold tabular-nums text-neon">{shortTime}</p>
+        </div>
+        <button
+          type="button"
+          onClick={runSpeedTest}
+          className="rounded-2xl border border-neon/20 bg-neon/[0.06] px-2 py-3 active:bg-neon/10"
+        >
+          <p className="text-[9px] tracking-[0.18em] text-neon/40 uppercase">link</p>
+          <p className={`mt-1 text-[12px] font-semibold tabular-nums ${online ? "text-neon" : "text-danger"}`}>
+            {linkLabel}
+          </p>
+        </button>
+        <div className="rounded-2xl border border-neon/20 bg-neon/[0.06] px-2 py-3">
+          <p className="text-[9px] tracking-[0.18em] text-neon/40 uppercase">ip</p>
+          <p className="mt-1 truncate text-[11px] font-semibold tabular-nums text-neon">{privateIp.split(".").slice(-2).join(".")}</p>
+        </div>
+      </div>
+
+      {openDefs.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {openDefs.map(def => (
+            <button
+              key={def.id}
+              type="button"
+              className={`min-h-9 rounded-full border px-3 text-[12px] ${
+                stateOf(def.id) === "open" ? "border-neon/50 bg-neon/15 text-neon" : "border-neon/20 text-neon/60"
+              }`}
+              onClick={() => {
+                toggleTask(def.id);
+                setStatusOpen(false);
+              }}
+            >
+              {def.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        className="min-h-10 w-full rounded-full border border-danger/30 text-[12px] font-medium text-danger/90"
+        onClick={() => {
+          setStatusOpen(false);
+          onLogout();
+        }}
+      >
+        log out
+      </button>
+    </div>
+  );
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-void select-none">
@@ -155,14 +224,10 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
         {"\n\nevery network reveals secrets,\nif you know how to listen."}
       </pre>
 
-      {/* Top panel — slides away on scroll; fully tucks under fullscreen mobile screens */}
-      <header
-        className={`absolute inset-x-0 top-0 z-30 flex h-9 items-center justify-between gap-2 border-b border-neon/15 bg-black/75 px-2.5 text-[11px] backdrop-blur-md transition-transform duration-200 md:relative md:h-8 md:px-3 md:text-xs md:backdrop-blur-none ${
-          hideNav ? "-translate-y-full md:translate-y-0" : "translate-y-0"
-        }`}
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
-          <span className="mr-0.5 shrink-0 font-semibold text-neon">⌬ offtrck</span>
+      {/* Desktop top panel — equal left / center / right columns */}
+      <header className="absolute inset-x-0 top-0 z-30 hidden h-8 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-neon/15 bg-black/75 px-3 text-xs md:relative md:grid">
+        <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto">
+          <OfftrckBrand className="mr-0.5 shrink-0" markClassName="h-3.5 w-3.5" />
           {openDefs.map(def => (
             <button
               key={def.id}
@@ -173,40 +238,99 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
             </button>
           ))}
         </div>
-        <span className="absolute left-1/2 hidden -translate-x-1/2 text-neon/70 xl:inline">{clock}</span>
-        <div className="flex shrink-0 items-center gap-1.5 text-neon/40 sm:gap-3">
-          <span className="hidden text-neon/70 md:inline xl:hidden">{clock}</span>
-          <button
-            className="hidden rounded px-1 tabular-nums hover:bg-neon/10 sm:inline"
-            onClick={runSpeedTest}
-            title="click to test speed again"
-          >
+        <span className="shrink-0 tabular-nums text-neon/70">{clock}</span>
+        <div className="flex min-w-0 items-center justify-end gap-3 text-neon/40">
+          <button className="rounded px-1 tabular-nums hover:bg-neon/10" onClick={runSpeedTest} title="click to test speed again">
             {!online ? (
               <span className="text-danger">offline</span>
             ) : (
               <>↓ <span className="text-neon/80">{testing && mbps === null ? "testing..." : mbps === null ? "--" : `${mbps.toFixed(1)} Mbps`}</span></>
             )}
           </button>
-          <span className="hidden md:inline"><span className="hidden sm:inline">wlan0 </span><span className="text-neon/80">{privateIp}</span></span>
-          <span className="max-w-[4.5rem] truncate text-neon/80 sm:max-w-none">{username}</span>
-          <button className="rounded px-1 py-0.5 text-neon/50 hover:bg-neon/10 hover:text-neon" onClick={onLogout}>
+          <span className="hidden lg:inline">wlan0 <span className="text-neon/80">{privateIp}</span></span>
+          <span className="truncate text-neon/80">{username}</span>
+          <button className="shrink-0 rounded px-1 py-0.5 text-neon/50 hover:bg-neon/10 hover:text-neon" onClick={onLogout}>
             log out
           </button>
         </div>
       </header>
 
+      {/* Mobile navbar — compact single row */}
+      {isMobile && !mobileCovered && (
+        <div
+          className={`absolute inset-x-0 top-0 z-40 border-b border-neon/15 bg-black/55 pt-[env(safe-area-inset-top)] backdrop-blur-md transition-transform duration-200 ${
+            hideDesktopBar && !statusOpen ? "-translate-y-full" : "translate-y-0"
+          }`}
+        >
+          <div className="flex h-9 items-center gap-2 px-2.5">
+            <OfftrckBrand className="min-w-0 truncate text-[13px] leading-none tracking-wide" markClassName="h-3.5 w-3.5" />
+
+            <button
+              type="button"
+              aria-expanded={statusOpen}
+              aria-label={statusOpen ? "close status" : "open status"}
+              onClick={() => setStatusOpen(open => !open)}
+              className={`ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2 transition ${
+                statusOpen ? "bg-neon/15 text-neon" : "text-neon/80 active:bg-neon/10"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                  online ? "bg-neon shadow-[0_0_6px_rgba(61,220,132,0.9)]" : "bg-danger"
+                }`}
+                aria-hidden
+              />
+              <span className="font-mono text-[12px] font-semibold leading-none">
+                {statusOpen ? "×" : ">_"}
+              </span>
+              <span className="text-[12px] font-medium leading-none tabular-nums">{shortTime}</span>
+            </button>
+          </div>
+
+          {statusOpen && (
+            <div className="border-t border-neon/10 bg-black/80 px-3 pb-3">
+              <p className="pt-3 pb-2 truncate font-mono text-[11px] text-neon/55">
+                <span className="text-neon">{username}@offtrck</span>
+                :~$ status
+                <span className="animate-blink ml-1 inline-block h-2.5 w-1.5 translate-y-px bg-neon align-middle" />
+              </p>
+              {statusPanel}
+              <a
+                href="#/team"
+                className="mt-1 flex min-h-10 items-center justify-center rounded-xl border border-neon/20 font-mono text-[12px] text-neon/70"
+                onClick={() => setStatusOpen(false)}
+              >
+                $ cat /etc/offtrck/team
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isMobile && statusOpen && !mobileCovered && (
+        <button
+          type="button"
+          aria-label="dismiss status"
+          className="absolute inset-0 z-30 bg-black/40"
+          onClick={() => setStatusOpen(false)}
+        />
+      )}
+
       {/* Desktop icons */}
       <main
         ref={mainRef}
         className={`relative z-10 h-dvh overflow-y-auto overscroll-contain md:h-[calc(100dvh-2rem)] md:overflow-hidden md:pt-0 ${
-          mobileCovered ? "pt-0" : "pt-9"
+          mobileCovered ? "pt-0" : "pt-[calc(2.25rem+env(safe-area-inset-top))]"
         }`}
-        onClick={() => !isMobile && setSelected(null)}
+        onClick={() => {
+          if (!isMobile) setSelected(null);
+          else setStatusOpen(false);
+        }}
       >
         <div
           className={
             isMobile
-              ? "grid grid-cols-4 gap-2 p-3"
+              ? "grid grid-cols-4 gap-3 p-4"
               : "flex w-fit flex-col flex-wrap gap-2 p-4"
           }
         >
@@ -229,8 +353,8 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
                   isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"
                 }`}
               >
-                <app.Icon className={`h-7 w-7 md:h-10 md:w-10 ${app.id.startsWith("cyber-") ? "text-neon" : "text-neon/50"}`} />
-                <span className={`rounded px-0.5 text-center text-[9px] leading-tight md:text-xs ${isSelected ? "bg-neon/20 text-neon" : "text-neon/70"}`}>
+                <app.Icon className={`h-8 w-8 md:h-10 md:w-10 ${app.id.startsWith("cyber-") ? "text-neon" : "text-neon/50"}`} />
+                <span className={`rounded px-0.5 text-center leading-tight ${isMobile ? "text-[11px]" : "text-xs"} ${isSelected ? "bg-neon/20 text-neon" : "text-neon/70"}`}>
                   {app.label}
                 </span>
               </button>

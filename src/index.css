@@ -18,7 +18,7 @@
     --animate-blink: blink 1.1s steps(2, start) infinite;
     --animate-line-in: line-in 120ms ease-out both;
     --animate-glitch: glitch 0.9s steps(1) infinite;
-    --animate-wallpaper-drift: wallpaper-drift 28s ease-in-out alternate infinite;
+    --animate-wallpaper-drift: wallpaper-drift 22s ease-in-out infinite;
     --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
     --animate-soft-bounce: soft-bounce 1.4s ease-in-out infinite;
     --animate-session-flash: session-flash 1.2s ease-out both;
@@ -86,11 +86,20 @@
     }
 
     @keyframes wallpaper-drift {
-        from {
-            transform: scale(1.04) translate3d(0, 0, 0);
+        0% {
+            transform: scale(1.08) translate3d(0%, 0%, 0);
         }
-        to {
-            transform: scale(1.12) translate3d(-2%, 1.5%, 0);
+        25% {
+            transform: scale(1.16) translate3d(-3.5%, 2%, 0);
+        }
+        50% {
+            transform: scale(1.12) translate3d(2.5%, -2.5%, 0);
+        }
+        75% {
+            transform: scale(1.18) translate3d(-2%, -1.5%, 0);
+        }
+        100% {
+            transform: scale(1.08) translate3d(0%, 0%, 0);
         }
     }
 
@@ -114,7 +123,7 @@
 @media (prefers-reduced-motion: reduce) {
     .animate-wallpaper-drift {
         animation: none !important;
-        transform: scale(1.06) !important;
+        transform: none !important;
     }
 }
 

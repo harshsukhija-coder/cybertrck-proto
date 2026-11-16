@@ -14,6 +14,7 @@ import {
   type QuizQuestion,
   type StoryMessage,
 } from "./story";
+import { MobileBackHeader } from "./mobile-chrome";
 import TerminalTextBox from "./terminal-textbox";
 import { useKeyboardInset } from "./use-media";
 
@@ -77,6 +78,8 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
   const { chapters, title, Icon } = course;
   const windowRef = useRef(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const stickToBottom = useRef(true);
   const timers = useRef<number[]>([]);
   const keyboardInset = useKeyboardInset();
 
@@ -93,6 +96,7 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
   const [correctCount, setCorrectCount] = useState(saved?.correctCount ?? 0);
   const [choices, setChoices] = useState<Choices>(saved?.choices ?? {});
   const [busy, setBusy] = useState(!saved);
+  const [unreadBelow, setUnreadBelow] = useState(0);
 
   // const asciiTextRef = useAsciiText({
   //   text: "nmap",
@@ -157,6 +161,43 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
   useEffect(() => {
     if (!minimized) inputRef.current?.focus();
   }, [minimized]);
+
+  // Chat-style stickiness: only follow new lines when the user is already near the bottom
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (!node) return;
+    const frame = window.requestAnimationFrame(() => {
+      if (messages.length === 0) {
+        stickToBottom.current = true;
+        setUnreadBelow(0);
+        return;
+      }
+      if (stickToBottom.current) {
+        node.scrollTop = node.scrollHeight;
+        setUnreadBelow(0);
+        return;
+      }
+      setUnreadBelow(count => count + 1);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [messages]);
+
+  const onThreadScroll = () => {
+    const node = scrollRef.current;
+    if (!node) return;
+    const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
+    const atBottom = distance < 72;
+    stickToBottom.current = atBottom;
+    if (atBottom) setUnreadBelow(0);
+  };
+
+  const jumpToLatest = () => {
+    const node = scrollRef.current;
+    if (!node) return;
+    stickToBottom.current = true;
+    setUnreadBelow(0);
+    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+  };
 
   const chapterDone = nextScene >= chapter.scenes.length;
 
@@ -405,7 +446,7 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
       <div
         className={`relative flex flex-col overflow-hidden border-neon/20 bg-panel ${
           mobile
-            ? `h-full border-t ${phase === "glitch" ? "animate-glitch" : "animate-screen-push"}`
+            ? `h-full ${phase === "glitch" ? "animate-glitch" : "animate-screen-push"}`
             : `h-[min(75vh,44rem)] rounded-lg border ${phase === "glitch" ? "animate-glitch" : "animate-window-open"}`
         }`}
       >
@@ -420,30 +461,21 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
             </div>
           </div>
         )}
-        {/* Header */}
-        <div
-          className={`flex shrink-0 items-center justify-between gap-2 border-b border-neon/15 bg-neon/[0.04] px-2 text-[11px] md:h-10 md:gap-2 md:px-3 md:text-xs ${
-            mobile ? "h-11" : "h-10"
-          } ${mobile ? "" : "window-handle cursor-grab active:cursor-grabbing"}`}
-        >
-          <div className="flex min-w-0 items-center gap-2">
-            {mobile && (
-              <button
-                type="button"
-                className="window-button grid h-9 w-9 shrink-0 place-items-center rounded-md border border-neon/20 bg-neon/[0.06] text-base leading-none text-neon hover:bg-neon/10"
-                onClick={handleWindowButton(onClose)}
-                aria-label="back"
-              >
-                ←
-              </button>
-            )}
-            <Icon className="h-4 w-4 shrink-0 text-neon" />
-            <span className="truncate font-semibold text-neon">{title}</span>
-            <span className="hidden truncate text-neon/40 md:inline">{chapter.title} · {chapter.subtitle}</span>
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <span className="mr-1 hidden rounded border border-neon/20 px-1.5 py-0.5 text-neon/60 sm:inline">{course.badge}</span>
-            {!mobile && (
+        {mobile ? (
+          <MobileBackHeader
+            title={title}
+            icon={<Icon className="h-3.5 w-3.5 shrink-0 text-neon" />}
+            onBack={onClose}
+          />
+        ) : (
+          <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between gap-2 border-b border-neon/15 bg-neon/[0.04] px-3 text-xs active:cursor-grabbing">
+            <div className="flex min-w-0 items-center gap-2">
+              <Icon className="h-4 w-4 shrink-0 text-neon" />
+              <span className="truncate font-semibold text-neon">{title}</span>
+              <span className="truncate text-neon/40">{chapter.title} · {chapter.subtitle}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <span className="mr-1 rounded border border-neon/20 px-1.5 py-0.5 text-neon/60">{course.badge}</span>
               <button
                 className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
                 onClick={handleWindowButton(onMinimize)}
@@ -451,25 +483,38 @@ const Window = ({ course, username, minimized, mobile = false, onMinimize, onClo
               >
                 —
               </button>
-            )}
+              <button
+                className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-danger hover:text-white"
+                onClick={handleWindowButton(onClose)}
+                aria-label="close"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="relative min-h-0 flex-1">
+          <div
+            ref={scrollRef}
+            onScroll={onThreadScroll}
+            className="thin-scrollbar absolute inset-0 overflow-y-auto overscroll-contain"
+          >
+            <div className="flex min-h-full flex-col justify-end">
+              {messages.map(message => (
+                <MessageBlock key={message.id} course={course} message={message} time={message.time} />
+              ))}
+            </div>
+          </div>
+
+          {unreadBelow > 0 && (
             <button
-              className={`window-button grid place-items-center rounded text-neon/50 hover:bg-danger hover:text-white ${
-                mobile ? "h-9 w-9 rounded-md border border-neon/15 text-sm" : "h-6 w-6 text-xs"
-              }`}
-              onClick={handleWindowButton(onClose)}
-              aria-label="close"
+              type="button"
+              onClick={jumpToLatest}
+              className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-neon/40 bg-black/90 px-3 py-1.5 text-[11px] font-semibold text-neon shadow-[0_6px_20px_rgba(0,0,0,0.45)] backdrop-blur-sm"
             >
-              ✕
+              {unreadBelow === 1 ? "1 new message ↓" : `${unreadBelow} new ↓`}
             </button>
-          </div>
-        </div>
-        {/* column-reverse keeps the list pinned to the bottom as new messages grow in */}
-        <div className="thin-scrollbar flex min-h-0 flex-1 flex-col-reverse overflow-y-auto overscroll-contain">
-          <div>
-            {messages.map(message => (
-              <MessageBlock key={message.id} course={course} message={message} time={message.time} />
-            ))}
-          </div>
+          )}
         </div>
         <TerminalTextBox
           inputRef={inputRef}

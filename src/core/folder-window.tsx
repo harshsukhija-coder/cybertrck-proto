@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import Draggable from "react-draggable";
 import type { Folder, FolderItem } from "./folders";
+import { MobileBackHeader, PathBreadcrumb } from "./mobile-chrome";
 
 type FolderWindowProps = {
   folder: Folder;
@@ -34,61 +35,49 @@ const FolderWindow = ({ folder, minimized, mobile = false, onOpenItem, onMinimiz
       <div
         className={
           mobile
-            ? "flex h-full flex-col overflow-hidden border-t border-neon/20 bg-panel"
+            ? "flex h-full flex-col overflow-hidden bg-panel"
             : "animate-window-open flex h-[min(60vh,26rem)] flex-col overflow-hidden rounded-lg border border-neon/20 bg-panel"
         }
       >
-        {/* Header */}
+        {mobile ? (
+          <MobileBackHeader
+            title={folder.label}
+            icon={<folder.Icon className="h-3.5 w-3.5 shrink-0 text-neon" />}
+            onBack={onClose}
+          />
+        ) : (
+          <>
+            <div className="window-handle flex h-10 shrink-0 cursor-grab items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-3 text-xs active:cursor-grabbing">
+              <div className="flex min-w-0 items-center gap-2">
+                <folder.Icon className="h-4 w-4 shrink-0 text-neon" />
+                <span className="truncate font-semibold text-neon">{folder.label}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
+                  onClick={handleWindowButton(onMinimize)}
+                  aria-label="minimize"
+                >
+                  —
+                </button>
+                <button
+                  className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-danger hover:text-white"
+                  onClick={handleWindowButton(onClose)}
+                  aria-label="close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <PathBreadcrumb path={folder.path} />
+          </>
+        )}
+
         <div
-          className={`flex shrink-0 items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-2 text-[11px] md:h-10 md:px-3 md:text-xs ${
-            mobile ? "h-11" : "h-10"
-          } ${mobile ? "" : "window-handle cursor-grab active:cursor-grabbing"}`}
+          className={`thin-scrollbar min-h-0 flex-1 overflow-y-auto ${mobile ? "p-3" : "p-3"}`}
+          onClick={() => !mobile && setSelected(null)}
         >
-          <div className="flex min-w-0 items-center gap-2">
-            {mobile && (
-              <button
-                type="button"
-                className="window-button grid h-9 w-9 shrink-0 place-items-center rounded-md border border-neon/20 bg-neon/[0.06] text-base leading-none text-neon hover:bg-neon/10"
-                onClick={handleWindowButton(onClose)}
-                aria-label="back"
-              >
-                ←
-              </button>
-            )}
-            <folder.Icon className="h-4 w-4 shrink-0 text-neon" />
-            <span className="truncate font-semibold text-neon">{folder.label}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {!mobile && (
-              <button
-                className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
-                onClick={handleWindowButton(onMinimize)}
-                aria-label="minimize"
-              >
-                —
-              </button>
-            )}
-            <button
-              className={`window-button grid place-items-center rounded text-neon/50 hover:bg-danger hover:text-white ${
-                mobile ? "h-9 w-9 rounded-md border border-neon/15 text-sm" : "h-6 w-6 text-xs"
-              }`}
-              onClick={handleWindowButton(onClose)}
-              aria-label="close"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
-        {/* Path bar — compact on mobile */}
-        <div className="flex h-6 shrink-0 items-center gap-1.5 border-b border-neon/10 px-2 text-[10px] md:h-8 md:gap-2 md:px-3 md:text-xs">
-          <span className="text-neon/40">loc</span>
-          <span className="truncate rounded border border-neon/15 px-1.5 py-px text-neon/70">{folder.path}</span>
-        </div>
-
-        {/* Items */}
-        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-1.5 md:p-3" onClick={() => !mobile && setSelected(null)}>
-          <div className={`grid ${mobile ? "grid-cols-4 gap-1" : "grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-2"}`}>
+          <div className={`grid ${mobile ? "grid-cols-3 gap-2" : "grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-2"}`}>
             {items.map(item => {
               const isSelected = selected === item.id;
               const locked = Boolean(item.lockedMessage);
@@ -105,12 +94,22 @@ const FolderWindow = ({ folder, minimized, mobile = false, onOpenItem, onMinimiz
                   }}
                   onDoubleClick={() => !mobile && onOpenItem(item)}
                   onKeyDown={(event) => event.key === "Enter" && onOpenItem(item)}
-                  className={`flex flex-col items-center gap-0.5 rounded-md border p-1 outline-none transition-colors md:gap-1.5 md:rounded-lg md:p-2 ${
-                    isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"
+                  className={`flex flex-col items-center outline-none transition-colors ${
+                    mobile
+                      ? `min-h-[5.5rem] gap-1.5 rounded-2xl border p-2.5 active:scale-[0.98] ${
+                          locked ? "border-neon/10 bg-neon/[0.02]" : "border-neon/15 bg-neon/[0.04]"
+                        }`
+                      : `gap-1.5 rounded-lg border p-2 ${
+                          isSelected ? "border-neon/30 bg-neon/10" : "border-transparent hover:bg-neon/5"
+                        }`
                   }`}
                 >
-                  <item.Icon className={`h-6 w-6 md:h-10 md:w-10 ${locked ? "text-neon/25" : "text-neon"}`} />
-                  <span className={`rounded px-0.5 text-center text-[9px] leading-tight md:text-xs ${isSelected ? "bg-neon/20 text-neon" : locked ? "text-neon/40" : "text-neon/80"}`}>
+                  <item.Icon className={`${mobile ? "h-9 w-9" : "h-10 w-10"} ${locked ? "text-neon/25" : "text-neon"}`} />
+                  <span
+                    className={`rounded px-0.5 text-center leading-tight ${
+                      mobile ? "text-[11px] font-medium" : "text-xs"
+                    } ${isSelected ? "bg-neon/20 text-neon" : locked ? "text-neon/40" : "text-neon/85"}`}
+                  >
                     {item.label}
                   </span>
                 </button>
@@ -119,14 +118,15 @@ const FolderWindow = ({ folder, minimized, mobile = false, onOpenItem, onMinimiz
           </div>
         </div>
 
-        {/* Status bar */}
-        <div className="flex h-5 shrink-0 items-center justify-between border-t border-neon/10 px-2 text-[9px] text-neon/40 md:h-7 md:px-3 md:text-xs">
-          <span className="truncate">
-            {selectedItem
-              ? `${selectedItem.label}${selectedItem.lockedMessage ? " · locked" : ""}`
-              : `${items.length} items · ${mobile ? "tap" : "double-click"}`}
-          </span>
-        </div>
+        {!mobile && (
+          <div className="flex h-7 shrink-0 items-center justify-between border-t border-neon/10 px-3 text-xs text-neon/40">
+            <span className="truncate">
+              {selectedItem
+                ? `${selectedItem.label}${selectedItem.lockedMessage ? " · locked" : ""}`
+                : `${items.length} items · double-click`}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

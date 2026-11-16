@@ -3,7 +3,7 @@ import Desktop from "./core/desktop";
 import FoundersPage from "./core/founders-page";
 import LoginScreen from "./core/login-screen";
 
-const FOUNDERS_ROUTE = "#/founders";
+const TEAM_ROUTES = new Set(["#/team", "#/founders"]);
 
 function App() {
   const [username, setUsername] = useState<string | null>(null);
@@ -15,7 +15,7 @@ function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  if (route === FOUNDERS_ROUTE) return <FoundersPage />;
+  if (TEAM_ROUTES.has(route)) return <FoundersPage />;
   if (!username) return <LoginScreen onLogin={setUsername} />;
   return <Desktop username={username} onLogout={() => setUsername(null)} />;
 }
