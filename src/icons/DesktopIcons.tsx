@@ -93,6 +93,13 @@ export const LockIcon = (props: IconProps) => (
   </svg>
 );
 
+export const FirewallIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M12 3 5 6v5c0 4.5 2.9 7.8 7 9 4.1-1.2 7-4.5 7-9V6z" />
+    <path d="M9 12h6M12 9v6" opacity="0.75" />
+  </svg>
+);
+
 export const FileIcon = (props: IconProps) => (
   <svg {...base} {...props}>
     <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />

@@ -55,7 +55,13 @@ export type VisualKey =
   | "trojan-package"
   | "extension-trick"
   | "reverse-shell"
-  | "trojan-defense";
+  | "trojan-defense"
+  | "firewall-border"
+  | "firewall-ports"
+  | "firewall-rules"
+  | "firewall-types"
+  | "firewall-limits"
+  | "firewall-recap";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {

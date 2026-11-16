@@ -3,6 +3,7 @@ import {
   AttacksFolderIcon,
   ConceptsFolderIcon,
   EncryptionIcon,
+  FirewallIcon,
   LockIcon,
   NmapIcon,
   ToolsFolderIcon,
@@ -78,9 +79,8 @@ export const cyberConcepts: Folder = {
     {
       id: "firewalls",
       label: "firewalls",
-      Icon: LockIcon,
-      description: "deciding who gets in",
-      lockedMessage: "firewalls is locked. coming soon.",
+      Icon: FirewallIcon,
+      description: "border guard · ports · rules · default deny",
     },
   ],
 };

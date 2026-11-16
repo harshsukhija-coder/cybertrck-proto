@@ -45,6 +45,14 @@ import {
   VpnTunnelFlow,
   VpnVsProxy,
 } from "./vpn-visuals";
+import {
+  FirewallBorder,
+  FirewallLimits,
+  FirewallPorts,
+  FirewallRecap,
+  FirewallRules,
+  FirewallTypes,
+} from "./firewall-visuals";
 
 const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "office-network": OfficeNetwork,
@@ -94,6 +102,12 @@ const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "extension-trick": ExtensionTrick,
   "reverse-shell": ReverseShell,
   "trojan-defense": TrojanDefense,
+  "firewall-border": FirewallBorder,
+  "firewall-ports": FirewallPorts,
+  "firewall-rules": FirewallRules,
+  "firewall-types": FirewallTypes,
+  "firewall-limits": FirewallLimits,
+  "firewall-recap": FirewallRecap,
 };
 
 const Visual = ({ name }: { name: VisualKey }) => {

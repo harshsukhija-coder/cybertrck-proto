@@ -1,9 +1,14 @@
-import { EncryptionIcon, NmapIcon, TrojanIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
+import { EncryptionIcon, FirewallIcon, NmapIcon, TrojanIcon, VpnIcon, WifiIcon } from "../icons/DesktopIcons";
 import { encryptionChapterFive } from "./chapters/encryption/chapter-05";
 import { encryptionChapterFour } from "./chapters/encryption/chapter-04";
 import { encryptionChapterOne } from "./chapters/encryption/chapter-01";
 import { encryptionChapterThree } from "./chapters/encryption/chapter-03";
 import { encryptionChapterTwo } from "./chapters/encryption/chapter-02";
+import { firewallChapterFive } from "./chapters/firewall/chapter-05";
+import { firewallChapterFour } from "./chapters/firewall/chapter-04";
+import { firewallChapterOne } from "./chapters/firewall/chapter-01";
+import { firewallChapterThree } from "./chapters/firewall/chapter-03";
+import { firewallChapterTwo } from "./chapters/firewall/chapter-02";
 import { chapterFive } from "./chapters/nmap/chapter-05";
 import { chapterFour } from "./chapters/nmap/chapter-04";
 import { chapterOne } from "./chapters/nmap/chapter-01";
@@ -69,4 +74,13 @@ export const trojanCourse: Course = {
   moduleName: "trojan",
   Icon: TrojanIcon,
   chapters: [trojanChapterOne, trojanChapterTwo, trojanChapterThree, trojanChapterFour, trojanChapterFive],
+};
+
+export const firewallCourse: Course = {
+  id: "firewalls",
+  title: "firewalls",
+  badge: "policy: default deny",
+  moduleName: "firewalls",
+  Icon: FirewallIcon,
+  chapters: [firewallChapterOne, firewallChapterTwo, firewallChapterThree, firewallChapterFour, firewallChapterFive],
 };
