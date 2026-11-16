@@ -49,6 +49,18 @@ const FileIconGlyph = ({ kind }: { kind: "image" | "exe" }) =>
     <span className="animate-pulse-ring grid h-10 w-10 place-items-center rounded bg-[#3b1d1d] text-lg">⚙️</span>
   );
 
+const WifiBars = ({ bars }: { bars: number }) => (
+  <span className="inline-flex items-end gap-px" aria-hidden>
+    {[1, 2, 3, 4].map(level => (
+      <span
+        key={level}
+        className={`w-[3px] rounded-sm ${level <= bars ? "animate-wifi-bars bg-[#8ec7ff]" : "bg-white/15"}`}
+        style={{ height: `${4 + level * 3}px`, animationDelay: `${level * 80}ms` }}
+      />
+    ))}
+  </span>
+);
+
 const SallyPanel = ({ screen }: { screen: SallyScreen }) => (
   <div className="overflow-hidden rounded-md border border-[#5b9bd5]/40 bg-[#0c1420]">
     <div className="flex items-center gap-2 border-b border-[#5b9bd5]/25 bg-[#152238] px-2.5 py-1.5 text-[10px]">
@@ -129,6 +141,80 @@ const SallyPanel = ({ screen }: { screen: SallyScreen }) => (
           <p className="text-2xl">😶‍🌫️</p>
           <p className="mt-1 text-slate-400">no photo window. no error. silence.</p>
           <p className="mt-2 text-[10px] text-[#ff5d73]">(background: reverse shell connecting…)</p>
+        </div>
+      </div>
+    )}
+
+    {screen.mode === "wifi" && (
+      <div className="p-3 text-[11px] text-slate-200">
+        <div className="mb-2 flex items-center gap-2 border-b border-white/10 pb-2">
+          <span className="animate-soft-bounce">📶</span>
+          <div>
+            <p className="font-semibold text-[#8ec7ff]">Wi-Fi networks</p>
+            <p className="text-[10px] text-slate-500">choose a network</p>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          {(screen.wifiNetworks ?? []).map(net => (
+            <div
+              key={`${net.name}-${net.fake ? "fake" : "real"}`}
+              className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 ${
+                net.selected
+                  ? "animate-pulse-ring border-[#5b9bd5]/60 bg-[#5b9bd5]/15"
+                  : net.fake
+                    ? "border-[#ff5d73]/35 bg-[#ff5d73]/08"
+                    : "border-white/10 bg-white/5"
+              }`}
+            >
+              <WifiBars bars={net.bars} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-slate-100">{net.name}</p>
+                <p className="text-[10px] text-slate-500">
+                  {net.open ? "open · no password" : "secured"}
+                  {net.fake ? " · 👀 twin" : ""}
+                </p>
+              </div>
+              {net.selected && <span className="text-[10px] text-[#8ec7ff]">connected</span>}
+              {net.fake && !net.selected && <span className="text-sm">🎭</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {screen.mode === "browser" && screen.browser && (
+      <div className="p-3 text-[11px] text-slate-200">
+        <div className="mb-2 flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 font-mono text-[10px]">
+          <span>{screen.browser.secure ? "🔒" : "⚠️"}</span>
+          <span className={screen.browser.secure ? "text-[#3ddc84]" : "text-[#ff8a3d]"}>
+            {screen.browser.secure ? "https://" : "http://"}
+          </span>
+          <span className="truncate text-slate-300">{screen.browser.url}</span>
+        </div>
+        <div className="rounded border border-[#5b9bd5]/25 bg-[#101b2c] p-3">
+          <p className="text-sm font-semibold text-[#8ec7ff]">{screen.browser.heading ?? "page"}</p>
+          <p className="mt-2 whitespace-pre-wrap text-slate-300">{screen.browser.body}</p>
+        </div>
+      </div>
+    )}
+
+    {screen.mode === "cert" && (
+      <div className="animate-session-flash p-3 text-[11px] text-slate-200">
+        <div className="rounded-lg border border-[#ff5d73]/50 bg-[#2a1014] p-3">
+          <p className="flex items-center gap-2 text-base font-bold text-[#ff5d73]">
+            <span className="animate-soft-bounce">🚨</span> Your connection is not private
+          </p>
+          <p className="mt-2 text-slate-300">
+            Attackers might be trying to steal your information from{" "}
+            <span className="font-mono text-[#ffd23f]">{screen.certHost ?? "this site"}</span>.
+          </p>
+          <p className="mt-2 text-[10px] text-slate-500">NET::ERR_CERT_AUTHORITY_INVALID</p>
+          <div className="mt-3 flex gap-2">
+            <span className="rounded bg-white/10 px-2 py-1 text-[10px] text-slate-400">Back to safety</span>
+            <span className="rounded border border-[#ff5d73]/40 px-2 py-1 text-[10px] text-[#ff5d73]">
+              Advanced (don&apos;t)
+            </span>
+          </div>
         </div>
       </div>
     )}

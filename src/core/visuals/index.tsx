@@ -53,6 +53,13 @@ import {
   FirewallRules,
   FirewallTypes,
 } from "./firewall-visuals";
+import {
+  ArpPoison,
+  EvilTwin,
+  MitmDefense,
+  MitmMiddle,
+  SessionHijack,
+} from "./mitm-visuals";
 
 const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "office-network": OfficeNetwork,
@@ -108,6 +115,11 @@ const visuals: Record<VisualKey, () => React.JSX.Element> = {
   "firewall-types": FirewallTypes,
   "firewall-limits": FirewallLimits,
   "firewall-recap": FirewallRecap,
+  "mitm-middle": MitmMiddle,
+  "evil-twin": EvilTwin,
+  "arp-poison": ArpPoison,
+  "session-hijack": SessionHijack,
+  "mitm-defense": MitmDefense,
 };
 
 const Visual = ({ name }: { name: VisualKey }) => {

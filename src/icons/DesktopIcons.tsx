@@ -59,6 +59,16 @@ export const TrojanIcon = (props: IconProps) => (
   </svg>
 );
 
+export const MitmIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="3" y="9" width="5" height="6" rx="1" />
+    <rect x="16" y="9" width="5" height="6" rx="1" />
+    <circle cx="12" cy="12" r="2.4" />
+    <path d="M8 12h1.5M14.5 12H16" opacity="0.85" />
+    <path d="M12 6v2.2M12 15.8V18" opacity="0.55" />
+  </svg>
+);
+
 export const EncryptionIcon = (props: IconProps) => (
   <svg {...base} {...props}>
     <rect x="4" y="10" width="16" height="11" rx="2" />

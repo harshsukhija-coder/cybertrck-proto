@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
 import { OfftrckBrand } from "../icons/OfftrckMark";
-import { encryptionCourse, firewallCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
+import { encryptionCourse, firewallCourse, mitmCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
 import DesktopWidgets from "./desktop-widgets";
 import FolderWindow from "./folder-window";
 import { cyberAttacks, cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
@@ -58,6 +58,7 @@ const windowDefs: WindowDef[] = [
   { id: "wifi", label: "wifi passwords", course: wifiCourse, offset: "md:translate-x-8 md:translate-y-6" },
   { id: "vpn", label: "vpn", course: vpnCourse, offset: "md:translate-x-12 md:translate-y-9" },
   { id: "trojan", label: "image trojan", course: trojanCourse, offset: "md:translate-x-6 md:translate-y-12" },
+  { id: "mitm", label: "man in the middle", course: mitmCourse, offset: "md:translate-x-14 md:translate-y-10" },
   { id: "firewalls", label: "firewalls", course: firewallCourse, offset: "md:translate-x-10 md:translate-y-14" },
 ];
 

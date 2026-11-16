@@ -6,7 +6,7 @@ import rameshAvatar from "../assets/characters/ramesh.jpg";
 import sallyAvatar from "../assets/characters/sally.jpg";
 import type { VividColor } from "./palette";
 
-export type Speaker = "system" | "friday" | "ramesh" | "kim" | "sally" | "bob" | "you";
+export type Speaker = "system" | "friday" | "ramesh" | "kim" | "sally" | "bob" | "jules" | "you";
 
 export type VisualKey =
   | "office-network"
@@ -61,7 +61,12 @@ export type VisualKey =
   | "firewall-rules"
   | "firewall-types"
   | "firewall-limits"
-  | "firewall-recap";
+  | "firewall-recap"
+  | "mitm-middle"
+  | "evil-twin"
+  | "arp-poison"
+  | "session-hijack"
+  | "mitm-defense";
 
 // Text and terminal output can mark important bits as {color:text}, e.g. {pink:192.168.1.30}
 export type TerminalBlock = {
@@ -73,10 +78,13 @@ export type TerminalBlock = {
 
 export type SallyScreen = {
   title?: string;
-  mode: "idle" | "mail" | "downloads" | "opened";
+  mode: "idle" | "mail" | "downloads" | "opened" | "wifi" | "browser" | "cert";
   email?: { from: string; subject: string; body: string; attachment: string };
   files?: { name: string; icon: "image" | "exe"; selected?: boolean }[];
   hideExtensions?: boolean;
+  wifiNetworks?: { name: string; bars: number; open?: boolean; fake?: boolean; selected?: boolean }[];
+  browser?: { url: string; secure?: boolean; heading?: string; body?: string };
+  certHost?: string;
   note?: string;
 };
 
@@ -153,6 +161,7 @@ export const speakers: Record<Speaker, { name: string; color: string; avatar?: s
   kim: { name: "kim", color: "#3DDC84", avatar: kimAvatar },
   sally: { name: "sally", color: "#8EC7FF", avatar: sallyAvatar },
   bob: { name: "bob", color: "#FFD23F", avatar: bobAvatar },
+  jules: { name: "jules", color: "#FF8A3D" },
   you: { name: "you", color: "#A1A8B0" },
 };
 

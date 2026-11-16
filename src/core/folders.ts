@@ -5,6 +5,7 @@ import {
   EncryptionIcon,
   FirewallIcon,
   LockIcon,
+  MitmIcon,
   NmapIcon,
   ToolsFolderIcon,
   TrojanIcon,
@@ -98,11 +99,17 @@ export const cyberAttacks: Folder = {
       description: "fake jpeg · reverse shell · social engineering",
     },
     {
+      id: "mitm",
+      label: "man in the middle",
+      Icon: MitmIcon,
+      description: "evil twin · arp spoof · silent intercept",
+    },
+    {
       id: "phishing",
       label: "phishing",
       Icon: LockIcon,
       description: "fake login pages",
-      lockedMessage: "phishing is locked. finish image trojan first.",
+      lockedMessage: "phishing is locked. finish man in the middle first.",
     },
     {
       id: "ransomware",
