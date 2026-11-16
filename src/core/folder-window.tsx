@@ -40,25 +40,25 @@ const FolderWindow = ({ folder, minimized, mobile = false, onOpenItem, onMinimiz
       >
         {/* Header */}
         <div
-          className={`flex h-8 shrink-0 items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-2 text-[11px] md:h-10 md:px-3 md:text-xs ${
-            mobile ? "" : "window-handle cursor-grab active:cursor-grabbing"
-          }`}
+          className={`flex shrink-0 items-center justify-between border-b border-neon/15 bg-neon/[0.04] px-2 text-[11px] md:h-10 md:px-3 md:text-xs ${
+            mobile ? "h-11" : "h-10"
+          } ${mobile ? "" : "window-handle cursor-grab active:cursor-grabbing"}`}
         >
-          <div className="flex min-w-0 items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-2">
             {mobile && (
               <button
                 type="button"
-                className="window-button grid h-5 w-5 shrink-0 place-items-center rounded text-[11px] leading-none text-neon/70 hover:bg-neon/10 hover:text-neon"
+                className="window-button grid h-9 w-9 shrink-0 place-items-center rounded-md border border-neon/20 bg-neon/[0.06] text-base leading-none text-neon hover:bg-neon/10"
                 onClick={handleWindowButton(onClose)}
                 aria-label="back"
               >
                 ←
               </button>
             )}
-            <folder.Icon className="h-3.5 w-3.5 shrink-0 text-neon md:h-4 md:w-4" />
+            <folder.Icon className="h-4 w-4 shrink-0 text-neon" />
             <span className="truncate font-semibold text-neon">{folder.label}</span>
           </div>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             {!mobile && (
               <button
                 className="window-button grid h-6 w-6 place-items-center rounded text-neon/50 hover:bg-neon/10 hover:text-neon"
@@ -69,7 +69,9 @@ const FolderWindow = ({ folder, minimized, mobile = false, onOpenItem, onMinimiz
               </button>
             )}
             <button
-              className="window-button grid h-5 w-5 place-items-center rounded text-[10px] leading-none text-neon/50 hover:bg-danger hover:text-white md:h-6 md:w-6 md:text-xs"
+              className={`window-button grid place-items-center rounded text-neon/50 hover:bg-danger hover:text-white ${
+                mobile ? "h-9 w-9 rounded-md border border-neon/15 text-sm" : "h-6 w-6 text-xs"
+              }`}
               onClick={handleWindowButton(onClose)}
               aria-label="close"
             >
