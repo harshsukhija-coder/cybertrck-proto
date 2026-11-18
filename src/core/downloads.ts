@@ -17,8 +17,16 @@ export const quizFile = (course: Course, chapter: Chapter) => {
   return { name: `${fileSlug(course, chapter)}-quiz.md`, text };
 };
 
-export const downloadText = ({ name, text }: { name: string; text: string }) => {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/markdown;charset=utf-8" }));
+export const downloadText = ({
+  name,
+  text,
+  mime = "text/markdown;charset=utf-8",
+}: {
+  name: string;
+  text: string;
+  mime?: string;
+}) => {
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
   const link = document.createElement("a");
   link.href = url;
   link.download = name;

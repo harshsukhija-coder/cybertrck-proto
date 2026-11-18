@@ -7,8 +7,10 @@ import {
   LockIcon,
   MitmIcon,
   NmapIcon,
+  ProjectsFolderIcon,
   ToolsFolderIcon,
   TrojanIcon,
+  TryHarderIcon,
   VpnIcon,
   WifiIcon,
 } from "../icons/DesktopIcons";
@@ -82,6 +84,21 @@ export const cyberConcepts: Folder = {
       label: "firewalls",
       Icon: FirewallIcon,
       description: "border guard · ports · rules · default deny",
+    },
+  ],
+};
+
+export const cyberProjects: Folder = {
+  id: "cyber-projects",
+  label: "cyber-projects",
+  path: "/home/friday/cyber-projects",
+  Icon: ProjectsFolderIcon,
+  items: [
+    {
+      id: "try-harder",
+      label: "try harder firewall",
+      Icon: TryHarderIcon,
+      description: "Target vs Attacker · decode the terminals",
     },
   ],
 };

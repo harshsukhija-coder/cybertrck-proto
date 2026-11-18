@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
-import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
+import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, ProjectsFolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
 import { OfftrckBrand } from "../icons/OfftrckMark";
 import { encryptionCourse, firewallCourse, mitmCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
 import DesktopWidgets from "./desktop-widgets";
 import FolderWindow from "./folder-window";
-import { cyberAttacks, cyberConcepts, cyberTools, type Folder, type FolderItem } from "./folders";
+import { cyberAttacks, cyberConcepts, cyberProjects, cyberTools, type Folder, type FolderItem } from "./folders";
+import type { Project } from "./project";
+import ProjectWindow from "./project-window";
+import { tryHarderProject } from "./projects";
 import type { Course } from "./story";
 import { useClock } from "./use-clock";
 import { useIsMobile } from "./use-media";
@@ -23,8 +26,9 @@ const apps: DesktopApp[] = [
   { id: "cyber-tools", label: "cyber-tools", Icon: ToolsFolderIcon },
   { id: "cyber-concepts", label: "cyber-concepts", Icon: ConceptsFolderIcon },
   { id: "cyber-attacks", label: "cyber-attacks", Icon: AttacksFolderIcon },
+  { id: "cyber-projects", label: "cyber-projects", Icon: ProjectsFolderIcon },
   { id: "terminal", label: "terminal", Icon: TerminalIcon, message: "bash: permission denied. finish nMap first." },
-  { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 4 folders, 0 secrets (so far)." },
+  { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 5 folders, 0 secrets (so far)." },
   { id: "todo", label: "todo.txt", Icon: FileIcon, message: "todo.txt -> 1. learn nmap  2. don't get fired" },
   { id: "trash", label: "trash", Icon: TrashIcon, message: "trash is empty. friday is very clean." },
 ];
@@ -47,12 +51,17 @@ type WindowDef = {
   label: string;
   // Small offsets so stacked windows don't sit exactly on top of each other
   offset: string;
-} & ({ folder: Folder; course?: never } | { course: Course; folder?: never });
+} & (
+  | { folder: Folder; course?: never; project?: never }
+  | { course: Course; folder?: never; project?: never }
+  | { project: Project; folder?: never; course?: never }
+);
 
 const windowDefs: WindowDef[] = [
   { id: "cyber-tools", label: "cyber-tools", folder: cyberTools, offset: "-translate-y-10 md:-translate-x-24 md:-translate-y-16" },
   { id: "cyber-concepts", label: "cyber-concepts", folder: cyberConcepts, offset: "-translate-y-6 md:-translate-x-10 md:-translate-y-8" },
   { id: "cyber-attacks", label: "cyber-attacks", folder: cyberAttacks, offset: "-translate-y-2 md:translate-x-2 md:-translate-y-4" },
+  { id: "cyber-projects", label: "cyber-projects", folder: cyberProjects, offset: "md:translate-x-4 md:-translate-y-12" },
   { id: "nmap", label: "nMap", course: nmapCourse, offset: "" },
   { id: "encryption", label: "encryption", course: encryptionCourse, offset: "md:translate-x-4 md:translate-y-3" },
   { id: "wifi", label: "wifi passwords", course: wifiCourse, offset: "md:translate-x-8 md:translate-y-6" },
@@ -60,6 +69,7 @@ const windowDefs: WindowDef[] = [
   { id: "trojan", label: "image trojan", course: trojanCourse, offset: "md:translate-x-6 md:translate-y-12" },
   { id: "mitm", label: "man in the middle", course: mitmCourse, offset: "md:translate-x-14 md:translate-y-10" },
   { id: "firewalls", label: "firewalls", course: firewallCourse, offset: "md:translate-x-10 md:translate-y-14" },
+  { id: "try-harder", label: "try harder firewall", project: tryHarderProject, offset: "md:translate-x-8 md:translate-y-8" },
 ];
 
 type DesktopProps = {
@@ -385,6 +395,14 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
                     minimized={false}
                     mobile={isMobile}
                     onOpenItem={openFolderItem}
+                    onMinimize={() => setWindowState(def.id, "minimized")}
+                    onClose={() => setWindowState(def.id, "closed")}
+                  />
+                ) : def.project ? (
+                  <ProjectWindow
+                    project={def.project}
+                    minimized={false}
+                    mobile={isMobile}
                     onMinimize={() => setWindowState(def.id, "minimized")}
                     onClose={() => setWindowState(def.id, "closed")}
                   />

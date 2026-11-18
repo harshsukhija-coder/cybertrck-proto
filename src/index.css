@@ -26,6 +26,80 @@
     --animate-packet-slip: packet-slip 2.8s ease-in-out infinite;
     --animate-orbit-spin: orbit-spin 14s linear infinite;
     --animate-scan-sweep: scan-sweep 4.5s ease-in-out infinite;
+    --animate-page-in: page-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-page-in-back: page-in-back 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-page-glitch: page-glitch 520ms steps(2) both;
+    --animate-strip-rise: strip-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-pop: pop-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-term-glow: term-glow 2.4s ease-in-out infinite;
+    --animate-packet-fly: packet-fly 1.6s ease-in-out infinite;
+    --animate-packet-fly-back: packet-fly-back 1.6s ease-in-out infinite;
+    --animate-wire-pulse: wire-pulse 1.2s ease-in-out infinite;
+
+    @keyframes packet-fly {
+        0% { left: 8%; opacity: 0; transform: translateY(-50%) scale(0.85); }
+        12% { opacity: 1; }
+        88% { opacity: 1; }
+        100% { left: 78%; opacity: 0; transform: translateY(-50%) scale(1); }
+    }
+
+    @keyframes packet-fly-back {
+        0% { left: 78%; opacity: 0; transform: translateY(-50%) scale(0.85); }
+        12% { opacity: 1; }
+        88% { opacity: 1; }
+        100% { left: 8%; opacity: 0; transform: translateY(-50%) scale(1); }
+    }
+
+    @keyframes wire-pulse {
+        0%, 100% { opacity: 0.35; }
+        50% { opacity: 0.9; }
+    }
+
+    @keyframes page-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes page-in-back {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes page-glitch {
+        0% { opacity: 1; }
+        20% { opacity: 1; transform: translate(-3px, 1px) skewX(-2deg); }
+        40% { opacity: 0.85; transform: translate(4px, -2px); }
+        60% { opacity: 1; transform: translate(-2px, 0) skewX(2deg); }
+        80% { opacity: 0.7; }
+        100% { opacity: 0; }
+    }
+
+    @keyframes strip-rise {
+        from {
+            opacity: 0;
+            transform: translateY(22px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pop-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes term-glow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); }
+        50% { box-shadow: 0 0 24px 0 rgba(61, 220, 132, 0.12); }
+    }
 
     @keyframes glitch {
         0%, 100% { transform: none; clip-path: none; filter: none; }
@@ -147,9 +221,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .animate-wallpaper-drift {
+    .animate-wallpaper-drift,
+    .animate-page-in,
+    .animate-page-in-back,
+    .animate-page-glitch,
+    .animate-strip-rise,
+    .animate-pop,
+    .animate-term-glow,
+    .animate-packet-fly,
+    .animate-packet-fly-back,
+    .animate-wire-pulse {
         animation: none !important;
         transform: none !important;
+        filter: none !important;
     }
 }
 

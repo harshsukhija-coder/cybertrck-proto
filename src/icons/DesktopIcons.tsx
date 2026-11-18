@@ -129,3 +129,19 @@ export const TrashIcon = (props: IconProps) => (
     <path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
   </svg>
 );
+
+export const ProjectsFolderIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <path d="M8 13h8M8 16h5" opacity="0.8" />
+    <circle cx="16.5" cy="12.5" r="1.2" opacity="0.85" />
+  </svg>
+);
+
+export const TryHarderIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M7 10h4M7 14h10" opacity="0.85" />
+    <path d="m14 8 3 3-3 3" opacity="0.9" />
+  </svg>
+);
