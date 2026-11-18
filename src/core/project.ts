@@ -93,6 +93,31 @@ export type ComicStrip =
       title: string;
       code: string;
       decode: string;
+    }
+  | {
+      type: "goals";
+      rows: {
+        who: "narrator" | "target" | "attacker" | "bot" | "script";
+        goal: string;
+        plan: string;
+      }[];
+    }
+  | {
+      type: "links";
+      title: string;
+      items: { label: string; href: string; note: string }[];
+    }
+  | {
+      type: "path";
+      /** journey of one packet through the OS */
+      title: string;
+      steps: { name: string; detail: string }[];
+    }
+  | {
+      type: "playground";
+      /** interactive packet lab */
+      title: string;
+      hint: string;
     };
 
 export type ProjectPage =

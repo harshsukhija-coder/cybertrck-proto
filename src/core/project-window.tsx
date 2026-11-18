@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import Draggable from "react-draggable";
 import { downloadText } from "./downloads";
 import { Highlighted } from "./message-block";
 import { MobileBackHeader } from "./mobile-chrome";
+import { PacketPlayground } from "./packet-playground";
 import { cast, type CastWho } from "./project-faces";
+import { Face } from "./project-faces-ui";
 import type { ComicStrip, LiveLine, LiveTerm, Project, ProjectPage } from "./project";
 
 type ProjectWindowProps = {
@@ -22,118 +24,10 @@ const toneClass: Record<NonNullable<LiveLine["tone"]>, string> = {
   dim: "text-slate-500",
 };
 
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const Face = ({ who, size = "md" }: { who: CastWho; size?: "sm" | "md" | "lg" }) => {
-  const person = cast[who];
-  const dim = size === "sm" ? "h-8 w-8" : size === "lg" ? "h-12 w-12" : "h-10 w-10";
-  return (
-    <img
-      src={person.face}
-      alt={person.label}
-      className={`${dim} shrink-0 rounded-full border-2 object-cover`}
-      style={{ borderColor: person.color }}
-    />
-  );
-};
-
-/** terminal: type command, then stream result lines one by one */
+/** terminal — show full sample instantly (no typing animation) */
 const LiveTerminal = ({ term, playKey }: { term: LiveTerm; playKey: string }) => {
-  const [lineIdx, setLineIdx] = useState(0);
-  const [typing, setTyping] = useState("");
-  const [outLines, setOutLines] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "cmd" | "out" | "done">("idle");
   const who: CastWho = term.side === "bot" ? "bot" : term.side;
   const person = cast[who];
-
-  useEffect(() => {
-    setLineIdx(0);
-    setTyping("");
-    setOutLines(0);
-    setPhase("idle");
-    if (prefersReducedMotion() || term.lines.length === 0) {
-      setLineIdx(term.lines.length);
-      setPhase("done");
-      return;
-    }
-
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const runLine = (index: number) => {
-      if (cancelled) return;
-      if (index >= term.lines.length) {
-        setPhase("done");
-        return;
-      }
-      const line = term.lines[index];
-      setLineIdx(index);
-      setOutLines(0);
-
-      timer = setTimeout(() => {
-        if (cancelled) return;
-
-        const afterCmd = () => {
-          if (cancelled) return;
-          const chunks = line.output ? line.output.split("\n") : [];
-          if (chunks.length === 0) {
-            setLineIdx(index + 1);
-            runLine(index + 1);
-            return;
-          }
-          setPhase("out");
-          let o = 0;
-          const nextOut = () => {
-            if (cancelled) return;
-            o += 1;
-            setOutLines(o);
-            if (o >= chunks.length) {
-              timer = setTimeout(() => {
-                setLineIdx(index + 1);
-                runLine(index + 1);
-              }, 180);
-            } else {
-              timer = setTimeout(nextOut, 140);
-            }
-          };
-          timer = setTimeout(nextOut, 100);
-        };
-
-        if (line.command != null) {
-          setPhase("cmd");
-          let i = 0;
-          const full = line.command;
-          const tick = () => {
-            if (cancelled) return;
-            i += 1;
-            setTyping(full.slice(0, i));
-            if (i < full.length) {
-              timer = setTimeout(tick, 14 + Math.random() * 16);
-            } else {
-              timer = setTimeout(() => {
-                setTyping("");
-                afterCmd();
-              }, 120);
-            }
-          };
-          tick();
-        } else {
-          afterCmd();
-        }
-      }, line.pause ?? 220);
-    };
-
-    runLine(0);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [playKey, term]);
-
-  const committed = term.lines.slice(0, Math.min(lineIdx, term.lines.length));
-  const current = term.lines[lineIdx];
-  const currentOut = current?.output?.split("\n") ?? [];
 
   return (
     <div className="overflow-hidden rounded-xl border bg-[#050607]" style={{ borderColor: `${person.color}66` }}>
@@ -143,14 +37,12 @@ const LiveTerminal = ({ term, playKey }: { term: LiveTerm; playKey: string }) =>
           <p className="truncate font-mono text-[10px] font-bold tracking-wide uppercase" style={{ color: person.color }}>
             {term.title}
           </p>
-          <p className="font-mono text-[9px] text-slate-500">
-            {phase === "cmd" ? "typing…" : phase === "out" ? "streaming output…" : phase === "done" ? "idle" : "ready"}
-          </p>
+          <p className="font-mono text-[9px] text-slate-500">sample output</p>
         </div>
       </div>
       <pre className="max-h-48 overflow-y-auto px-2.5 py-2 font-mono text-[10.5px] leading-snug md:max-h-56 md:text-[11px]">
-        {committed.map((line, i) => (
-          <div key={`${playKey}-c-${i}`} className="mb-1.5">
+        {term.lines.map((line, i) => (
+          <div key={`${playKey}-${i}`} className="mb-1.5">
             {line.command != null && (
               <p>
                 <span style={{ color: person.color }}>{line.prompt ?? term.host}</span>{" "}
@@ -166,30 +58,6 @@ const LiveTerminal = ({ term, playKey }: { term: LiveTerm; playKey: string }) =>
             )}
           </div>
         ))}
-        {phase === "cmd" && current?.command != null && (
-          <p>
-            <span style={{ color: person.color }}>{current.prompt ?? term.host}</span>{" "}
-            <span className="font-semibold text-slate-50">{typing}</span>
-            <span className="animate-blink ml-0.5 inline-block h-2.5 w-1 translate-y-px bg-neon align-middle" />
-          </p>
-        )}
-        {phase === "out" && current && (
-          <div className="mb-1">
-            {current.command != null && (
-              <p>
-                <span style={{ color: person.color }}>{current.prompt ?? term.host}</span>{" "}
-                <span className="font-semibold text-slate-50">
-                  <Highlighted text={current.command} chip={false} />
-                </span>
-              </p>
-            )}
-            {currentOut.slice(0, outLines).map((row, i) => (
-              <p key={`${playKey}-o-${i}`} className={`whitespace-pre-wrap ${current.tone ? toneClass[current.tone] : "text-slate-400"}`}>
-                <Highlighted text={row} chip={false} />
-              </p>
-            ))}
-          </div>
-        )}
       </pre>
     </div>
   );
@@ -259,100 +127,78 @@ const WireLane = ({
   to: "target" | "attacker" | "bot";
   packets: { label: string; kind?: "knock" | "answer" | "roast" | "block" | "data" }[];
   note?: string;
-}) => {
-  const [shown, setShown] = useState(0);
-
-  useEffect(() => {
-    setShown(0);
-    if (prefersReducedMotion()) {
-      setShown(packets.length);
-      return;
-    }
-    let i = 0;
-    let timer: ReturnType<typeof setTimeout>;
-    const tick = () => {
-      i += 1;
-      setShown(i);
-      if (i < packets.length) timer = setTimeout(tick, 700);
-    };
-    timer = setTimeout(tick, 400);
-    return () => clearTimeout(timer);
-  }, [packets]);
-
-  return (
-    <div className="rounded-xl border border-white/10 bg-black/40 px-3 py-2.5">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <Face who={from} size="sm" />
-          <span className="font-mono text-[10px] font-bold uppercase" style={{ color: cast[from].color }}>
-            {cast[from].label}
-          </span>
-        </div>
-        <span className="font-mono text-[9px] tracking-wide text-slate-500 uppercase">step by step</span>
-        <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[10px] font-bold uppercase" style={{ color: cast[to].color }}>
-            {cast[to].label}
-          </span>
-          <Face who={to} size="sm" />
-        </div>
+}) => (
+  <div className="rounded-xl border border-white/10 bg-black/40 px-3 py-2.5">
+    <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-1.5">
+        <Face who={from} size="sm" />
+        <span className="font-mono text-[10px] font-bold uppercase" style={{ color: cast[from].color }}>
+          {cast[from].label}
+        </span>
       </div>
-
-      <ol className="space-y-1.5">
-        {packets.map((packet, i) => {
-          const kind = packet.kind ?? "data";
-          const meta = packetMeaning[kind] ?? packetMeaning.data;
-          const visible = i < shown;
-          const reverse = kind === "answer" || kind === "roast";
-          return (
-            <li
-              key={`${packet.label}-${i}`}
-              className={`rounded-lg border px-2.5 py-2 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-25"}`}
-              style={{ borderColor: `${meta.color}55`, backgroundColor: `${meta.color}12` }}
-            >
-              <div className="flex items-start gap-2">
-                <span
-                  className="grid h-5 w-5 shrink-0 place-items-center rounded-full font-mono text-[10px] font-bold text-black"
-                  style={{ backgroundColor: meta.color }}
-                >
-                  {i + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[11px] font-bold" style={{ color: meta.color }}>
-                    {packet.label}
-                    <span className="ml-1.5 font-normal text-slate-500">· {meta.title}</span>
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] leading-snug text-slate-300">
-                    {reverse ? (
-                      <>
-                        <span style={{ color: cast[to].color }}>{cast[to].label}</span>
-                        {" → "}
-                        <span style={{ color: cast[from].color }}>{cast[from].label}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ color: cast[from].color }}>{cast[from].label}</span>
-                        {" → "}
-                        <span style={{ color: cast[to].color }}>{cast[to].label}</span>
-                      </>
-                    )}
-                    {" · "}
-                    {meta.meaning}
-                  </p>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      {note && (
-        <p className="mt-2 border-t border-white/10 pt-2 text-[12px] leading-snug text-slate-300">
-          <Highlighted text={note} />
-        </p>
-      )}
+      <span className="font-mono text-[9px] tracking-wide text-slate-500 uppercase">packets</span>
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-[10px] font-bold uppercase" style={{ color: cast[to].color }}>
+          {cast[to].label}
+        </span>
+        <Face who={to} size="sm" />
+      </div>
     </div>
-  );
-};
+
+    <ol className="space-y-1.5">
+      {packets.map((packet, i) => {
+        const kind = packet.kind ?? "data";
+        const meta = packetMeaning[kind] ?? packetMeaning.data;
+        const reverse = kind === "answer" || kind === "roast";
+        return (
+          <li
+            key={`${packet.label}-${i}`}
+            className="rounded-lg border px-2.5 py-2"
+            style={{ borderColor: `${meta.color}55`, backgroundColor: `${meta.color}12` }}
+          >
+            <div className="flex items-start gap-2">
+              <span
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-full font-mono text-[10px] font-bold text-black"
+                style={{ backgroundColor: meta.color }}
+              >
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-[11px] font-bold" style={{ color: meta.color }}>
+                  {packet.label}
+                  <span className="ml-1.5 font-normal text-slate-500">· {meta.title}</span>
+                </p>
+                <p className="mt-0.5 text-[11.5px] leading-snug text-slate-300">
+                  {reverse ? (
+                    <>
+                      <span style={{ color: cast[to].color }}>{cast[to].label}</span>
+                      {" → "}
+                      <span style={{ color: cast[from].color }}>{cast[from].label}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ color: cast[from].color }}>{cast[from].label}</span>
+                      {" → "}
+                      <span style={{ color: cast[to].color }}>{cast[to].label}</span>
+                    </>
+                  )}
+                  {" · "}
+                  {meta.meaning}
+                </p>
+              </div>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+
+    {note && (
+      <p className="mt-2 border-t border-white/10 pt-2 text-[12px] leading-snug text-slate-300">
+        <Highlighted text={note} />
+      </p>
+    )}
+  </div>
+);
 
 const Strip = ({ strip, playKey }: { strip: ComicStrip; playKey: string }) => {
   if (strip.type === "narrator") return <NarratorBox text={strip.text} />;
@@ -428,6 +274,85 @@ const Strip = ({ strip, playKey }: { strip: ComicStrip; playKey: string }) => {
   }
 
   if (strip.type === "meme") return null;
+
+  if (strip.type === "goals") {
+    return (
+      <div className="space-y-2">
+        {strip.rows.map(row => {
+          const person = cast[row.who];
+          return (
+            <div key={row.who + row.goal} className="rounded-xl border px-3 py-2.5" style={{ borderColor: `${person.color}55`, backgroundColor: person.bg }}>
+              <div className="mb-1.5 flex items-center gap-2">
+                <Face who={row.who} size="sm" />
+                <p className="font-mono text-[10px] font-bold tracking-wide uppercase" style={{ color: person.color }}>
+                  {person.label}
+                </p>
+              </div>
+              <p className="text-[12.5px] leading-snug text-slate-100">
+                <span className="font-semibold text-slate-400">goal · </span>
+                <Highlighted text={row.goal} />
+              </p>
+              <p className="mt-1 text-[12.5px] leading-snug text-slate-300">
+                <span className="font-semibold text-slate-400">how · </span>
+                <Highlighted text={row.plan} />
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (strip.type === "links") {
+    return (
+      <div className="rounded-xl border border-cyan/30 bg-[#0a1214] px-3 py-2.5">
+        <p className="mb-2 font-mono text-[10px] tracking-wide text-cyan uppercase">{strip.title}</p>
+        <ul className="space-y-2">
+          {strip.items.map(item => (
+            <li key={item.href} className="text-[12.5px] leading-snug">
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-neon underline-offset-2 hover:underline"
+                onClick={e => e.stopPropagation()}
+              >
+                {item.label}
+              </a>
+              <span className="text-slate-400"> — {item.note}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  if (strip.type === "path") {
+    return (
+      <div className="rounded-xl border border-white/10 bg-black/40 px-3 py-2.5">
+        <p className="mb-2 font-mono text-[10px] tracking-wide text-slate-400 uppercase">{strip.title}</p>
+        <ol className="space-y-2">
+          {strip.steps.map((step, i) => (
+            <li key={step.name} className="flex gap-2.5">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-neon/20 font-mono text-[10px] font-bold text-neon">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="font-mono text-[11px] font-bold text-neon">{step.name}</p>
+                <p className="text-[12px] leading-snug text-slate-300">
+                  <Highlighted text={step.detail} />
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  }
+
+  if (strip.type === "playground") {
+    return <PacketPlayground title={strip.title} hint={strip.hint} />;
+  }
 
   if (strip.type === "boom") {
     return (
@@ -616,7 +541,6 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
   const focusRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [quizChoice, setQuizChoice] = useState<number | null>(null);
-  const [dir, setDir] = useState<"fwd" | "back">("fwd");
   const pages = project.pages;
   const page = pages[index];
   const last = index >= pages.length - 1;
@@ -624,7 +548,6 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
 
   const go = (next: number) => {
     if (next < 0 || next >= pages.length) return;
-    setDir(next > index ? "fwd" : "back");
     setIndex(next);
     setQuizChoice(null);
     requestAnimationFrame(() => focusRef.current?.focus());
@@ -662,7 +585,7 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const handleWindowButton = (action: () => void) => (event: React.MouseEvent) => {
+  const handleWindowButton = (action: () => void) => (event: MouseEvent) => {
     event.stopPropagation();
     action();
   };
@@ -674,7 +597,7 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
     <div
       className={`pointer-events-auto ${
         mobile
-          ? `animate-screen-push flex h-full w-full flex-col overflow-hidden bg-panel ${minimized ? "hidden" : ""}`
+          ? `flex h-full w-full flex-col overflow-hidden bg-panel ${minimized ? "hidden" : ""}`
           : `w-[min(48rem,94vw)] ${minimized ? "hidden" : ""}`
       }`}
       ref={windowRef}
@@ -683,7 +606,7 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
         className={
           mobile
             ? "relative flex h-full flex-col overflow-hidden bg-panel"
-            : "relative animate-window-open flex h-[min(82vh,46rem)] flex-col overflow-hidden rounded-lg border border-neon/20 bg-panel"
+            : "relative flex h-[min(82vh,46rem)] flex-col overflow-hidden rounded-lg border border-neon/20 bg-panel"
         }
         ref={focusRef}
         tabIndex={0}
@@ -727,7 +650,7 @@ const ProjectWindow = ({ project, minimized, mobile = false, onMinimize, onClose
             if (!quizLocked) advance();
           }}
         >
-          <div key={index} className={`h-full ${dir === "fwd" ? "animate-page-in" : "animate-page-in-back"}`}>
+          <div key={index} className="h-full">
             <PageBody page={page} pageIndex={index} quizChoice={quizChoice} onPick={setQuizChoice} />
           </div>
         </div>

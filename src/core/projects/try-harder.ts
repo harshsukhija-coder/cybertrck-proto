@@ -97,590 +97,710 @@ if __name__ == "__main__":
         print("\\nStopping...")
 `;
 
-export const COMMANDS_CHEATSHEET = `# try harder firewall · command list
+
+export const COMMANDS_CHEATSHEET = `# try harder firewall · command + reading list
 > lab only · only test machines you own
 
 ## who’s who
-- **Target** — your cloud server (example IP: 167.99.10.42)
-- **Attacker** — your second machine used for practice scans (example: 167.99.10.117)
+- **Target** — your cloud VPS (example: 167.99.10.42)
+- **Attacker** — your second machine for practice scans (example: 167.99.10.117)
 
-## on Target · see your address and open doors
+## rent a VPS (starter picks)
+- DigitalOcean Droplets — https://docs.digitalocean.com/products/droplets/
+- Linode / Akamai — https://www.linode.com/docs/products/compute/compute-instances/
+- Hetzner Cloud — https://docs.hetzner.com/cloud/
+- AWS EC2 (steeper) — https://docs.aws.amazon.com/ec2/
+
+## further reading
+- TCP 3-way handshake — https://developer.mozilla.org/en-US/docs/Glossary/TCP
+- How Linux netfilter/iptables works — https://www.netfilter.org/documentation/
+- nmap port scanning basics — https://nmap.org/book/man-port-scanning-basics.html
+- DigitalOcean: secure your droplet — https://docs.digitalocean.com/products/droplets/how-to/add-firewalls/
+
+## on Target · identity
 \`\`\`bash
 hostname
 ip -br a
 ss -tuln | head
 \`\`\`
 
-## on Target · watch knocks arrive
+## on Target · watch SYN knocks
 \`\`\`bash
-tcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0' -n
+tcpdump -i eth0 -n 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'
 \`\`\`
 
-## on Target · install the script’s library
+## on Target · install + run defense
 \`\`\`bash
 apt-get update && apt-get install -y python3-venv python3-pip
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install scapy
-\`\`\`
-
-## on Target · start the defense (needs admin)
-\`\`\`bash
 sudo .venv/bin/python firewall_try_harder.py
 \`\`\`
 
-## on Attacker · scan Target’s common doors
+## on Attacker · scan + read payload
 \`\`\`bash
-nmap -p21,22,25,80,443 167.99.10.42
+nmap -p21,22,25,80,443 -sS 167.99.10.42
+tcpdump -i eth0 -n -A host 167.99.10.42 and tcp -c 30
 \`\`\`
 
-## on Attacker · read the “try harder” text on the wire
-\`\`\`bash
-tcpdump -i eth0 host 167.99.10.42 -A -c 40
-\`\`\`
-
-## on Target · see who is blocked
+## block / unblock
 \`\`\`bash
 iptables -L INPUT -n -v | head
-\`\`\`
-
-## on Attacker · scan again after a block
-\`\`\`bash
-nmap -Pn -p22,80 167.99.10.42
-\`\`\`
-
-## reset the lab block
-\`\`\`bash
 iptables -D INPUT -s 167.99.10.117 -j DROP
 \`\`\`
-
-## plain English
-1. strangers knock on numbered doors (ports)
-2. for the first few knocks: pretend doors are open + send “try harder”
-3. after too many knocks from one IP: block that IP for a while
 `;
 
 const pages: ProjectPage[] = [
   {
     kind: "cover",
-    kicker: "live lab · happening on a real public IP",
+    kicker: "from zero · VPS → packets → defense",
     title: "try harder firewall",
     tagline:
-      "a brand-new cloud server goes online. within minutes, strangers knock on its ports. we watch the traffic, run the same commands you’d run, then build one small defense — and leave with a complete playbook.",
+      "we start at the basics: what a VPS is, how a request reaches Linux, how SYN / SYN-ACK / ACK really work — then we build a small lab defense you can reproduce.",
   },
 
-  // ── CAST ──────────────────────────────────────────────
+  // ── mission ───────────────────────────────────────────
   {
     kind: "comic",
-    act: "cast",
-    headline: "who’s who",
+    act: "mission",
+    headline: "characters · goals · how we win",
+    strips: [
+      {
+        type: "narrator",
+        text: "before any terminal: know the cast, what each wants, and the plan. that is the map for everything that follows.",
+      },
+      {
+        type: "goals",
+        rows: [
+          {
+            who: "narrator",
+            goal: "make the tech readable — VPS, OS, handshake, firewall — so nothing feels like magic.",
+            plan: "explain → quiz → interactive packet lab → live samples → script → one-stop playbook.",
+          },
+          {
+            who: "target",
+            goal: "stay online for real users on a rented cloud server, without becoming an easy scan target.",
+            plan: "run website + SSH; later confuse scanners; block IPs that knock too much.",
+          },
+          {
+            who: "attacker",
+            goal: "practice scanning {yellow:our own} Target so we can see what bots see.",
+            plan: "use nmap + tcpdump on a second machine we own. never scan strangers.",
+          },
+          {
+            who: "bot",
+            goal: "find weak / interesting servers on the public internet as fast as possible.",
+            plan: "auto-knock common ports on every new IP. not our friend.",
+          },
+        ],
+      },
+      {
+        type: "fix",
+        title: "success looks like",
+        text: "you can explain a VPS, the OS path of a packet, the three handshake steps without mixing names, play the packet lab, run sample commands, and download a working lab script.",
+      },
+    ],
+  },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "In this project, what is Attacker’s goal?",
+    options: [
+      "hack random companies on the internet",
+      "practice scanning a machine we own, to learn",
+      "delete Target’s website",
+      "sell Target’s IP address",
+    ],
+    answer: 1,
+    roastWrong: "Attacker is our lab scanner — not a criminal plot.",
+    explain: "Attacker = second machine {yellow:you own}. the point is learning what a scan looks like from both sides.",
+  },
+
+  // ── VPS basics ────────────────────────────────────────
+  {
+    kind: "comic",
+    act: "basics · VPS",
+    headline: "what is a VPS?",
     strips: [
       {
         type: "bubble",
-        who: "narrator",
-        text: "i’m the {yellow:narrator}. i translate terminals and packets into plain language after you see them.",
+        who: "target",
+        text: "i’m a {green:VPS} — Virtual Private Server. a slice of a real computer in a data center that acts like my own machine: CPU, RAM, disk, and a {cyan:public IP}.",
       },
       {
-        type: "bubble",
-        who: "target",
-        text: "i’m {green:Target} — your rented cloud server (DigitalOcean / AWS / any VPS). i run a website on port {green:80} and SSH login on port {green:22}.",
+        type: "narrator",
+        text: "compare: your laptop is private on home Wi‑Fi. a VPS is a computer that lives on the public internet 24/7. websites, APIs, game servers, and lab boxes are often VPSes.",
+      },
+      {
+        type: "decode",
+        text: "words you’ll hear: {yellow:droplet} (DigitalOcean), {yellow:instance} (AWS/Linode), {yellow:cloud VM}. same idea — rent a computer with a public address.",
+      },
+    ],
+  },
+  {
+    kind: "comic",
+    act: "basics · VPS",
+    headline: "how people rent one (real steps)",
+    strips: [
+      {
+        type: "narrator",
+        text: "typical flow (DigitalOcean / Linode / Hetzner are beginner-friendly): 1) create account 2) pick region near you 3) pick a small Linux image (Ubuntu LTS) 4) choose size (1 GB RAM is enough for this lab) 5) add your SSH key 6) create → copy the public IP.",
       },
       {
         type: "bubble",
         who: "attacker",
-        text: "i’m {red:Attacker} — your second machine. i scan Target on purpose so we can learn. lab only.",
-      },
-      {
-        type: "bubble",
-        who: "bot",
-        text: "we’re {orange:internet bots}. we don’t know you. new public IP? we knock common ports looking for easy wins.",
+        text: "for this project you ideally want {red:two} small VPS boxes — or one VPS (Target) plus your laptop (Attacker) if your network allows outbound scans to your own IP.",
       },
       {
         type: "boom",
-        title: "lab rule",
-        text: "Target + Attacker are {yellow:machines you own}. scanning strangers without permission is illegal.",
+        title: "money + safety",
+        text: "expect a few dollars/month for a tiny droplet. turn it off when done. {yellow:never} put real production secrets on a throwaway lab VPS.",
+      },
+      {
+        type: "links",
+        title: "resources · rent + harden",
+        items: [
+          {
+            label: "DigitalOcean Droplets docs",
+            href: "https://docs.digitalocean.com/products/droplets/",
+            note: " clearest beginner VPS docs",
+          },
+          {
+            label: "Hetzner Cloud docs",
+            href: "https://docs.hetzner.com/cloud/",
+            note: " popular EU cloud VMs",
+          },
+          {
+            label: "Secure a Droplet (DO)",
+            href: "https://docs.digitalocean.com/products/droplets/how-to/add-firewalls/",
+            note: " cloud firewall basics",
+          },
+          {
+            label: "SSH keys explained (DO)",
+            href: "https://docs.digitalocean.com/products/droplets/how-to/add-ssh-keys/",
+            note: " login without passwords",
+          },
+        ],
       },
     ],
   },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "What does a brand-new VPS usually get that your home laptop often does not?",
+    options: [
+      "a free pizza",
+      "a public IP address reachable from the internet",
+      "immunity to scanning",
+      "no operating system",
+    ],
+    answer: 1,
+    roastWrong: "the whole point of a VPS for websites is being reachable.",
+    explain: "a public IP is why bots find you minutes after create. that reachability is useful — and risky.",
+  },
 
-  // ── LIVE NOW ──────────────────────────────────────────
+  // ── OS + packet path ──────────────────────────────────
   {
     kind: "comic",
-    act: "live now",
-    headline: "this is happening right now",
+    act: "basics · OS",
+    headline: "a request reaches the VPS — what does the OS do?",
+    strips: [
+      {
+        type: "narrator",
+        text: "“OS” here means Linux on Target. the operating system owns the network stack: it receives bits from the network card, decides if a packet is allowed, and whether any app should see it.",
+      },
+      {
+        type: "path",
+        title: "one inbound packet’s journey",
+        steps: [
+          {
+            name: "NIC (network card)",
+            detail: "hardware receives the Ethernet frame from the internet / cloud network.",
+          },
+          {
+            name: "driver → kernel",
+            detail: "Linux pulls the packet into the kernel networking stack.",
+          },
+          {
+            name: "netfilter / firewall hooks",
+            detail: "rules (iptables/nftables, or cloud firewall) can {red:ACCEPT}, {red:DROP}, or {orange:REJECT} before an app ever wakes up.",
+          },
+          {
+            name: "socket lookup",
+            detail: "kernel checks: is any process {yellow:LISTEN}ing on this IP:port? if yes, queue the packet for that app (nginx, sshd, our script…).",
+          },
+          {
+            name: "application",
+            detail: "only now can the program read bytes (HTTP request, SSH, etc.). if nothing listens and firewall didn’t drop — kernel may reply RST for TCP.",
+          },
+        ],
+      },
+      {
+        type: "decode",
+        text: "key idea: {yellow:apps don’t catch packets first}. the OS does. firewalls sit in that OS path. that’s why {red:DROP} can make a port “invisible.”",
+      },
+    ],
+  },
+  {
+    kind: "comic",
+    act: "basics · OS",
+    headline: "when and how packets are dropped",
     strips: [
       {
         type: "bubble",
         who: "target",
-        text: "my public IP just went live: {cyan:167.99.10.42}. i expected quiet.",
+        text: "DROP means: “throw this packet in the trash.” no reply. the sender often waits, then gives up. nmap labels that {orange:filtered}.",
+      },
+      {
+        type: "narrator",
+        text: "common places a drop happens: 1) {yellow:cloud security group / cloud firewall} in front of the VPS 2) {yellow:iptables/nftables} on Linux 3) sometimes a provider DDoS layer. REJECT is different — it sends an explicit “no” (like ICMP unreachable or TCP RST).",
+      },
+      {
+        type: "run",
+        setup: "sample: add / list a DROP rule (lab only)",
+        term: {
+          title: "Target · iptables",
+          host: "root@vps:~#",
+          side: "target",
+          lines: [
+            {
+              command: "iptables -A INPUT -s 167.99.10.117 -j DROP",
+              output: "",
+              tone: "ok",
+            },
+            {
+              command: "iptables -L INPUT -n -v | head -5",
+              output: "Chain INPUT (policy ACCEPT)\n pkts bytes target prot opt in out source\n    0     0 {red:DROP}   all  --  *   *   167.99.10.117",
+              tone: "warn",
+            },
+          ],
+        },
+        decode:
+          "{yellow:-A INPUT} = append rule on inbound traffic. {yellow:-s} = source IP. {red:-j DROP} = action. packets matching this never become a friendly SYN-ACK.",
+      },
+      {
+        type: "links",
+        title: "further reading · firewalls",
+        items: [
+          {
+            label: "netfilter documentation",
+            href: "https://www.netfilter.org/documentation/",
+            note: " where iptables lives in Linux",
+          },
+          {
+            label: "iptables tutorial (frozentux)",
+            href: "https://www.frozentux.net/iptables-tutorial/iptables-tutorial.html",
+            note: " deep but classic",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "A TCP SYN hits the VPS and iptables DROP matches. What usually happens next?",
+    options: [
+      "nginx still sees the request",
+      "the kernel sends SYN-ACK automatically",
+      "the packet is discarded; sender gets no useful reply",
+      "the packet turns into UDP",
+    ],
+    answer: 2,
+    roastWrong: "DROP means trash — apps don’t get a turn.",
+    explain: "firewall hooks run in the OS path. DROP ends the journey early. that’s why scanners report filtered/silence.",
+  },
+
+  // ── handshake (clear naming) ──────────────────────────
+  {
+    kind: "comic",
+    act: "handshake",
+    headline: "three-way handshake — names that stick",
+    strips: [
+      {
+        type: "narrator",
+        text: "people write it many ways and it gets confusing. memorize {yellow:three steps}, not the slash spelling:",
+      },
+      {
+        type: "path",
+        title: "TCP handshake = 3 packets",
+        steps: [
+          {
+            name: "Step 1 — SYN (client → server)",
+            detail: "client knocks: “Want to sync a new connection on this port?” SYN = synchronize.",
+          },
+          {
+            name: "Step 2 — SYN-ACK (server → client)",
+            detail: "server answers: “Yes, I’m here, let’s sync.” This is {green:one packet} with two flags set: SYN and ACK. also written SYN+ACK — {pink:not} “ACK-SYN” as a separate second step name.",
+          },
+          {
+            name: "Step 3 — ACK (client → server)",
+            detail: "client confirms: “Got your answer.” Now both sides agree. connection is established.",
+          },
+        ],
+      },
+      {
+        type: "fix",
+        title: "naming trap",
+        text: "you may see “SYN, SYN-ACK, ACK” or “SYN, ACK-SYN, ACK.” same three packets. the middle one is always {yellow:server’s SYN combined with ACK} — one reply, two flags.",
+      },
+      {
+        type: "links",
+        title: "further reading · TCP",
+        items: [
+          {
+            label: "MDN: TCP glossary",
+            href: "https://developer.mozilla.org/en-US/docs/Glossary/TCP",
+            note: " short + clear",
+          },
+          {
+            label: "nmap port scanning basics",
+            href: "https://nmap.org/book/man-port-scanning-basics.html",
+            note: " how scanners interpret replies",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "What is the middle packet of a normal TCP handshake?",
+    options: [
+      "two separate packets: ACK then SYN",
+      "one packet from the server with SYN and ACK flags together (SYN-ACK)",
+      "only ACK from the client",
+      "a DROP from iptables",
+    ],
+    answer: 1,
+    roastWrong: "it’s one reply with two flags — SYN-ACK.",
+    explain: "Step 2 is a single server packet: SYN+ACK. Step 3 is the client’s ACK.",
+  },
+
+  // ── every packet (page that was confusing) ────────────
+  {
+    kind: "comic",
+    act: "every packet",
+    headline: "every packet · shown and explained",
+    strips: [
+      {
+        type: "narrator",
+        text: "stop guessing. below is a lab that lists {yellow:every packet} in the exchange — direction, flags, plain English, a sample wire line, and what a scanner thinks. start with mode ①.",
+      },
+      {
+        type: "playground",
+        title: "packet-by-packet lab",
+        hint: "All packets stay on screen. Tap a card to highlight it. Switch modes ①–④ to compare open / closed / DROP / fake.",
+      },
+      {
+        type: "decode",
+        text: "cheat sheet: {green:SYN+ACK} ⇒ open · {orange:RST} ⇒ closed · {red:no reply} ⇒ filtered · forged SYN+ACK ⇒ looks open but isn’t a real service.",
+      },
+    ],
+  },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "In the playground, which scenario makes nmap most likely to say “filtered”?",
+    options: ["normal handshake", "closed port RST", "firewall DROP (silence)", "fake SYN-ACK"],
+    answer: 2,
+    roastWrong: "filtered is the “no useful reply” bucket — that’s DROP/silence.",
+    explain: "DROP produces silence. scanners often map that to filtered.",
+  },
+
+  // ── cast reminder + live world ────────────────────────
+  {
+    kind: "comic",
+    act: "live world",
+    headline: "back to our story · bots find Target",
+    strips: [
+      {
+        type: "bubble",
+        who: "target",
+        text: "my VPS just got public IP {cyan:167.99.10.42}. website on :{green:80}, SSH on :{green:22}.",
       },
       {
         type: "bubble",
         who: "bot",
-        text: "found you. knocking {orange:22}, {orange:80}, {orange:443}, {orange:25}…",
+        text: "new IP on the internet? knocking common ports now.",
       },
       {
         type: "wire",
         from: "bot",
         to: "target",
         packets: [
-          { label: "TCP SYN :22", kind: "knock" },
-          { label: "TCP SYN :80", kind: "knock" },
-          { label: "TCP SYN :25", kind: "knock" },
+          { label: "SYN → :22", kind: "knock" },
+          { label: "SYN → :80", kind: "knock" },
+          { label: "SYN → :25", kind: "knock" },
         ],
-        note: "each label is a real packet type: {yellow:TCP SYN} = “is anyone listening on this port?” bots spray these at new IPs every day.",
+        note: "these are Step‑1 SYN knocks. if Target’s OS/app answers with SYN-ACK, bots mark that port interesting.",
       },
       {
         type: "narrator",
-        text: "this isn’t fiction. rent a droplet and check logs — you’ll see unknown IPs probing within minutes. they’re building a map of “which doors answered.”",
+        text: "this is why we rented a VPS in the first place for the lab — to watch real internet noise safely on {yellow:our} machine.",
       },
     ],
   },
 
-  // ── SAMPLE: Target identity ───────────────────────────
+  // ── sample terminals ──────────────────────────────────
   {
     kind: "comic",
-    act: "sample · Target",
-    headline: "Target checks itself (sample commands)",
+    act: "samples",
+    headline: "sample · Target looks at itself",
     strips: [
-      {
-        type: "bubble",
-        who: "target",
-        text: "first i confirm who i am on the network — address + which ports are listening.",
-      },
       {
         type: "run",
         term: {
-          title: "Target · live shell",
-          host: "root@shop-server:~#",
+          title: "Target",
+          host: "root@vps:~#",
           side: "target",
           lines: [
-            {
-              command: "hostname",
-              output: "shop-server",
-              tone: "ok",
-            },
+            { command: "hostname", output: "shop-server", tone: "ok" },
             {
               command: "ip -br a",
-              output: "lo               UNKNOWN        127.0.0.1/8\neth0             UP             {cyan:167.99.10.42/20}",
+              output: "lo    UNKNOWN  127.0.0.1/8\neth0  UP       {cyan:167.99.10.42/20}",
               tone: "info",
             },
             {
               command: "ss -tuln",
-              output:
-                "Netid  State   Local Address:Port\ntcp    LISTEN  0.0.0.0:{yellow:22}\ntcp    LISTEN  0.0.0.0:{yellow:80}",
+              output: "State   Local Address:Port\nLISTEN  0.0.0.0:{yellow:22}\nLISTEN  0.0.0.0:{yellow:80}",
               tone: "warn",
             },
           ],
         },
-        decode:
-          "{cyan:167.99.10.42} is the public address anyone can try to reach. {yellow:LISTEN :22} means SSH is accepting connections. {yellow:LISTEN :80} means a web server is accepting connections. no LISTEN on :25 → Target is {pink:not} running email — but bots will still knock there.",
+        decode: "{yellow:LISTEN} = an app asked the OS to accept connections on that port. no LISTEN on :25 → email isn’t running — bots still knock.",
       },
     ],
   },
-
-  // ── SAMPLE: watch knocks ──────────────────────────────
   {
     kind: "comic",
-    act: "sample · knocks",
-    headline: "watch knocks arrive (tcpdump sample)",
+    act: "samples",
+    headline: "sample · watch knocks with tcpdump",
     strips: [
-      {
-        type: "bubble",
-        who: "target",
-        text: "i’ll sniff for TCP SYN packets — the “knock” flag — without answering yet.",
-      },
       {
         type: "run",
         term: {
           title: "Target · tcpdump",
-          host: "root@shop-server:~#",
+          host: "root@vps:~#",
           side: "target",
           lines: [
             {
               command: "tcpdump -i eth0 -n 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'",
               output:
-                "15:02:01.102 IP {orange:185.220.101.44}.49152 > 167.99.10.42.{yellow:22}: Flags [{red:S}]\n15:02:01.340 IP {orange:45.33.32.156}.53012 > 167.99.10.42.{yellow:80}: Flags [{red:S}]\n15:02:02.011 IP {orange:89.248.165.77}.44123 > 167.99.10.42.{yellow:25}: Flags [{red:S}]",
+                "IP {orange:185.220.101.44}.49152 > 167.99.10.42.{yellow:22}: Flags [{red:S}]\nIP {orange:45.33.32.156}.53012 > 167.99.10.42.{yellow:80}: Flags [{red:S}]\nIP {orange:89.248.165.77}.44123 > 167.99.10.42.{yellow:25}: Flags [{red:S}]",
               tone: "warn",
-              pause: 280,
+              pause: 260,
             },
           ],
         },
-        decode:
-          "filter meaning: show TCP packets where {red:SYN} is set and {yellow:ACK} is not — pure connection attempts (knocks), not replies. each line = one stranger asking “is port N open?” source IPs ({orange:185…}, {orange:45…}, {orange:89…}) are not Attacker — Attacker hasn’t scanned yet.",
-      },
-      {
-        type: "narrator",
-        text: "technical note: a full TCP handshake is SYN → SYN-ACK → ACK. scanners often only need your {green:SYN-ACK} (“i’m here”) to mark the port {green:open}. silence or RST usually means closed/filtered.",
-      },
-    ],
-  },
-
-  // ── PACKET TECH ───────────────────────────────────────
-  {
-    kind: "comic",
-    act: "packets",
-    headline: "packets explained clearly",
-    strips: [
-      {
-        type: "narrator",
-        text: "imagine Target as an apartment building. a {yellow:port} is a numbered door. a {yellow:packet} is a tiny envelope with from/to addresses + which door + flags (like SYN).",
-      },
-      {
-        type: "wire",
-        from: "attacker",
-        to: "target",
-        packets: [
-          { label: "① SYN knock", kind: "knock" },
-          { label: "② SYN-ACK home", kind: "answer" },
-          { label: "③ ACK ok", kind: "data" },
-        ],
-        note: "① client: “can we talk on this port?” ② server: “yes, i’m listening.” ③ client: “cool.” scanners care most about ②.",
-      },
-      {
-        type: "decode",
-        text: "nmap status cheat-sheet: {green:open} = got SYN-ACK (something answered). {orange:closed} = got RST (door says no). {orange:filtered} = no useful reply (firewall dropped it, or path blocked). our later defense turns noisy scanners into {orange:filtered}.",
+        decode: "Flags [S] = SYN only = handshake Step 1. filter excludes packets that already have ACK — so we see knocks, not replies.",
       },
     ],
   },
   {
-    kind: "choice",
-    act: "check",
-    prompt: "A scanner sends SYN. The server replies SYN-ACK. What does the scanner usually record?",
-    options: ["port closed", "port open", "DNS failed", "server wants coffee"],
-    answer: 1,
-    roastWrong: "SYN-ACK is an answer — that maps to open.",
-    explain:
-      "SYN-ACK is the technical “i’m here.” most port scanners treat that as {green:open}. that’s why faking SYN-ACKs can poison a scan map.",
-  },
-
-  // ── SAMPLE: Attacker scan ─────────────────────────────
-  {
     kind: "comic",
-    act: "sample · Attacker",
-    headline: "Attacker scans (sample nmap output)",
+    act: "samples",
+    headline: "sample · Attacker nmap (before defense)",
     strips: [
-      {
-        type: "bubble",
-        who: "attacker",
-        text: "i’m on {red:167.99.10.117}. i’ll scan common ports on Target the same way a curious stranger might — on our lab only.",
-      },
       {
         type: "run",
         term: {
           title: "Attacker · nmap",
-          host: "root@lab-scanner:~#",
+          host: "root@lab:~#",
           side: "attacker",
           lines: [
             {
               command: "nmap -p21,22,25,80,443 -sS 167.99.10.42",
               output:
-                "Starting Nmap 7.94\nNmap scan report for 167.99.10.42\nPORT    STATE    SERVICE\n21/tcp  {orange:closed}   ftp\n22/tcp  {green:open}     ssh\n25/tcp  {orange:closed}   smtp\n80/tcp  {green:open}     http\n443/tcp {orange:closed}   https\n\nNmap done: 1 IP address (1 host up)",
+                "PORT    STATE    SERVICE\n21/tcp  {orange:closed}   ftp\n22/tcp  {green:open}     ssh\n25/tcp  {orange:closed}   smtp\n80/tcp  {green:open}     http\n443/tcp {orange:closed}   https",
               tone: "warn",
-              pause: 300,
+              pause: 280,
             },
           ],
         },
-        decode:
-          "{yellow:-p21,22,25,80,443} = only check these doors. {yellow:-sS} = SYN scan (send SYN, watch for SYN-ACK/RST; often needs root). sample result: SSH + HTTP really answer; FTP/SMTP/HTTPS do not — yet. after we run the defense script, this report will look very different.",
+        decode: "{yellow:-sS} = SYN scan (send Step 1, watch for Step 2). open ≈ got SYN-ACK. closed ≈ got RST. this is the honest map before we lie.",
       },
     ],
   },
+  {
+    kind: "choice",
+    act: "quiz",
+    prompt: "nmap shows 22/tcp open. What packet did Target most likely send back?",
+    options: ["only ACK", "SYN-ACK (Step 2)", "DROP", "UDP hello"],
+    answer: 1,
+    roastWrong: "open usually means the scanner saw a SYN-ACK.",
+    explain: "Step 2 SYN-ACK is what makes a port look open to a SYN scan.",
+  },
 
-  // ── THE PLAN (before script) ──────────────────────────
+  // ── plan + demo ───────────────────────────────────────
   {
     kind: "comic",
     act: "plan",
-    headline: "defense idea — before we open the script",
+    headline: "how we achieve Target’s goal",
     strips: [
       {
-        type: "bubble",
-        who: "target",
-        text: "plan: listen for SYN knocks → for the first few from an IP, send fake SYN-ACK + a data packet saying {pink:try harder} → after more than 5 knocks from the same IP, {red:iptables DROP} that IP for ~10 minutes.",
-      },
-      {
-        type: "narrator",
-        text: "why it helps in the real world: scanners trust answers. fake answers waste their time and muddy “what’s really open.” the block is the serious part — stop the noisy IP from reaching real services.",
-      },
-      {
-        type: "tool",
-        name: "nmap",
-        who: "attacker",
-        does: "sends SYNs, classifies ports open/closed/filtered, fingerprints services.",
-        why: "Attacker (and bots) use it — or tools like it — to build a door map.",
-      },
-      {
-        type: "tool",
-        name: "tcpdump",
-        who: "attacker",
-        does: "captures packets; {yellow:-A} prints payload as ASCII so you can read strings like “try harder”.",
-        why: "proof on the wire, not just a log line.",
+        type: "goals",
+        rows: [
+          {
+            who: "target",
+            goal: "confuse scanners + stop noisy IPs",
+            plan: "for the first few SYNs from an IP: forge SYN-ACK + send “try harder”. after >5: iptables DROP that IP for ~10 minutes.",
+          },
+          {
+            who: "attacker",
+            goal: "prove the trap works",
+            plan: "scan again, read “try harder” with tcpdump -A, then see filtered after the block.",
+          },
+        ],
       },
       {
         type: "tool",
         name: "scapy",
         who: "target",
-        does: "Python library to sniff and craft packets (SYN-ACK, payload, etc.).",
-        why: "lets the script act like a fake receptionist on many ports.",
+        does: "sniff SYNs and craft fake SYN-ACK + payload packets from Python.",
+        why: "lets Target role-play “open” on ports with no real service.",
       },
       {
         type: "tool",
         name: "iptables",
         who: "target",
-        does: "Linux netfilter firewall. {red:-j DROP} discards matching packets.",
-        why: "the bouncer after the jokes.",
+        does: "DROP matching source IPs in the OS firewall path.",
+        why: "serious stop after the joke.",
       },
     ],
   },
-
-  // ── SETUP SAMPLES ─────────────────────────────────────
   {
     kind: "comic",
     act: "setup",
-    headline: "install path (sample errors + fixes)",
+    headline: "sample · install path (errors included)",
     strips: [
-      {
-        type: "bubble",
-        who: "target",
-        text: "real first runs fail. here’s what you’ll actually see.",
-      },
       {
         type: "run",
         term: {
-          title: "Target · first run",
-          host: "root@shop-server:~#",
+          title: "Target",
+          host: "root@vps:~#",
           side: "target",
           lines: [
             {
               command: "python3 firewall_try_harder.py",
-              output: "Traceback (most recent call last):\n  ...\nModuleNotFoundError: No module named '{yellow:scapy}'",
+              output: "ModuleNotFoundError: No module named '{yellow:scapy}'",
               tone: "err",
             },
-          ],
-        },
-        decode: "the script imports scapy. no library → crash before it can sniff anything.",
-      },
-      {
-        type: "run",
-        setup: "fix: private toolbox (venv) + install scapy",
-        term: {
-          title: "Target · venv",
-          host: "root@shop-server:~#",
-          side: "target",
-          lines: [
             {
-              command: "apt-get update && apt-get install -y python3-venv python3-pip",
-              output: "python3-venv is already the newest version.\npython3-pip is already the newest version.",
-              tone: "dim",
-            },
-            {
-              command: "python3 -m venv .venv && source .venv/bin/activate",
-              output: "({cyan:.venv}) ready",
+              command: "python3 -m venv .venv && source .venv/bin/activate && pip install scapy",
+              output: "({cyan:.venv}) ready\nSuccessfully installed {green:scapy}",
               tone: "ok",
+              pause: 220,
             },
             {
-              command: "pip install scapy",
-              output: "Collecting scapy\nInstalling collected packages: scapy\nSuccessfully installed {green:scapy-2.5.0}",
+              command: "sudo .venv/bin/python firewall_try_harder.py",
+              output: "listening for TCP SYNs…\nblock after >5 knocks / IP",
               tone: "ok",
               pause: 220,
             },
           ],
         },
-        decode: "({cyan:.venv}) means packages install into ./.venv, not system Python. keeps the server clean.",
-      },
-      {
-        type: "run",
-        setup: "second real error: firewall changes need root",
-        term: {
-          title: "Target · permission",
-          host: "(.venv) user@shop-server:~$",
-          side: "target",
-          lines: [
-            {
-              command: "python firewall_try_harder.py",
-              output: "Scan detected…\nBlocking IP: 185.220.101.44\n{red:Permission denied} · iptables needs admin",
-              tone: "err",
-            },
-          ],
-        },
-        decode: "sniffing/crafting can work in some setups without root; editing {yellow:iptables} almost never does. use sudo for the lab process.",
-      },
-      {
-        type: "run",
-        term: {
-          title: "Target · live defense",
-          host: "root@shop-server:~#",
-          side: "target",
-          lines: [
-            {
-              command: "sudo .venv/bin/python firewall_try_harder.py",
-              output: "listening for TCP SYNs on eth0…\nready · block after >5 knocks / IP · duration 10 min",
-              tone: "ok",
-              pause: 240,
-            },
-          ],
-        },
-        decode: "defense is live. next we provoke it with Attacker and show sample responses.",
+        decode: "venv isolates packages. sudo is needed because iptables DROP requires admin. now the defense process is in the path of knocks (via sniffing) and can also edit firewall rules.",
       },
     ],
   },
-
-  // ── LIVE DEMO WITH SAMPLES ────────────────────────────
   {
     kind: "comic",
     act: "live demo",
-    headline: "live: fake answer + try harder",
+    headline: "live · fake open + try harder",
     strips: [
       {
-        type: "bubble",
-        who: "bot",
-        text: "knocking SMTP port {orange:25} even though Target never installed mail.",
-      },
-      {
         type: "duel",
-        setup: "script is running on Target. bot probes :25.",
+        setup: "bot knocks SMTP :25 — Target has no mail service.",
         target: {
-          title: "Target · script log",
+          title: "Target · script",
           host: "script#",
           side: "target",
           lines: [
             {
-              output:
-                "Scan detected on port {yellow:25} from 89.248.165.77\nSent SYN-ACK to 89.248.165.77 on port 25\nSent data packet with message '{pink:try harder}'",
+              output: "SYN on :{yellow:25} from 89.248.165.77\nsent forged {green:SYN-ACK}\nsent payload '{pink:try harder}'",
               tone: "ok",
-              pause: 220,
+              pause: 200,
             },
           ],
         },
         attacker: {
-          title: "bot · probe",
+          title: "bot",
           host: "bot#",
           side: "bot",
-          lines: [
-            {
-              command: "nmap -p25 -sS 167.99.10.42",
-              output: "PORT   STATE SERVICE\n25/tcp {green:open}  smtp",
-              tone: "warn",
-            },
-          ],
+          lines: [{ command: "nmap -p25 -sS 167.99.10.42", output: "25/tcp {green:open} smtp", tone: "warn" }],
         },
         wire: {
           from: "bot",
           to: "target",
           packets: [
             { label: "SYN :25", kind: "knock" },
-            { label: "SYN-ACK", kind: "answer" },
+            { label: "forged SYN-ACK", kind: "answer" },
             { label: "try harder", kind: "roast" },
           ],
         },
-        decode:
-          "Target has {pink:no} SMTP service. the script forged a SYN-ACK anyway, so nmap records {green:open}. then it sent a TCP packet whose payload is the ASCII string try harder — you’ll see that next with tcpdump.",
+        decode: "compare to playground mode “try-harder fake open”. nmap’s open is a lie — but a useful one for wasting scanners.",
       },
     ],
   },
   {
     kind: "comic",
     act: "live demo",
-    headline: "sample: Attacker’s full scan after the trap",
+    headline: "sample · nmap after the trap",
     strips: [
-      {
-        type: "bubble",
-        who: "attacker",
-        text: "same nmap as before — but Target’s script is answering now.",
-      },
       {
         type: "run",
         term: {
-          title: "Attacker · nmap again",
-          host: "root@lab-scanner:~#",
+          title: "Attacker",
+          host: "root@lab:~#",
           side: "attacker",
           lines: [
             {
               command: "nmap -p21,22,25,80,443 -sS 167.99.10.42",
-              output:
-                "PORT    STATE SERVICE\n21/tcp  {green:open}  ftp\n22/tcp  {green:open}  ssh\n25/tcp  {green:open}  smtp\n80/tcp  {green:open}  http\n443/tcp {green:open}  https\n\n{orange:WARNING}: every probed port answered SYN-ACK",
-              tone: "warn",
-              pause: 300,
-            },
-          ],
-        },
-        decode:
-          "compare to the earlier sample: FTP/SMTP/HTTPS flipped from closed → {green:open}. only some of those are real services. the scan map is now {yellow:untrustworthy} — which is the point of the trap.",
-      },
-    ],
-  },
-  {
-    kind: "comic",
-    act: "live demo",
-    headline: "sample: prove the message on the wire",
-    strips: [
-      {
-        type: "bubble",
-        who: "attacker",
-        text: "tcpdump -A prints packet payloads as text. if Target really sent “try harder”, we’ll see it.",
-      },
-      {
-        type: "run",
-        term: {
-          title: "Attacker · tcpdump -A",
-          host: "root@lab-scanner:~#",
-          side: "attacker",
-          lines: [
-            {
-              command: "tcpdump -i eth0 -n -A host 167.99.10.42 and tcp -c 30",
-              output:
-                "15:10:44.221 IP 167.99.10.42.25 > 167.99.10.117.44123: Flags [P.]\n.........E..try harder\n15:10:44.221 IP 167.99.10.42.22 > 167.99.10.117.53001: Flags [P.]\n.........E..{pink:try harder}",
+              output: "21 {green:open}\n22 {green:open}\n25 {green:open}\n80 {green:open}\n443 {green:open}",
               tone: "warn",
               pause: 260,
             },
+            {
+              command: "tcpdump -A host 167.99.10.42 -c 12",
+              output: ".......{pink:try harder}",
+              tone: "info",
+              pause: 220,
+            },
           ],
         },
-        decode:
-          "{yellow:-A} = ASCII dump of payload. the string is inside a TCP segment from Target → Attacker. it’s not a fake log — it’s bytes on the network. Flags [P.] means PSH+ACK (data push).",
+        decode: "map is polluted vs the earlier honest scan. tcpdump -A shows the payload string on the wire.",
       },
     ],
   },
   {
     kind: "comic",
     act: "live demo",
-    headline: "sample: knock #6 → iptables DROP",
+    headline: "sample · too many knocks → DROP",
     strips: [
-      {
-        type: "bubble",
-        who: "target",
-        text: "Attacker kept knocking. count crossed 5. adding a DROP rule.",
-      },
       {
         type: "duel",
         target: {
-          title: "Target · script + iptables",
-          host: "root@shop-server:~#",
+          title: "Target",
+          host: "script#",
           side: "target",
           lines: [
             {
-              output:
-                "IP {red:167.99.10.117} exceeded scan limit\nBlocking IP: 167.99.10.117\nwill unblock at 2026-11-18 15:20:44",
-              tone: "ok",
-              pause: 200,
-            },
-            {
-              command: "iptables -L INPUT -n -v | head -5",
-              output:
-                "Chain INPUT (policy ACCEPT)\n pkts bytes target  prot opt in out source\n   12   720 {red:DROP}    all  --  *  *   {red:167.99.10.117}",
+              output: "count > 5 for {red:167.99.10.117}\niptables {red:DROP} added",
               tone: "ok",
             },
           ],
         },
         attacker: {
-          title: "Attacker · after block",
-          host: "root@lab-scanner:~#",
+          title: "Attacker",
+          host: "root@lab:~#",
           side: "attacker",
           lines: [
             {
               command: "nmap -Pn -p22,80 167.99.10.42",
-              output: "PORT   STATE    SERVICE\n22/tcp {orange:filtered} ssh\n80/tcp {orange:filtered} http",
+              output: "22/tcp {orange:filtered}\n80/tcp {orange:filtered}",
               tone: "err",
-              pause: 280,
+              pause: 260,
             },
           ],
         },
@@ -692,152 +812,92 @@ const pages: ProjectPage[] = [
             { label: "DROP", kind: "block" },
           ],
         },
-        decode:
-          "{red:DROP} = kernel throws the packet away; no RST, no SYN-ACK. Attacker’s nmap therefore says {orange:filtered}. {yellow:-Pn} skips host-discovery pings (useful when ICMP is ignored).",
+        decode: "OS firewall now discards Attacker’s packets early in the path you learned. playground mode “firewall DROP” is this outcome.",
       },
-
     ],
   },
   {
-    kind: "comic",
-    act: "cleanup",
-    headline: "sample: reset the lab block",
-    strips: [
-      {
-        type: "run",
-        term: {
-          title: "Target · unblock",
-          host: "root@shop-server:~#",
-          side: "target",
-          lines: [
-            {
-              command: "iptables -D INPUT -s 167.99.10.117 -j DROP",
-              output: "",
-              tone: "ok",
-            },
-            {
-              command: "iptables -L INPUT -n | grep 167.99.10.117 || echo clean",
-              output: "{green:clean}",
-              tone: "ok",
-            },
-          ],
-        },
-        decode: "{yellow:-D} deletes that one rule. prefer surgical deletes over {pink:iptables -F} on anything that isn’t a throwaway lab box.",
-      },
+    kind: "choice",
+    act: "quiz",
+    prompt: "After DROP, Attacker’s new SYNs are discarded. Where in the journey does that happen?",
+    options: [
+      "inside nginx after reading HTTP",
+      "in the OS firewall / netfilter path (before the app)",
+      "only in the bot’s imagination",
+      "in DNS",
     ],
+    answer: 1,
+    roastWrong: "DROP is an OS/netfilter decision — apps never see it.",
+    explain: "remember the path: NIC → kernel → firewall hooks → (maybe) socket. DROP cuts in at the firewall hooks.",
   },
 
-  // ── SCRIPT WALKTHROUGH (after live) ───────────────────
+  // ── script after live ─────────────────────────────────
   {
     kind: "comic",
     act: "script",
-    headline: "now the script — important parts",
+    headline: "script · important parts (after you’ve seen it live)",
     strips: [
       {
         type: "narrator",
-        text: "you’ve seen the behavior live. here’s what {yellow:firewall_try_harder.py} is doing under the hood — the pieces that matter.",
+        text: "now the code matches behavior you already watched.",
       },
       {
         type: "codebit",
-        title: "1 · track knocks per IP",
-        code: `scan_tracker = defaultdict(lambda: {"count": 0, "timestamp": None})
-BLOCK_DURATION = timedelta(minutes=10)
-
-# each SYN from an IP:
-scan_tracker[src_ip]["count"] += 1
-scan_tracker[src_ip]["timestamp"] = datetime.now()`,
-        decode: "a dictionary keyed by source IP. count how many SYN knocks you’ve seen. after 10 minutes of quiet, the sample script resets that IP’s count.",
-      },
-    ],
-  },
-  {
-    kind: "comic",
-    act: "script",
-    headline: "script · fake SYN-ACK + payload",
-    strips: [
-      {
-        type: "codebit",
-        title: "2 · lie “i’m home” + send try harder",
-        code: `syn_ack = (
-  IP(dst=src_ip, src=packet[IP].dst) /
-  TCP(sport=port, dport=src_port, flags="SA",
-      seq=100, ack=packet[TCP].seq + 1)
-)
-send(syn_ack, verbose=0)
-
-data_packet = (
-  IP(dst=src_ip, src=packet[IP].dst) /
-  TCP(sport=port, dport=src_port, flags="PA",
-      seq=101, ack=packet[TCP].seq + 1) /
-  Raw(load="try harder")
-)
-send(data_packet, verbose=0)`,
-        decode:
-          "scapy builds packets in layers: {yellow:IP} / {yellow:TCP} / optional {yellow:Raw}. flags {green:SA} = SYN+ACK (fake open). flags {green:PA} = PSH+ACK with payload bytes {pink:try harder}. {yellow:sport=port} makes it look like the service port is talking.",
-      },
-    ],
-  },
-  {
-    kind: "comic",
-    act: "script",
-    headline: "script · block with iptables",
-    strips: [
-      {
-        type: "codebit",
-        title: "3 · DROP after >5 knocks",
-        code: `if scan_tracker[src_ip]["count"] > 5:
-  subprocess.run(
-    ["sudo", "iptables", "-A", "INPUT",
-     "-s", ip, "-j", "DROP"],
-    check=True
-  )
-  # schedule unblock ~10 minutes later
-  return  # stop faking answers for this knock`,
-        decode:
-          "{yellow:-A INPUT} appends a rule on inbound traffic. {yellow:-s ip} matches that source. {red:-j DROP} discards. the script also remembers an unblock time and later runs {yellow:iptables -D} to remove the rule.",
+        title: "count SYNs per IP",
+        code: `scan_tracker[src_ip]["count"] += 1
+if scan_tracker[src_ip]["count"] > 5:
+    block_ip(src_ip)   # iptables -A INPUT -s ip -j DROP
+    return`,
+        decode: "goal wiring: too much knocking → OS DROP.",
       },
       {
         type: "codebit",
-        title: "4 · listen forever",
-        code: `sniff(filter="tcp", prn=handle_packet)
-# prn=callback runs handle_packet for each TCP packet`,
-        decode: "scapy’s sniff loop is the heart of the process. filter {yellow:tcp} keeps noise down; {yellow:handle_packet} only acts when TCP flags == SYN (a fresh knock).",
+        title: "forge Step 2 + payload",
+        code: `syn_ack = IP(...)/TCP(..., flags="SA", ...)
+send(syn_ack)
+send(IP(...)/TCP(..., flags="PA", ...)/Raw(load="try harder"))`,
+        decode: "flags SA = SYN-ACK (handshake Step 2 forged). PA = push data including the text try harder.",
+      },
+      {
+        type: "codebit",
+        title: "listen",
+        code: `sniff(filter="tcp", prn=handle_packet)`,
+        decode: "scapy asks the OS for copies of TCP packets and calls your function — that’s how the script “hears” knocks.",
       },
       {
         type: "fix",
-        title: "limits (read this)",
-        text: "this is a {yellow:teaching} firewall: it can confuse scanners and rate-limit SYNs, but it is not a full IDS/IPS. run only on lab boxes. production needs layered controls (cloud SG, fail2ban, real firewall policy, patching).",
+        title: "limits",
+        text: "teaching tool, not a full production firewall. use cloud SG + real hardening too. lab machines only.",
       },
     ],
   },
 
-  // ── ONE-STOP CONCLUSION ───────────────────────────────
+  // ── conclude ──────────────────────────────────────────
   {
     kind: "choice",
     act: "final",
-    prompt: "What is the one-stop pattern this project teaches?",
+    prompt: "What is the full learning path this project was built around?",
     options: [
-      "only send jokes forever",
-      "watch real knocks → understand packets → trap with fake answers → block noisy IPs → know the script",
-      "turn the server off and hope",
-      "nmap blocks people automatically",
+      "memes first, commands never",
+      "VPS basics → OS/DROP → clear handshake → interactive lab → samples → script → playbook",
+      "only read iptables man pages",
+      "skip Target and only use bots",
     ],
     answer: 1,
-    roastWrong: "the full loop is observe → understand → confuse → block → own the code.",
-    explain:
-      "one-stop solution: see live traffic, run the sample commands, understand SYN/SYN-ACK/DROP, then keep the script + cheatsheet so you can reproduce the lab.",
+    roastWrong: "we started from renting a VPS and ended with a reproducible playbook.",
+    explain: "that path is the one-stop solution: concepts, interaction, practice samples, then code.",
   },
   {
     kind: "loot",
     title: "one-stop solution",
     outro:
-      "you now have the full loop in one place: cast roles, live “it’s happening now,” sample commands with real-looking responses, packet meaning, the defense behavior, and the script’s important parts.",
+      "you met the cast and goals, learned what a VPS is and how to rent one, followed a packet through Linux, fixed the SYN / SYN-ACK / ACK confusion, played the packet lab, ran sample commands, then read the script that implements the trap.",
     bullets: [
-      "{green:observe} — tcpdump SYN knocks on a new public IP (bots arrive fast)",
-      "{yellow:understand} — open = SYN-ACK · filtered ≈ DROP · ports are doors",
-      "{pink:trap} — scapy fakes SYN-ACK + “try harder” to poison scan maps",
-      "{red:block} — after >5 knocks/IP, iptables DROP for ~10 minutes",
-      "{cyan:reproduce} — download commands.md + firewall_try_harder.py · lab machines only",
+      "{green:characters} — Target protects · Attacker practices on owned kit · bots hunt · narrator translates",
+      "{yellow:VPS} — rented public computer; resources linked for DO / Hetzner / hardening",
+      "{cyan:OS path} — NIC → kernel → firewall hooks → socket → app; DROP dies at firewall",
+      "{pink:handshake} — 1 SYN · 2 SYN-ACK (one packet, two flags) · 3 ACK",
+      "{red:defense} — fake Step 2 + try harder → then iptables DROP · download commands + script",
     ],
     commandsFile: { name: "offtrck-try-harder-commands.md", text: COMMANDS_CHEATSHEET },
     scriptFile: { name: "firewall_try_harder.py", text: FIREWALL_TRY_HARDER_PY },
@@ -847,8 +907,8 @@ send(data_packet, verbose=0)`,
 export const tryHarderProject: Project = {
   id: "try-harder",
   title: "try harder firewall",
-  badge: "one-stop lab",
-  blurb: "live knocks → sample terminals → packets → script → playbook",
+  badge: "VPS · packets · lab",
+  blurb: "basics → handshake lab → samples → script playbook",
   Icon: TryHarderIcon,
   pages,
 };
