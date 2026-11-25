@@ -1,185 +1,228 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type CSSProperties, type FormEvent, type InputHTMLAttributes } from "react";
 import loginWallpaper from "../assets/backgrounds/login-wallpaper.jpg";
+import { ChapterCover } from "../courses/chapter-cover";
+import { useGem } from "../courses/gems";
+import { networkingCourse } from "../courses/networking";
 import { OfftrckMark } from "../icons/OfftrckMark";
-import { useIsMobile, useKeyboardInset } from "./use-media";
 
-const WELCOME_DELAY_MS = 750;
+export type Space = "feed" | "desktop";
 
 type Mode = "login" | "signup";
 
-type Step = { key: string; prompt: string; secret?: boolean };
+const chapters = networkingCourse.chapters;
 
-const steps: Record<Mode, Step[]> = {
-  login: [
-    { key: "username", prompt: "login:" },
-    { key: "password", prompt: "password:", secret: true },
-  ],
-  signup: [
-    { key: "username", prompt: "username:" },
-    { key: "email", prompt: "email:" },
-    { key: "password", prompt: "password:", secret: true },
-  ],
-};
+/** Covers floating behind the form, with their resting tilt */
+const COLLAGE = [
+  { index: 5, className: "left-[2%] top-[10%] w-44 rotate-[-9deg]" },
+  { index: 0, className: "left-[34%] top-[2%] w-52 rotate-[4deg]" },
+  { index: 6, className: "right-0 top-[26%] w-44 rotate-[11deg]" },
+  { index: 3, className: "left-[6%] top-[56%] w-40 rotate-[7deg]" },
+  { index: 4, className: "left-[36%] top-[54%] w-52 rotate-[-5deg]" },
+];
 
-const LoginScreen = ({ onLogin }: { onLogin: (username: string) => void }) => {
-  const isMobile = useIsMobile();
-  const keyboardInset = useKeyboardInset();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const welcomeTimer = useRef<number>(undefined);
+const Field = ({
+  label,
+  ...input
+}: { label: string } & InputHTMLAttributes<HTMLInputElement>) => (
+  <label className="block">
+    <span className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{label}</span>
+    <input
+      {...input}
+      autoCapitalize="off"
+      autoCorrect="off"
+      spellCheck={false}
+      className="mt-1.5 w-full rounded-2xl border border-(--line) bg-white/[0.04] px-4 py-3.5 text-[16px] text-(--fg) outline-none transition-colors placeholder:text-white/25 focus:border-(--gem) focus:bg-white/[0.06]"
+    />
+  </label>
+);
 
+const SpacePicker = ({ username, onPick }: { username: string; onPick: (space: Space) => void }) => (
+  <div className="animate-tile-in">
+    <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">signed in as {username}</p>
+    <h1 className="mt-3 font-display text-[clamp(2rem,4.5vw,3rem)] font-bold lowercase leading-[1.05] tracking-[-0.04em]">
+      where to, <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">{username}</span>?
+    </h1>
+    <p className="mt-3 text-(--muted)">two ways to learn. switch any time.</p>
+
+    <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <button
+        type="button"
+        onClick={() => onPick("feed")}
+        className="group flex flex-col rounded-3xl border border-(--line) bg-(--panel) p-2 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-(--gem)/60"
+      >
+        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[20px] bg-white/[0.03]">
+          {[5, 0, 6].map((index, i) => (
+            <div
+              key={index}
+              className="absolute w-[38%] transition-transform duration-500 ease-out"
+              style={{ transform: `translateX(${(i - 1) * 55}%) rotate(${(i - 1) * 9}deg)`, zIndex: i === 1 ? 2 : 1 }}
+            >
+              <ChapterCover
+                chapter={chapters[index]}
+                wordClass="text-3xl"
+                className="aspect-[4/5] rounded-xl shadow-xl shadow-black/50 ring-1 ring-white/10 transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+          ))}
+          <span className="absolute left-3 top-3 rounded-full bg-(--gem) px-2.5 py-1 font-jetbrains text-[10px] font-bold uppercase tracking-wider text-black">
+            new
+          </span>
+        </div>
+        <div className="px-3 pb-3 pt-4">
+          <h2 className="font-display text-xl font-bold lowercase">the feed →</h2>
+          <p className="mt-1 text-sm text-(--muted)">scroll chapters like posts, double-tap what you love, play mini games.</p>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onPick("desktop")}
+        className="group flex flex-col rounded-3xl border border-(--line) bg-(--panel) p-2 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#3ddc84]/60"
+      >
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[20px]">
+          <img
+            src={loginWallpaper}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-x-4 bottom-4 rounded-lg border border-[#3ddc84]/30 bg-black/70 p-3 font-jetbrains text-[11px] leading-5 text-[#3ddc84]">
+            <p>
+              {username}@offtrck<span className="text-white/40">:</span>
+              <span className="text-[#7dd3fc]">~</span>
+              <span className="text-white/40">$</span> ./start
+            </p>
+            <p className="text-[#3ddc84]/70">
+              booting desktop<span className="ml-1 inline-block h-3 w-1.5 animate-blink bg-[#3ddc84] align-middle" />
+            </p>
+          </div>
+          <span className="absolute left-3 top-3 rounded-full border border-[#3ddc84]/40 bg-black/60 px-2.5 py-1 font-jetbrains text-[10px] font-bold uppercase tracking-wider text-[#3ddc84]">
+            classic
+          </span>
+        </div>
+        <div className="px-3 pb-3 pt-4">
+          <h2 className="font-display text-xl font-bold lowercase">the desktop →</h2>
+          <p className="mt-1 text-sm text-(--muted)">the original hacker desktop. terminals, windows and missions.</p>
+        </div>
+      </button>
+    </div>
+  </div>
+);
+
+const LoginScreen = ({ onLogin }: { onLogin: (username: string, space: Space) => void }) => {
+  const { gem } = useGem();
   const [mode, setMode] = useState<Mode>("login");
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [input, setInput] = useState("");
-  const [linking, setLinking] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signedIn, setSignedIn] = useState<string | null>(null);
 
-  const currentSteps = steps[mode];
-  const stepIndex = answers.length;
-  const step = currentSteps[stepIndex];
-  const username = answers[0]?.trim() || "guest";
-  const keyboardOpen = isMobile && keyboardInset > 0;
-
-  useEffect(() => () => window.clearTimeout(welcomeTimer.current), []);
-
-  const submitStep = () => {
-    if (!step || linking) return;
-    if (!input.trim() && step.key !== "password") return;
-    if (step.secret && !input) return;
-
-    const nextAnswers = [...answers, input];
-    setAnswers(nextAnswers);
-    setInput("");
-
-    if (nextAnswers.length === currentSteps.length) {
-      setLinking(true);
-      welcomeTimer.current = window.setTimeout(
-        () => onLogin(nextAnswers[0].trim() || "guest"),
-        WELCOME_DELAY_MS,
-      );
-      inputRef.current?.blur();
-      return;
-    }
-
-    window.setTimeout(() => inputRef.current?.focus(), 20);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter") return;
-    event.preventDefault();
-    submitStep();
-  };
+  const ready = username.trim() && password && (mode === "login" || email.trim());
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    submitStep();
-  };
-
-  const switchMode = () => {
-    setMode(mode === "login" ? "signup" : "login");
-    setAnswers([]);
-    setInput("");
-    setLinking(false);
+    if (!ready) return;
+    setSignedIn(username.trim());
   };
 
   return (
-    <div
-      className="relative h-dvh w-full overflow-hidden bg-void"
-      style={{ paddingBottom: keyboardOpen ? keyboardInset : undefined }}
-    >
-      <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <img
-          src={loginWallpaper}
-          alt=""
-          className="animate-wallpaper-drift absolute -inset-[10%] h-[120%] w-[120%] max-w-none object-cover will-change-transform"
-        />
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/35 to-black/80" />
-      </div>
+    <div style={{ "--gem": gem.color } as CSSProperties} className="cv-root relative h-full overflow-y-auto overflow-x-hidden font-vibe">
+      <div className="cv-grid pointer-events-none absolute inset-x-0 top-0 h-[700px]" aria-hidden />
+      <div
+        className="pointer-events-none absolute left-[20%] top-[-300px] h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-(--gem) opacity-[0.13] blur-[140px]"
+        aria-hidden
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="relative z-10 mx-auto flex h-full w-full max-w-md flex-col px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]"
-      >
-        <div
-          className={`flex flex-1 flex-col ${
-            keyboardOpen ? "justify-end" : "justify-center gap-10"
-          }`}
-        >
-          {!keyboardOpen && (
-            <div className="flex flex-col items-center">
-              <OfftrckMark className="h-14 w-14 text-neon drop-shadow-[0_0_18px_rgba(61,220,132,0.45)]" />
-              <p className="mt-4 font-mono text-[14px] font-semibold tracking-[0.34em] text-neon">OFFTRCK</p>
-              <p className="mt-1.5 font-mono text-[11px] text-white/40">
-                {linking ? "link established…" : "establish a session"}
-              </p>
+      <div className="relative mx-auto grid min-h-full max-w-7xl items-center gap-10 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className={signedIn ? "lg:col-span-2 lg:mx-auto lg:w-full lg:max-w-3xl" : "max-w-md"}>
+          <a href="#/courses" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
+            <OfftrckMark className="h-6 w-6 text-(--gem)" />
+            offtrck
+          </a>
+
+          {!signedIn && (
+            <div className="no-scrollbar -mx-5 mt-8 flex gap-3 overflow-x-auto px-5 lg:hidden">
+              {chapters.map(chapter => (
+                <ChapterCover key={chapter.id} chapter={chapter} wordClass="text-3xl" className="aspect-[4/5] w-28 shrink-0 rounded-2xl" />
+              ))}
             </div>
           )}
 
-          {/* CLI only — no modal chrome */}
-          <div className="font-mono text-[13px] leading-7 md:text-[14px]">
-            <p className="text-neon/80">
-              <span className="text-neon">guest@offtrck</span>
-              <span className="text-white/35">:</span>
-              <span className="text-[#7dd3fc]">~</span>
-              <span className="text-white/35">$</span>{" "}
-              <span className="text-white/80">{mode === "login" ? "login" : "useradd"}</span>
-            </p>
-
-            {answers.map((answer, i) => (
-              <p key={`${mode}-${i}`} className="text-neon/85">
-                <span className="text-neon">{currentSteps[i].prompt}</span>{" "}
-                <span>{currentSteps[i].secret ? "********" : answer}</span>
-              </p>
-            ))}
-
-            {linking ? (
-              <p className="text-neon">
-                welcome, {username}
-                <span className="animate-blink ml-1 inline-block h-3.5 w-1.5 translate-y-px bg-neon align-middle" />
-              </p>
+          <div className="mt-10 lg:mt-14">
+            {signedIn ? (
+              <SpacePicker username={signedIn} onPick={space => onLogin(signedIn, space)} />
             ) : (
-              step && (
-                <label className="flex min-h-11 items-center gap-2">
-                  <span className="shrink-0 text-neon">{step.prompt}</span>
-                  <input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(event) => setInput(event.target.value)}
-                    onKeyDown={handleKeyDown}
-                    type={step.secret ? "password" : step.key === "email" ? "email" : "text"}
-                    autoComplete="off"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    enterKeyHint="go"
-                    aria-label={step.prompt}
-                    className="min-w-0 flex-1 border-0 bg-transparent font-mono text-[16px] text-neon caret-neon outline-none md:text-[14px]"
-                  />
-                </label>
-              )
-            )}
+              <form key={mode} onSubmit={handleSubmit} className="animate-tile-in">
+                <h1 className="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-bold lowercase leading-[1.02] tracking-[-0.04em]">
+                  {mode === "login" ? "log in. stay" : "join. get"}{" "}
+                  <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">curious</span>.
+                </h1>
+                <p className="mt-3 text-(--muted)">
+                  {mode === "login" ? "pick up where you left the rabbit hole." : "8 chapters and 4 games are waiting for you."}
+                </p>
 
-            {!linking && step && (
-              <div className="mt-4 flex items-center justify-between text-[11px] text-white/35">
-                <button type="button" onClick={switchMode} className="hover:text-neon">
-                  {mode === "login" ? "./signup" : "./login"}
+                <div className="mt-8 space-y-4">
+                  <Field label="username" value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" placeholder="packet_pal" autoFocus />
+                  {mode === "signup" && (
+                    <Field label="email" type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" placeholder="you@mail.com" />
+                  )}
+                  <Field
+                    label="password"
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!ready}
+                  className="mt-7 w-full rounded-full bg-(--gem) py-4 font-bold text-black shadow-[0_10px_40px_-12px_var(--gem)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:shadow-none disabled:hover:translate-y-0"
+                >
+                  {mode === "login" ? "log in →" : "create account →"}
                 </button>
-                <button type="submit" className="hover:text-neon">
-                  enter ↵
-                </button>
-              </div>
+
+                <div className="mt-6 flex items-center justify-between text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                    className="text-(--muted) hover:text-(--fg)"
+                  >
+                    {mode === "login" ? (
+                      <>
+                        new here? <span className="font-semibold text-(--gem)">create an account</span>
+                      </>
+                    ) : (
+                      <>
+                        have an account? <span className="font-semibold text-(--gem)">log in</span>
+                      </>
+                    )}
+                  </button>
+                  <a href="#/team" className="font-jetbrains text-[11px] uppercase tracking-wider text-(--muted) hover:text-(--fg)">
+                    meet the team
+                  </a>
+                </div>
+              </form>
             )}
           </div>
-
-          {!keyboardOpen && (
-            <a
-              href="#/team"
-              className="block text-center font-mono text-[11px] text-white/25 hover:text-neon/70"
-            >
-              $ cat team
-            </a>
-          )}
         </div>
-      </form>
+
+        {!signedIn && (
+          <div className="relative hidden h-[620px] lg:block" aria-hidden>
+            {COLLAGE.map(({ index, className }) => (
+              <div key={index} className={`absolute transition-transform duration-500 hover:z-10 hover:scale-105 hover:rotate-0 ${className}`}>
+                <ChapterCover
+                  chapter={chapters[index]}
+                  wordClass="text-[2.6rem]"
+                  className="aspect-[4/5] rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/10"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

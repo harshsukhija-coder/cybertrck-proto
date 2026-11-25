@@ -17,6 +17,29 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
+    --animate-heart-burst: heart-burst 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-like-pop: like-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    --animate-shake: shake 380ms ease-in-out both;
+
+    @keyframes heart-burst {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-12deg); }
+        25% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(0deg); }
+        60% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: translate(-50%, -90%) scale(0.9) rotate(0deg); }
+    }
+
+    @keyframes like-pop {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.35); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+    }
+
     --color-void: #050607;
     --color-panel: #0b0d0f;
     --color-neon: #3ddc84;
@@ -248,7 +271,9 @@
     .animate-packet-fly,
     .animate-packet-fly-back,
     .animate-wire-pulse,
-    .animate-tile-in {
+    .animate-tile-in,
+    .animate-like-pop,
+    .animate-shake {
         animation: none !important;
         transform: none !important;
         filter: none !important;
@@ -446,4 +471,12 @@ body {
 .cv-root ::selection {
     background: var(--gem);
     color: #fff;
+}
+
+.no-scrollbar {
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
 }
