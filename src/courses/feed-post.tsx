@@ -1,14 +1,30 @@
 import { useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { ChapterCover } from "./chapter-cover";
+import { COURSES, chapterHash, findCourse } from "./data";
+import type { Fact, Poll } from "./feed-extras";
 import { BookmarkIcon, ChevronIcon, CommentIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
 import { gameHash, type GameMeta } from "./games/games";
-import type { CourseChapter } from "./networking";
+import type { Course, CourseChapter } from "./types";
 
 const DOUBLE_TAP_MS = 300;
-const LIKERS = ["packet_pal", "dns.diva", "ping_prince", "router.rat", "lagless.lena", "subnet.sam"];
+const LIKERS = ["packet_pal", "stonks.sid", "dns.diva", "brand.bae", "query.queen", "lagless.lena", "budget.boss", "subnet.sam"];
 
-const chapterHash = (chapter: CourseChapter) => `#/courses/networking/${chapter.id}`;
+const FACT_CAPTIONS = [
+  "save this for your next awkward silence 🧠",
+  "drop this at dinner and watch everyone go quiet 🤯",
+  "you can't unlearn this now. sorry 😌",
+  "send this to the friend who thinks they know everything 👀",
+];
+const POLL_CAPTIONS = [
+  "vote first, then see what everyone else said 👀",
+  "no googling. gut answer only 🫣",
+  "most people get this wrong. do you? 🤔",
+];
+
+const CourseAvatar = ({ course }: { course: Course }) => (
+  <span className="font-poster text-lg uppercase leading-none">{course.label[0]}</span>
+);
 
 /** Likes + double-tap heart bursts, shared by chapter and game posts */
 const useLike = () => {
@@ -93,7 +109,7 @@ const QuestionSlide = ({ chapter }: { chapter: CourseChapter }) => {
   );
 };
 
-const SpoilerSlide = ({ chapter, revealed }: { chapter: CourseChapter; revealed: boolean }) => {
+const SpoilerSlide = ({ course, chapter, revealed }: { course: Course; chapter: CourseChapter; revealed: boolean }) => {
   const [shadow, highlight] = chapter.duo;
   return (
     <div className="relative flex h-full w-full flex-col justify-between p-6 sm:p-8" style={{ background: shadow }}>
@@ -109,7 +125,7 @@ const SpoilerSlide = ({ chapter, revealed }: { chapter: CourseChapter; revealed:
       </p>
       {revealed ? (
         <a
-          href={chapterHash(chapter)}
+          href={chapterHash(course, chapter)}
           onClick={event => event.stopPropagation()}
           className="inline-flex w-fit items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
           style={{ background: highlight, color: shadow }}
@@ -126,7 +142,7 @@ const SpoilerSlide = ({ chapter, revealed }: { chapter: CourseChapter; revealed:
   );
 };
 
-const Carousel = ({ chapter, onTap }: { chapter: CourseChapter; onTap: () => boolean }) => {
+const Carousel = ({ course, chapter, onTap }: { course: Course; chapter: CourseChapter; onTap: () => boolean }) => {
   const scroller = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -157,7 +173,7 @@ const Carousel = ({ chapter, onTap }: { chapter: CourseChapter; onTap: () => boo
           <QuestionSlide chapter={chapter} />
         </div>
         <div className="h-full w-full shrink-0 snap-center">
-          <SpoilerSlide chapter={chapter} revealed={revealed} />
+          <SpoilerSlide course={course} chapter={chapter} revealed={revealed} />
         </div>
       </div>
 
@@ -200,6 +216,10 @@ const Carousel = ({ chapter, onTap }: { chapter: CourseChapter; onTap: () => boo
 
 type FrameProps = {
   avatar: ReactNode;
+  /** Avatar background; defaults to the accent colour */
+  accent?: string;
+  /** Extra button in the header, e.g. "start" */
+  action?: ReactNode;
   name: string;
   meta: string;
   reason?: string;
@@ -231,16 +251,22 @@ const PostFrame = (props: FrameProps) => {
         </p>
       )}
       <header className="flex items-center gap-3 px-4 py-3 sm:px-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--gem) text-black ring-2 ring-(--gem)/30 ring-offset-2 ring-offset-[#07080c]">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--gem) text-black ring-2 ring-white/10 ring-offset-2 ring-offset-[#07080c]"
+          style={props.accent ? { background: props.accent } : undefined}
+        >
           {props.avatar}
         </span>
         <div className="min-w-0 flex-1 leading-tight">
           <p className="flex items-center gap-1 text-[15px] font-bold">
-            {props.name}
-            <VerifiedIcon className="h-4 w-4 text-(--gem)" />
+            <span className="truncate">{props.name}</span>
+            <span className="shrink-0" style={{ color: props.accent ?? "var(--gem)" }}>
+              <VerifiedIcon className="h-4 w-4" />
+            </span>
           </p>
           <p className="truncate text-xs text-(--muted)">{props.meta}</p>
         </div>
+        {props.action}
         <button type="button" aria-label="More options" className="rounded-full p-2 text-(--muted) hover:bg-white/5 hover:text-(--fg)">
           <DotsIcon className="h-5 w-5" />
         </button>
@@ -312,18 +338,38 @@ const PostFrame = (props: FrameProps) => {
   );
 };
 
-export const ChapterPost = ({ chapter, reason, seed }: { chapter: CourseChapter; reason?: string; seed: number }) => {
+export const ChapterPost = ({
+  course,
+  chapter,
+  reason,
+  seed,
+}: {
+  course: Course;
+  chapter: CourseChapter;
+  reason?: string;
+  seed: number;
+}) => {
   const { liked, toggle, bursts, onTap } = useLike();
   return (
     <PostFrame
       id={`post-${chapter.id}`}
-      avatar={<OfftrckMark className="h-5 w-5" />}
-      name="offtrck"
-      meta={`chapter ${String(chapter.number).padStart(2, "0")} · ${chapter.title} · ${chapter.minutes} min`}
+      avatar={<CourseAvatar course={course} />}
+      accent={course.color}
+      action={
+        <a
+          href={chapterHash(course, chapter)}
+          className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold text-black transition-transform hover:scale-105"
+          style={{ background: course.color }}
+        >
+          start
+        </a>
+      }
+      name={course.handle}
+      meta={`${course.title} · ch ${chapter.number} · ${chapter.minutes} min`}
       reason={reason}
       media={
         <>
-          <Carousel chapter={chapter} onTap={onTap} />
+          <Carousel course={course} chapter={chapter} onTap={onTap} />
           <HeartBursts bursts={bursts} />
         </>
       }
@@ -380,3 +426,161 @@ export const GamePost = ({ game, reason, seed }: { game: GameMeta; reason?: stri
     />
   );
 };
+
+export const PollPost = ({ poll, reason, seed }: { poll: Poll; reason?: string; seed: number }) => {
+  const { liked, toggle } = useLike();
+  const [picked, setPicked] = useState<number | null>(null);
+  const course = findCourse(poll.courseId) ?? COURSES[0];
+  const voted = picked !== null;
+
+  return (
+    <PostFrame
+      id={`post-${poll.id}`}
+      avatar={<CourseAvatar course={course} />}
+      accent={course.color}
+      name={course.handle}
+      meta={`poll · ${voted ? "results are in" : "tap to vote"}`}
+      reason={reason}
+      media={
+        <div className="flex flex-col p-5 sm:p-7" style={{ background: `${course.color}14` }}>
+          <span className="w-fit rounded-full px-2.5 py-1 font-jetbrains text-[10px] font-bold uppercase tracking-widest text-black" style={{ background: course.color }}>
+            poll
+          </span>
+          <p className="mt-4 font-display text-[clamp(1.4rem,6vw,1.9rem)] font-bold lowercase leading-[1.1] tracking-[-0.03em]">{poll.q}</p>
+          <div className="mt-5 grid gap-2.5">
+            {poll.options.map((option, i) => {
+              const isAnswer = i === poll.answer;
+              const share = poll.votes[i];
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  disabled={voted}
+                  onClick={() => setPicked(i)}
+                  className={`relative overflow-hidden rounded-2xl border px-4 py-3.5 text-left text-[15px] font-semibold transition ${
+                    voted
+                      ? isAnswer
+                        ? "border-emerald-400/70"
+                        : picked === i
+                          ? "border-rose-400/70"
+                          : "border-(--line)"
+                      : "border-(--line) bg-white/[0.04] hover:border-white/30 active:scale-[0.98]"
+                  }`}
+                >
+                  {voted && (
+                    <span
+                      className={`absolute inset-y-0 left-0 transition-[width] duration-700 ease-out ${isAnswer ? "bg-emerald-400/20" : "bg-white/[0.07]"}`}
+                      style={{ width: `${share}%` }}
+                    />
+                  )}
+                  <span className="relative flex items-center justify-between gap-3">
+                    <span>
+                      {voted && isAnswer && "✓ "}
+                      {option}
+                    </span>
+                    {voted && <span className="font-jetbrains text-xs text-(--muted)">{share}%</span>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {voted && (
+            <p className="mt-4 animate-tile-in text-sm leading-snug">
+              <b className={picked === poll.answer ? "text-emerald-300" : "text-rose-300"}>
+                {picked === poll.answer ? "you're in the smart " + poll.votes[poll.answer] + "%. " : "plot twist. "}
+              </b>
+              <span className="text-(--muted)">{poll.why}</span>
+            </p>
+          )}
+        </div>
+      }
+      liked={liked}
+      onToggleLike={toggle}
+      likes={900 + seed * 137}
+      caption={POLL_CAPTIONS[seed % POLL_CAPTIONS.length]}
+      tags={poll.tags}
+      comments={40 + seed * 7}
+      age={`${seed + 1}h ago`}
+      seed={seed}
+    />
+  );
+};
+
+export const FactPost = ({ fact, reason, seed }: { fact: Fact; reason?: string; seed: number }) => {
+  const { liked, toggle, bursts, onTap } = useLike();
+  const course = findCourse(fact.courseId) ?? COURSES[0];
+  const [shadow, highlight] = fact.duo;
+  const flipped = seed % 2 === 1;
+
+  return (
+    <PostFrame
+      id={`post-${fact.id}`}
+      avatar={<CourseAvatar course={course} />}
+      accent={course.color}
+      name={course.handle}
+      meta="did you know?"
+      reason={reason}
+      media={
+        <>
+          <div
+            onClick={onTap}
+            className="flex aspect-square flex-col justify-between p-6 sm:p-8"
+            style={{ background: flipped ? highlight : shadow, color: flipped ? shadow : "#fff" }}
+          >
+            <span className="font-jetbrains text-[11px] font-bold uppercase tracking-widest opacity-70">did you know?</span>
+            <div>
+              <p
+                className="break-words font-poster text-[clamp(5.5rem,30vw,10rem)] uppercase leading-[0.85]"
+                style={{ color: flipped ? shadow : highlight }}
+              >
+                {fact.big}
+              </p>
+              <p className="mt-4 font-display text-[clamp(1.25rem,5.5vw,1.7rem)] font-bold lowercase leading-[1.1] tracking-[-0.03em]">
+                {fact.line}
+              </p>
+            </div>
+            <p className="font-vibe text-sm leading-snug opacity-80">{fact.sub}</p>
+          </div>
+          <HeartBursts bursts={bursts} />
+        </>
+      }
+      liked={liked}
+      onToggleLike={toggle}
+      likes={2100 + seed * 211}
+      caption={FACT_CAPTIONS[seed % FACT_CAPTIONS.length]}
+      tags={fact.tags}
+      comments={60 + seed * 9}
+      age={`${seed + 2}h ago`}
+      seed={seed}
+    />
+  );
+};
+
+export const CoursesPost = ({ base }: { base: string }) => (
+  <article className="animate-tile-in border-b border-(--line) py-4 sm:rounded-[28px] sm:border sm:bg-(--panel) sm:p-5 sm:backdrop-blur-sm">
+    <div className="flex items-center justify-between px-4 sm:px-0">
+      <div className="flex items-center gap-2">
+        <OfftrckMark className="h-5 w-5 text-(--gem)" />
+        <p className="font-display text-sm font-bold lowercase">courses for you</p>
+      </div>
+      <a href={base} className="text-xs font-semibold text-(--gem) hover:underline">
+        see all
+      </a>
+    </div>
+    <div className="no-scrollbar mt-4 flex snap-x gap-3 overflow-x-auto px-4 sm:px-0">
+      {COURSES.map(course => (
+        <a key={course.id} href={`${base}/${course.id}`} className="group w-44 shrink-0 snap-start">
+          <ChapterCover
+            chapter={{ ...course.chapters[0], number: undefined }}
+            wordClass="text-4xl"
+            className="aspect-[4/5] rounded-2xl ring-1 ring-white/10 transition-transform group-hover:-translate-y-1"
+          />
+          <p className="mt-2.5 truncate text-sm font-bold">{course.title}</p>
+          <p className="truncate text-xs text-(--muted)">
+            {course.chapters.length} chapters · {course.tagline}
+          </p>
+        </a>
+      ))}
+    </div>
+  </article>
+);

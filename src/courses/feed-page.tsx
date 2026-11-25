@@ -1,25 +1,44 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { ChapterCover } from "./chapter-cover";
-import { GamepadIcon, HeartIcon, HomeIcon, MonitorIcon, SparkIcon } from "./feed-icons";
-import { ChapterPost, GamePost } from "./feed-post";
+import { AcademyPost } from "./academy/academy-promo";
+import { CourseCatalog } from "./course-catalog";
+import { COURSES, chapterHash } from "./data";
+import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
+import { BookIcon, GamepadIcon, HomeIcon, MonitorIcon, SparkIcon } from "./feed-icons";
+import { ChapterPost, CoursesPost, FactPost, GamePost, PollPost } from "./feed-post";
 import { GameView, GamesGrid } from "./games/games-section";
 import { GAMES, gameHash, isGameId, type GameMeta } from "./games/games";
 import { GEMS, useGem, type Gem } from "./gems";
-import { networkingCourse, type CourseChapter } from "./networking";
 import Onboarding from "./onboarding";
 import { INTERESTS, PACES, STYLES, usePrefs, type InterestId, type Prefs } from "./prefs";
+import { useProgress } from "./progress";
+import type { Course, CourseChapter } from "./types";
 
-type View = { kind: "feed" } | { kind: "games" } | { kind: "game"; id: string } | { kind: "start" };
+type View =
+  | { kind: "feed" }
+  | { kind: "courses"; id?: string }
+  | { kind: "games" }
+  | { kind: "game"; id: string }
+  | { kind: "start" };
 
 const parseView = (route: string): View => {
   const [, , section, id] = route.split("/");
   if (section === "games") return id ? { kind: "game", id } : { kind: "games" };
+  if (section === "courses") return { kind: "courses", id };
   if (section === "start") return { kind: "start" };
   return { kind: "feed" };
 };
 
-type FeedItem = { kind: "chapter"; chapter: CourseChapter; reason?: string } | { kind: "game"; game: GameMeta; reason?: string };
+type FeedItem =
+  | { kind: "chapter"; course: Course; chapter: CourseChapter; reason?: string }
+  | { kind: "game"; game: GameMeta; reason?: string }
+  | { kind: "poll"; poll: Poll; reason?: string }
+  | { kind: "fact"; fact: Fact; reason?: string }
+  | { kind: "courses" }
+  | { kind: "academy" };
+
+type ExtraKind = "game" | "poll" | "fact";
 
 const interestLabel = (id: InterestId) => INTERESTS.find(i => i.id === id)?.label ?? id;
 
@@ -31,33 +50,99 @@ const reasonFor = (tags: InterestId[], interests: InterestId[]) => {
 
 const overlap = (tags: InterestId[], interests: InterestId[]) => tags.filter(t => interests.includes(t)).length;
 
-/** Chapters ranked by interest overlap, with games mixed in based on how the user likes to learn */
+/**
+ * Chapters from every course, taken in turns so neighbours are never from the same course,
+ * with games, polls and fun facts mixed in based on how the user likes to learn.
+ */
 const buildFeed = (prefs: Prefs, filter: InterestId | null): FeedItem[] => {
   const matches = (tags: InterestId[]) => !filter || tags.includes(filter);
-  const chapters = networkingCourse.chapters
-    .filter(c => matches(c.tags))
-    .sort((a, b) => overlap(b.tags, prefs.interests) - overlap(a.tags, prefs.interests) || a.number - b.number);
-  const gameQueue = GAMES.filter(g => matches(g.tags)).sort((a, b) => overlap(b.tags, prefs.interests) - overlap(a.tags, prefs.interests));
+  const score = (tags: InterestId[]) => overlap(tags, prefs.interests);
+  const byScore = <T extends { tags: InterestId[] }>(list: T[]) => list.filter(x => matches(x.tags)).sort((a, b) => score(b.tags) - score(a.tags));
 
-  const loves = (id: string) => prefs.styles.some(s => s === id);
-  const gameEvery = loves("games") ? 2 : loves("quiz") ? 3 : 4;
-  if (loves("quiz") && !loves("games")) {
-    gameQueue.sort((a, b) => Number(b.id === "port-rush") - Number(a.id === "port-rush"));
+  const queues = COURSES.map(course => {
+    const chapters = course.chapters.filter(c => matches(c.tags));
+    return {
+      course,
+      chapters: chapters.sort((a, b) => score(b.tags) - score(a.tags) || a.number - b.number),
+      affinity: chapters.reduce((sum, c) => sum + score(c.tags), 0),
+    };
+  })
+    .filter(q => q.chapters.length)
+    .sort((a, b) => b.affinity - a.affinity);
+
+  const chapters: { course: Course; chapter: CourseChapter }[] = [];
+  while (queues.some(q => q.chapters.length)) {
+    for (const q of queues) {
+      const chapter = q.chapters.shift();
+      if (chapter) chapters.push({ course: q.course, chapter });
+    }
   }
 
+  const loves = (id: string) => prefs.styles.some(s => s === id);
+  const extras = { game: byScore(GAMES), poll: byScore(POLLS), fact: byScore(FACTS) };
+  const cycle: ExtraKind[] = [
+    ...(loves("games") ? (["game"] as const) : []),
+    ...(loves("quiz") ? (["poll"] as const) : []),
+    ...(loves("stories") ? (["fact"] as const) : []),
+    "poll",
+    "game",
+    "fact",
+  ];
+  const every = loves("deep") && !loves("games") ? 2 : 1;
+
+  let turn = 0;
+  const nextExtra = (avoidCourse: string): FeedItem | null => {
+    for (let tries = 0; tries < cycle.length; tries++) {
+      const kind = cycle[turn++ % cycle.length];
+      if (kind === "game" && extras.game.length) {
+        const game = extras.game.shift()!;
+        return { kind, game, reason: loves("games") ? "because you learn by playing" : reasonFor(game.tags, prefs.interests) };
+      }
+      if (kind === "poll" || kind === "fact") {
+        const queue: (Poll | Fact)[] = extras[kind];
+        if (!queue.length) continue;
+        const index = Math.max(0, queue.findIndex(x => x.courseId !== avoidCourse));
+        const [picked] = queue.splice(index, 1);
+        const reason = reasonFor(picked.tags, prefs.interests);
+        return kind === "poll" ? { kind, poll: picked as Poll, reason } : { kind, fact: picked as Fact, reason };
+      }
+    }
+    return null;
+  };
+
   const items: FeedItem[] = [];
-  chapters.forEach((chapter, i) => {
-    items.push({ kind: "chapter", chapter, reason: reasonFor(chapter.tags, prefs.interests) });
-    if ((i + 1) % gameEvery === 0 && gameQueue.length) {
-      const game = gameQueue.shift()!;
-      items.push({ kind: "game", game, reason: loves("games") ? "because you learn by playing" : reasonFor(game.tags, prefs.interests) });
+  chapters.forEach(({ course, chapter }, i) => {
+    items.push({ kind: "chapter", course, chapter, reason: reasonFor(chapter.tags, prefs.interests) });
+    if (i === 3 && !filter) items.push({ kind: "courses" });
+    if (i === 1 && (!filter || filter === "internet" || filter === "home")) items.push({ kind: "academy" });
+    if ((i + 1) % every === 0) {
+      const extra = nextExtra(course.id);
+      if (extra) items.push(extra);
     }
   });
   return items;
 };
 
+const itemKey = (item: FeedItem) => {
+  switch (item.kind) {
+    case "chapter":
+      return `${item.course.id}-${item.chapter.id}`;
+    case "game":
+      return item.game.id;
+    case "poll":
+      return item.poll.id;
+    case "fact":
+      return item.fact.id;
+    case "courses":
+      return "courses";
+    case "academy":
+      return "academy";
+  }
+};
+
 const NAV = [
   { href: "#/feed", label: "feed", kind: "feed", Icon: HomeIcon },
+  { href: "#/feed/courses", label: "learn", kind: "courses", Icon: BookIcon },
   { href: "#/feed/games", label: "games", kind: "games", Icon: GamepadIcon },
   { href: "#/feed/start", label: "my vibe", kind: "start", Icon: SparkIcon },
 ] as const;
@@ -65,7 +150,7 @@ const NAV = [
 const isActive = (kind: string, view: View) => view.kind === kind || (kind === "games" && view.kind === "game");
 
 const SideNav = ({ view, username, onLogout }: { view: View; username: string; onLogout: () => void }) => (
-    <aside className="sticky top-0 hidden h-screen w-20 shrink-0 flex-col border-r border-(--line) px-3 py-6 md:flex xl:w-64 xl:px-5">
+  <aside className="sticky top-0 hidden h-screen w-20 shrink-0 flex-col border-r border-(--line) px-3 py-6 md:flex xl:w-64 xl:px-5">
     <a href="#/feed" className="flex items-center gap-2.5 px-3 font-display text-lg font-bold tracking-tight">
       <OfftrckMark className="h-6 w-6 shrink-0 text-(--gem)" />
       <span className="hidden xl:inline">offtrck</span>
@@ -79,7 +164,7 @@ const SideNav = ({ view, username, onLogout }: { view: View; username: string; o
             href={href}
             title={label}
             className={`flex items-center gap-4 rounded-2xl px-3 py-3 text-[15px] transition-colors hover:bg-white/5 ${
-              active ? "font-bold" : "text-(--muted) hover:text-(--fg)"
+              active ? "bg-white/[0.06] font-bold" : "text-(--muted) hover:text-(--fg)"
             }`}
           >
             <Icon filled={active} className={`h-6 w-6 shrink-0 ${active ? "text-(--gem)" : ""}`} />
@@ -111,27 +196,51 @@ const SideNav = ({ view, username, onLogout }: { view: View; username: string; o
   </aside>
 );
 
-const MobileTopBar = () => (
-  <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-(--line) bg-black/50 px-4 backdrop-blur-xl md:hidden">
-    <a href="#/feed" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
-      <OfftrckMark className="h-5 w-5 text-(--gem)" />
-      offtrck
-    </a>
-    <div className="flex items-center gap-1">
-      <button type="button" aria-label="Notifications" className="relative rounded-full p-2">
-        <HeartIcon className="h-6 w-6" />
-        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#ff3b5c]" />
-      </button>
-    </div>
-  </header>
-);
+const MobileTopBar = ({ username, onLogout }: { username: string; onLogout: () => void }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-(--line) bg-black/60 px-4 backdrop-blur-xl md:hidden">
+      <a href="#/feed" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
+        <OfftrckMark className="h-5 w-5 text-(--gem)" />
+        offtrck
+      </a>
+      <div className="relative flex items-center gap-1">
+        <a href="#/" aria-label="Classic desktop" className="rounded-full p-2 text-(--muted) hover:text-(--fg)">
+          <MonitorIcon className="h-6 w-6" />
+        </a>
+        <button
+          type="button"
+          aria-label="Account"
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}
+          className="ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 font-display text-xs font-bold uppercase"
+        >
+          {username[0]}
+        </button>
+        {open && (
+          <div className="absolute right-0 top-11 w-44 animate-pop rounded-2xl border border-(--line) bg-[#0d0f14] p-1.5 shadow-2xl">
+            <p className="truncate px-3 py-2 text-xs text-(--muted)">signed in as {username}</p>
+            <button type="button" onClick={onLogout} className="w-full rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-white/5">
+              log out
+            </button>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
 
 const MobileTabBar = ({ view }: { view: View }) => (
-  <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-(--line) bg-black/70 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-    {[...NAV, { href: "#/", label: "desktop", kind: "desktop", Icon: MonitorIcon } as const].map(({ href, label, kind, Icon }) => {
+  <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-(--line) bg-black/75 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+    {NAV.map(({ href, label, kind, Icon }) => {
       const active = isActive(kind, view);
       return (
-        <a key={kind} href={href} className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] ${active ? "text-(--fg)" : "text-(--muted)"}`}>
+        <a
+          key={kind}
+          href={href}
+          className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium ${active ? "text-(--fg)" : "text-(--muted)"}`}
+        >
+          {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-(--gem)" />}
           <Icon filled={active} className={`h-6 w-6 ${active ? "text-(--gem)" : ""}`} />
           {label}
         </a>
@@ -140,33 +249,63 @@ const MobileTabBar = ({ view }: { view: View }) => (
   </nav>
 );
 
-const Stories = ({ items }: { items: FeedItem[] }) => (
-  <div className="no-scrollbar -mx-4 flex gap-3.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-    {items.map(item => {
-      const art = item.kind === "chapter" ? item.chapter : item.game;
-      const id = item.kind === "chapter" ? item.chapter.id : item.game.id;
-      const label = item.kind === "chapter" ? item.chapter.word : `▶ ${item.game.title}`;
-      return (
-        <button
-          key={id}
-          type="button"
-          onClick={() => document.getElementById(`post-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          className="group flex w-[72px] shrink-0 flex-col items-center gap-1.5"
-        >
-          <span className="rounded-full p-[2.5px] ring-2 ring-(--gem) transition-transform group-hover:scale-105 group-active:scale-95">
-            <ChapterCover chapter={{ ...art, word: "", number: undefined }} className="h-16 w-16 rounded-full" />
+/** One story bubble per course; tapping opens the next unfinished chapter */
+const Stories = () => {
+  const { nextIn, doneIn } = useProgress();
+  return (
+    <div className="no-scrollbar -mx-4 flex gap-3.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+      {COURSES.map(course => {
+        const next = nextIn(course);
+        const finished = doneIn(course) === course.chapters.length;
+        return (
+          <a key={course.id} href={chapterHash(course, next)} className="group flex w-[76px] shrink-0 flex-col items-center gap-1.5">
+            <span
+              className="rounded-full p-[2.5px] transition-transform group-hover:scale-105 group-active:scale-95"
+              style={{ boxShadow: `0 0 0 2px ${finished ? "rgba(255,255,255,0.2)" : course.color}` }}
+            >
+              <ChapterCover chapter={{ ...next, word: "", number: undefined }} className="h-16 w-16 rounded-full" />
+            </span>
+            <span className="w-full truncate text-center text-xs text-(--muted)">{course.label}</span>
+          </a>
+        );
+      })}
+      {GAMES.slice(0, 3).map(game => (
+        <a key={game.id} href={gameHash(game.id)} className="group flex w-[76px] shrink-0 flex-col items-center gap-1.5">
+          <span className="relative rounded-full p-[2.5px] ring-2 ring-white/25 transition-transform group-hover:scale-105 group-active:scale-95">
+            <ChapterCover chapter={{ ...game, word: "" }} className="h-16 w-16 rounded-full" />
+            <span className="absolute inset-0 grid place-items-center text-lg text-white drop-shadow">▶</span>
           </span>
-          <span className="w-full truncate text-center text-xs text-(--muted)">{label}</span>
-        </button>
-      );
-    })}
-  </div>
-);
+          <span className="w-full truncate text-center text-xs text-(--muted)">{game.title}</span>
+        </a>
+      ))}
+    </div>
+  );
+};
 
 const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGem: (id: string) => void }) => {
   const pace = PACES.find(p => p.id === prefs.pace) ?? PACES[1];
+  const { minutesToday, totalDone } = useProgress();
+  const pct = Math.min(100, Math.round((minutesToday / pace.minutes) * 100));
   return (
     <aside className="sticky top-0 hidden h-screen w-80 shrink-0 flex-col gap-4 overflow-y-auto py-8 pr-6 lg:flex">
+      <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
+        <h2 className="font-display text-sm font-bold lowercase">today's goal</h2>
+        <p className="mt-2 font-poster text-5xl leading-none">
+          {minutesToday}
+          <span className="text-(--muted)">/{pace.minutes} min</span>
+        </p>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-(--gem) transition-all duration-700" style={{ width: `${Math.max(pct, 4)}%` }} />
+        </div>
+        <p className="mt-2 text-xs text-(--muted)">
+          {pct >= 100
+            ? "goal smashed. you're on fire 🔥"
+            : totalDone
+              ? `${totalDone} chapters done so far. keep going!`
+              : "finish any chapter to start your streak 🔥"}
+        </p>
+      </section>
+
       <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-sm font-bold lowercase">your vibe</h2>
@@ -190,20 +329,14 @@ const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGe
       </section>
 
       <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
-        <h2 className="font-display text-sm font-bold lowercase">today's goal</h2>
-        <p className="mt-2 font-poster text-5xl leading-none">
-          0<span className="text-(--muted)">/{pace.minutes} min</span>
-        </p>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full w-[6%] rounded-full bg-(--gem)" />
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-sm font-bold lowercase">quick games</h2>
+          <a href="#/feed/games" className="text-xs font-semibold text-(--gem) hover:underline">
+            all {GAMES.length}
+          </a>
         </div>
-        <p className="mt-2 text-xs text-(--muted)">open any chapter to start your streak 🔥</p>
-      </section>
-
-      <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
-        <h2 className="font-display text-sm font-bold lowercase">quick games</h2>
         <ul className="mt-3 space-y-2.5">
-          {GAMES.map(game => (
+          {GAMES.slice(-4).map(game => (
             <li key={game.id}>
               <a href={gameHash(game.id)} className="group flex items-center gap-3">
                 <ChapterCover chapter={{ ...game, word: "" }} className="h-11 w-11 shrink-0 rounded-xl" />
@@ -238,56 +371,85 @@ const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGe
   );
 };
 
+const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
+  switch (item.kind) {
+    case "chapter":
+      return <ChapterPost course={item.course} chapter={item.chapter} reason={item.reason} seed={seed} />;
+    case "game":
+      return <GamePost game={item.game} reason={item.reason} seed={seed} />;
+    case "poll":
+      return <PollPost poll={item.poll} reason={item.reason} seed={seed} />;
+    case "fact":
+      return <FactPost fact={item.fact} reason={item.reason} seed={seed} />;
+    case "courses":
+      return <CoursesPost base="#/feed/courses" />;
+    case "academy":
+      return <AcademyPost />;
+  }
+};
+
+const greeting = () => {
+  const hour = new Date().getHours();
+  return hour < 5 ? "up late" : hour < 12 ? "good morning" : hour < 18 ? "good afternoon" : "good evening";
+};
+
 const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
   const [filter, setFilter] = useState<InterestId | null>(null);
   const items = buildFeed(prefs, filter);
+  const chips: InterestId[] = [...prefs.interests, ...INTERESTS.map(i => i.id).filter(id => !prefs.interests.includes(id))];
 
-  const chip = (label: ReactNode, value: InterestId | null) => (
-    <button
-      key={value ?? "all"}
-      type="button"
-      onClick={() => setFilter(value)}
-      className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-        filter === value ? "bg-(--fg) text-black" : "border border-(--line) bg-(--panel) text-(--muted) hover:text-(--fg)"
-      }`}
-    >
-      {label}
-    </button>
-  );
+  const chip = (label: ReactNode, value: InterestId | null, color?: string) => {
+    const active = filter === value;
+    return (
+      <button
+        key={value ?? "all"}
+        type="button"
+        onClick={() => setFilter(value)}
+        className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+          active ? "text-black" : "border border-(--line) bg-(--panel) text-(--muted) hover:text-(--fg)"
+        }`}
+        style={active ? { background: color ?? "var(--fg)" } : undefined}
+      >
+        {label}
+      </button>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5">
       <div className="px-4 sm:px-0">
-        <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">hey {username}</p>
+        <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">
+          {greeting()}, {username}
+        </p>
         <h1 className="font-display text-2xl font-bold lowercase tracking-[-0.03em]">
           your <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">feed</span>
         </h1>
       </div>
       <div className="px-4 sm:px-0">
-        <Stories items={items} />
+        <Stories />
       </div>
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-0">
         {chip("✦ for you", null)}
-        {prefs.interests.map(id => chip(interestLabel(id), id))}
+        {chips.map(id => chip(interestLabel(id), id, INTERESTS.find(i => i.id === id)?.color))}
       </div>
 
       <div className="flex flex-col gap-6">
-        {items.map((item, i) =>
-          item.kind === "chapter" ? (
-            <ChapterPost key={item.chapter.id} chapter={item.chapter} reason={item.reason} seed={i} />
-          ) : (
-            <GamePost key={item.game.id} game={item.game} reason={item.reason} seed={i} />
-          ),
-        )}
+        {items.map((item, i) => (
+          <FeedPost key={itemKey(item)} item={item} seed={i} />
+        ))}
       </div>
 
       <div className="flex flex-col items-center gap-2 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-(--gem) font-display text-xl text-(--gem)">✓</span>
         <p className="font-display font-bold lowercase">you're all caught up</p>
         <p className="text-sm text-(--muted)">
-          new chapters drop soon. till then,{" "}
+          {items.length} posts done. now{" "}
+          <a href="#/feed/courses" className="font-semibold text-(--gem) hover:underline">
+            finish a chapter
+          </a>{" "}
+          or{" "}
           <a href="#/feed/games" className="font-semibold text-(--gem) hover:underline">
-            go play something
+            play something
           </a>
           .
         </p>
@@ -303,10 +465,11 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
   const { gem, setGem } = useGem();
   const { prefs, setPrefs } = usePrefs();
   const scroller = useRef<HTMLDivElement>(null);
+  const section = view.kind;
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 });
-  }, [route]);
+  }, [section]);
 
   if (!prefs || view.kind === "start") {
     return (
@@ -321,6 +484,8 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
       />
     );
   }
+
+  const wide = view.kind === "games" || view.kind === "courses";
 
   return (
     <div
@@ -338,11 +503,17 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
         <SideNav view={view} username={username} onLogout={onLogout} />
 
         <div className="min-w-0 flex-1">
-          <MobileTopBar />
-          <main
-            className={`mx-auto w-full pb-28 pt-4 sm:px-4 sm:pt-8 md:pb-12 ${view.kind === "games" ? "max-w-3xl" : "max-w-[520px]"}`}
-          >
+          <MobileTopBar username={username} onLogout={onLogout} />
+          <main className={`mx-auto w-full pb-28 pt-4 sm:px-4 sm:pt-8 md:pb-12 ${wide ? "max-w-3xl" : "max-w-[520px]"}`}>
             {view.kind === "feed" && <Feed prefs={prefs} username={username} />}
+            {view.kind === "courses" && (
+              <div className="animate-tile-in px-4 sm:px-0">
+                <h1 className="mb-5 font-display text-3xl font-bold lowercase tracking-[-0.03em] sm:text-4xl">
+                  pick a <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">rabbit hole</span>
+                </h1>
+                <CourseCatalog courseId={view.id} base="#/feed/courses" />
+              </div>
+            )}
             {view.kind === "games" && (
               <div className="px-4 sm:px-0">
                 <GamesGrid />

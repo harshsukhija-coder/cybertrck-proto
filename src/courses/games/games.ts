@@ -2,10 +2,20 @@ import packetsPhoto from "../../assets/courses/packets.jpg";
 import phishPhoto from "../../assets/courses/phish.jpg";
 import portsPhoto from "../../assets/courses/ports.jpg";
 import tcpUdpPhoto from "../../assets/courses/tcp-udp.jpg";
+import creditPhoto from "../../assets/courses/credit.jpg";
+import selectPhoto from "../../assets/courses/select.jpg";
+import viralPhoto from "../../assets/courses/viral.jpg";
 import type { CoverArt } from "../chapter-cover";
 import type { InterestId } from "../prefs";
 
-export type GameId = "tcp-or-udp" | "real-or-phish" | "port-rush" | "packet-puzzle";
+export type GameId =
+  | "tcp-or-udp"
+  | "real-or-phish"
+  | "port-rush"
+  | "packet-puzzle"
+  | "higher-lower"
+  | "query-builder"
+  | "scam-or-legit";
 
 export type GameMeta = CoverArt & {
   id: GameId;
@@ -72,6 +82,46 @@ export const GAMES: GameMeta[] = [
     tags: ["internet", "streaming", "web"],
     plays: 6648,
   },
+  {
+    id: "higher-lower",
+    title: "bigger audience?",
+    word: "bigger?",
+    tagline: "two apps. which one has more users? keep the streak alive.",
+    how: "tap the bigger one",
+    caption: "is telegram bigger than snapchat? is spotify bigger than pinterest? your gut is lying to you 📊",
+    photo: viralPhoto,
+    duo: ["#1a0633", "#c084fc"],
+    focus: "50% 50%",
+    exposure: 1.3,
+    tags: ["marketing", "streaming"],
+    plays: 15204,
+  },
+  {
+    id: "query-builder",
+    title: "query builder",
+    word: "query",
+    tagline: "build the SQL that answers the question. one tile is a trap.",
+    how: "tap tiles in order",
+    caption: "SQL is basically lego for data. snap the blocks together and the database obeys 🧱",
+    photo: selectPhoto,
+    duo: ["#001a24", "#22d3ee"],
+    focus: "50% 50%",
+    tags: ["data", "web"],
+    plays: 4870,
+  },
+  {
+    id: "scam-or-legit",
+    title: "scam or legit?",
+    word: "scam?",
+    tagline: "\"guaranteed 30% a month\" — swipe before your money disappears.",
+    how: "swipe or use ← →",
+    caption: "someone in your family has forwarded one of these. can you spot every money scam? 💸",
+    photo: creditPhoto,
+    duo: ["#002814", "#4ade80"],
+    focus: "50% 50%",
+    tags: ["money", "security"],
+    plays: 9931,
+  },
 ];
 
 export const gameHash = (id: GameId) => `#/feed/games/${id}`;
@@ -119,6 +169,43 @@ export const PORTS: { port: number; service: string }[] = [
   { port: 123, service: "time sync (ntp)" },
   { port: 67, service: "dhcp" },
   { port: 5432, service: "postgres" },
+];
+
+/** Rough monthly active users, in billions (public figures, 2024–25) */
+export const AUDIENCES: { name: string; users: number; color: string }[] = [
+  { name: "facebook", users: 3.0, color: "#4f8cff" },
+  { name: "youtube", users: 2.5, color: "#ff4d4d" },
+  { name: "whatsapp", users: 2.0, color: "#2ee6a6" },
+  { name: "instagram", users: 2.0, color: "#f472d0" },
+  { name: "tiktok", users: 1.6, color: "#22d3ee" },
+  { name: "telegram", users: 0.95, color: "#38bdf8" },
+  { name: "snapchat", users: 0.85, color: "#facc15" },
+  { name: "spotify", users: 0.65, color: "#4ade80" },
+  { name: "pinterest", users: 0.55, color: "#ff5470" },
+  { name: "discord", users: 0.2, color: "#8b9cff" },
+];
+
+export type QueryRound = { ask: string; tiles: string[]; decoy: string };
+
+export const QUERY_ROUNDS: QueryRound[] = [
+  { ask: "show every user", tiles: ["SELECT", "*", "FROM", "users"], decoy: "DELETE" },
+  { ask: "just the names of users", tiles: ["SELECT", "name", "FROM", "users"], decoy: "WHERE" },
+  { ask: "users older than 18", tiles: ["SELECT", "*", "FROM", "users", "WHERE", "age > 18"], decoy: "INSERT" },
+  { ask: "posts, newest first", tiles: ["SELECT", "*", "FROM", "posts", "ORDER BY", "date DESC"], decoy: "UPDATE" },
+  { ask: "delete user 42", tiles: ["DELETE", "FROM", "users", "WHERE", "id = 42"], decoy: "SELECT" },
+];
+
+export const SCAM_CARDS: SwipeCard[] = [
+  { prompt: "guaranteed 30% returns every month", side: "left", why: "nothing legit guarantees returns. 30% a month is a classic ponzi promise." },
+  { prompt: "your upi pin is needed to RECEIVE money", side: "left", why: "you never enter your pin to receive money. only to send it." },
+  { prompt: "index fund that tracks the nifty 50", side: "right", why: "boring, regulated, low-cost. boring is good with money." },
+  { prompt: "\"your KYC expired, click this link\" sms", side: "left", why: "banks don't send links to fix KYC. go to the official app instead." },
+  { prompt: "fixed deposit at a big bank, 7% a year", side: "right", why: "a normal, realistic rate from a regulated bank." },
+  { prompt: "pay ₹2,000 fee to unlock your ₹5 lakh lottery", side: "left", why: "real prizes never ask you to pay first. you didn't even enter." },
+  { prompt: "SIP of ₹500/month in a mutual fund", side: "right", why: "small, regular investing in a registered fund. totally legit." },
+  { prompt: "dm from a stranger: \"i'll double your crypto\"", side: "left", why: "nobody doubles your money for free. it's gone the moment you send it." },
+  { prompt: "\"work from home: like videos, earn ₹5k/day\"", side: "left", why: "task scams pay small at first, then ask you to \"invest\" to unlock more." },
+  { prompt: "government bond via RBI retail direct", side: "right", why: "backed by the government. about as safe as it gets." },
 ];
 
 export const PUZZLE_MESSAGES = [

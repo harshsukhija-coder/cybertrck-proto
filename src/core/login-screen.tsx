@@ -2,23 +2,29 @@ import { useState, type CSSProperties, type FormEvent, type InputHTMLAttributes 
 import loginWallpaper from "../assets/backgrounds/login-wallpaper.jpg";
 import { ChapterCover } from "../courses/chapter-cover";
 import { useGem } from "../courses/gems";
-import { networkingCourse } from "../courses/networking";
+import { ALL_CHAPTERS, COURSES } from "../courses/data";
+import { GAMES } from "../courses/games/games";
 import { OfftrckMark } from "../icons/OfftrckMark";
 
 export type Space = "feed" | "desktop";
 
 type Mode = "login" | "signup";
 
-const chapters = networkingCourse.chapters;
+const byId = (id: string) => ALL_CHAPTERS.find(c => c.chapter.id === id)!.chapter;
+
+/** Chapters taken from each course in turn, so the strip shows a mix of topics */
+const MIXED = COURSES[0].chapters.flatMap((_, i) => COURSES.map(course => course.chapters[i]).filter(Boolean));
 
 /** Covers floating behind the form, with their resting tilt */
 const COLLAGE = [
-  { index: 5, className: "left-[2%] top-[10%] w-44 rotate-[-9deg]" },
-  { index: 0, className: "left-[34%] top-[2%] w-52 rotate-[4deg]" },
-  { index: 6, className: "right-0 top-[26%] w-44 rotate-[11deg]" },
-  { index: 3, className: "left-[6%] top-[56%] w-40 rotate-[7deg]" },
-  { index: 4, className: "left-[36%] top-[54%] w-52 rotate-[-5deg]" },
+  { chapter: byId("tcp-vs-udp"), className: "left-[2%] top-[10%] w-44 rotate-[-9deg]" },
+  { chapter: byId("hooks"), className: "left-[34%] top-[2%] w-52 rotate-[4deg]" },
+  { chapter: byId("stocks"), className: "right-0 top-[26%] w-44 rotate-[11deg]" },
+  { chapter: byId("sql"), className: "left-[6%] top-[56%] w-40 rotate-[7deg]" },
+  { chapter: byId("dns"), className: "left-[36%] top-[54%] w-52 rotate-[-5deg]" },
 ];
+
+const PICKER_FAN = [byId("hooks"), byId("what-is-a-network"), byId("compound-interest")];
 
 const Field = ({
   label,
@@ -51,15 +57,15 @@ const SpacePicker = ({ username, onPick }: { username: string; onPick: (space: S
         className="group flex flex-col rounded-3xl border border-(--line) bg-(--panel) p-2 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-(--gem)/60"
       >
         <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[20px] bg-white/[0.03]">
-          {[5, 0, 6].map((index, i) => (
+          {PICKER_FAN.map((chapter, i) => (
             <div
-              key={index}
+              key={chapter.id}
               className="absolute w-[38%] transition-transform duration-500 ease-out"
               style={{ transform: `translateX(${(i - 1) * 55}%) rotate(${(i - 1) * 9}deg)`, zIndex: i === 1 ? 2 : 1 }}
             >
               <ChapterCover
-                chapter={chapters[index]}
-                wordClass="text-3xl"
+                chapter={{ ...chapter, number: undefined }}
+                wordClass="text-[clamp(1.1rem,4vw,1.6rem)]"
                 className="aspect-[4/5] rounded-xl shadow-xl shadow-black/50 ring-1 ring-white/10 transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -70,7 +76,7 @@ const SpacePicker = ({ username, onPick }: { username: string; onPick: (space: S
         </div>
         <div className="px-3 pb-3 pt-4">
           <h2 className="font-display text-xl font-bold lowercase">the feed →</h2>
-          <p className="mt-1 text-sm text-(--muted)">scroll chapters like posts, double-tap what you love, play mini games.</p>
+          <p className="mt-1 text-sm text-(--muted)">tech, money and marketing as posts. double-tap what you love, play mini games.</p>
         </div>
       </button>
 
@@ -133,7 +139,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string, space: Space) =>
         aria-hidden
       />
 
-      <div className="relative mx-auto grid min-h-full max-w-7xl items-center gap-10 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="relative mx-auto grid min-h-full max-w-7xl items-center gap-10 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-8 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className={signedIn ? "lg:col-span-2 lg:mx-auto lg:w-full lg:max-w-3xl" : "max-w-md"}>
           <a href="#/courses" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
             <OfftrckMark className="h-6 w-6 text-(--gem)" />
@@ -142,8 +148,13 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string, space: Space) =>
 
           {!signedIn && (
             <div className="no-scrollbar -mx-5 mt-8 flex gap-3 overflow-x-auto px-5 lg:hidden">
-              {chapters.map(chapter => (
-                <ChapterCover key={chapter.id} chapter={chapter} wordClass="text-3xl" className="aspect-[4/5] w-28 shrink-0 rounded-2xl" />
+              {MIXED.map(chapter => (
+                <ChapterCover
+                  key={chapter.id}
+                  chapter={{ ...chapter, number: undefined }}
+                  wordClass="text-xl"
+                  className="aspect-[4/5] w-28 shrink-0 rounded-2xl"
+                />
               ))}
             </div>
           )}
@@ -158,7 +169,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string, space: Space) =>
                   <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">curious</span>.
                 </h1>
                 <p className="mt-3 text-(--muted)">
-                  {mode === "login" ? "pick up where you left the rabbit hole." : "8 chapters and 4 games are waiting for you."}
+                  {mode === "login" ? "pick up where you left the rabbit hole." : `${ALL_CHAPTERS.length} chapters, ${COURSES.length} courses and ${GAMES.length} games are waiting for you.`}
                 </p>
 
                 <div className="mt-8 space-y-4">
@@ -211,10 +222,10 @@ const LoginScreen = ({ onLogin }: { onLogin: (username: string, space: Space) =>
 
         {!signedIn && (
           <div className="relative hidden h-[620px] lg:block" aria-hidden>
-            {COLLAGE.map(({ index, className }) => (
-              <div key={index} className={`absolute transition-transform duration-500 hover:z-10 hover:scale-105 hover:rotate-0 ${className}`}>
+            {COLLAGE.map(({ chapter, className }) => (
+              <div key={chapter.id} className={`absolute transition-transform duration-500 hover:z-10 hover:scale-105 hover:rotate-0 ${className}`}>
                 <ChapterCover
-                  chapter={chapters[index]}
+                  chapter={chapter}
                   wordClass="text-[2.6rem]"
                   className="aspect-[4/5] rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/10"
                 />

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import AcademyPage from "./courses/academy/academy-page";
 import CoursesPage from "./courses/courses-page";
 import FeedApp from "./courses/feed-page";
+import { LessonReader } from "./courses/lesson-reader";
 import Desktop from "./core/desktop";
 import FoundersPage from "./core/founders-page";
 import LoginScreen, { type Space } from "./core/login-screen";
@@ -39,7 +41,12 @@ function App() {
   };
 
   if (TEAM_ROUTES.has(route)) return <FoundersPage />;
-  if (route.startsWith("#/courses")) return <CoursesPage />;
+  if (route.startsWith("#/courses")) return <CoursesPage route={route} />;
+  if (route.startsWith("#/academy")) return <AcademyPage route={route} />;
+  if (route.startsWith("#/learn/")) {
+    const [courseId = "", chapterId = ""] = route.slice("#/learn/".length).split("/");
+    return <LessonReader key={route} courseId={courseId} chapterId={chapterId} />;
+  }
   if (!username) return <LoginScreen onLogin={login} />;
   if (route.startsWith("#/feed")) return <FeedApp route={route} username={username} onLogout={logout} />;
   return <Desktop username={username} onLogout={logout} />;

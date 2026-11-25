@@ -49,6 +49,13 @@ export const GamepadIcon = ({ className, filled }: IconProps) => (
   </svg>
 );
 
+export const BookIcon = ({ className, filled }: IconProps) => (
+  <svg {...base} className={className} fill={filled ? "currentColor" : "none"}>
+    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z" />
+    <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" fill="none" />
+  </svg>
+);
+
 export const SparkIcon = ({ className, filled }: IconProps) => (
   <svg {...base} className={className} fill={filled ? "currentColor" : "none"}>
     <path d="M12 2.5 14 9l6.5 2.5L14 14l-2 6.5L10 14l-6.5-2.5L10 9l2-6.5Z" />

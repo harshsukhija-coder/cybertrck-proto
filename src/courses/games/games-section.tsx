@@ -1,8 +1,10 @@
 import { ChapterCover } from "../chapter-cover";
+import { HigherLower } from "./higher-lower";
 import { PacketPuzzle } from "./packet-puzzle";
 import { PortRush } from "./port-rush";
+import { QueryBuilder } from "./query-builder";
 import { SwipeGame } from "./swipe-game";
-import { GAMES, PHISH_CARDS, TCP_UDP_CARDS, gameHash, type GameId, type GameMeta } from "./games";
+import { GAMES, PHISH_CARDS, SCAM_CARDS, TCP_UDP_CARDS, gameHash, type GameId, type GameMeta } from "./games";
 
 const formatPlays = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
@@ -31,6 +33,19 @@ const GameBody = ({ id }: { id: GameId }) => {
       return <PortRush />;
     case "packet-puzzle":
       return <PacketPuzzle />;
+    case "higher-lower":
+      return <HigherLower />;
+    case "query-builder":
+      return <QueryBuilder />;
+    case "scam-or-legit":
+      return (
+        <SwipeGame
+          gameId={id}
+          cards={SCAM_CARDS}
+          left={{ label: "scam", color: "#ff4d6d" }}
+          right={{ label: "legit", color: "#4ade80" }}
+        />
+      );
   }
 };
 
@@ -65,10 +80,10 @@ export const GamesGrid = () => (
     <h1 className="font-display text-3xl font-bold lowercase tracking-[-0.03em] sm:text-4xl">
       learn by <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">playing</span>
     </h1>
-    <p className="mt-2 text-(--muted)">tiny games. real networking. beat your own best score.</p>
+    <p className="mt-2 text-(--muted)">tiny games about the internet, data, money and marketing. beat your own best score.</p>
     <div className="mt-7 grid gap-4 sm:grid-cols-2">
       {GAMES.map((game, i) => (
-        <GameCard key={game.id} game={game} featured={i === 0 || i === GAMES.length - 1} />
+        <GameCard key={game.id} game={game} featured={i === 0} />
       ))}
     </div>
   </div>

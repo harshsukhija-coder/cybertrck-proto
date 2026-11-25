@@ -105,11 +105,10 @@ const Onboarding = ({ username, gem, initial, onDone }: Props) => {
               <>
                 <p className="font-jetbrains text-xs uppercase tracking-wider text-(--muted)">hey {username} · 1 of 3</p>
                 <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3.25rem)] font-bold lowercase leading-[1.05] tracking-[-0.04em]">
-                  what made you{" "}
-                  <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">curious</span> about the
-                  internet?
+                  what are you{" "}
+                  <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">curious</span> about?
                 </h1>
-                <p className="mt-3 text-(--muted)">pick as many as you like. we'll put these first in your feed.</p>
+                <p className="mt-3 text-(--muted)">pick as many as you like. we'll put these first, and still sneak in a bit of everything.</p>
                 <div className="mt-8 flex flex-wrap gap-2.5">
                   {INTERESTS.map(interest => {
                     const on = interests.includes(interest.id);
