@@ -1,9 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Anton&family=Instrument+Serif:ital@1&family=Space+Grotesk:wght@400..700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
     --font-jetbrains: "JetBrains Mono", monospace;
+    --font-display: "Unbounded", system-ui, sans-serif;
+    --font-poster: "Anton", "Impact", sans-serif;
+    --font-accent: "Instrument Serif", Georgia, serif;
+    --font-vibe: "Space Grotesk", system-ui, sans-serif;
+
+    --animate-tile-in: tile-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+    @keyframes tile-in {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
     --color-void: #050607;
     --color-panel: #0b0d0f;
@@ -235,7 +247,8 @@
     .animate-term-glow,
     .animate-packet-fly,
     .animate-packet-fly-back,
-    .animate-wire-pulse {
+    .animate-wire-pulse,
+    .animate-tile-in {
         animation: none !important;
         transform: none !important;
         filter: none !important;
@@ -406,4 +419,31 @@ body {
 .thin-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(61, 220, 132, 0.2) transparent;
+}
+
+/* Courses page: dark, see-through surfaces; --gem is set inline from the chosen accent */
+.cv-root {
+    --bg: #07080c;
+    --fg: #eef0f6;
+    --muted: rgba(238, 240, 246, 0.55);
+    --line: rgba(255, 255, 255, 0.08);
+    --panel: rgba(255, 255, 255, 0.03);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+/* Faint grid that fades out away from the top */
+.cv-grid {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent 75%);
+}
+
+.cv-root ::selection {
+    background: var(--gem);
+    color: #fff;
 }
