@@ -48,7 +48,10 @@ const SpacePicker = ({ username, onPick }: { username: string; onPick: (space: S
     <h1 className="mt-3 font-display text-[clamp(2rem,4.5vw,3rem)] font-bold lowercase leading-[1.05] tracking-[-0.04em]">
       where to, <span className="font-accent text-[1.25em] font-normal italic tracking-normal text-(--gem)">{username}</span>?
     </h1>
-    <p className="mt-3 text-(--muted)">three ways to learn. switch any time.</p>
+    <p className="mt-3 text-(--muted)">
+      <span className="md:hidden">two</span>
+      <span className="hidden md:inline">three</span> ways to learn. switch any time.
+    </p>
 
     <div className="mt-8 grid gap-4 sm:grid-cols-2">
       <button
@@ -116,7 +119,7 @@ const SpacePicker = ({ username, onPick }: { username: string; onPick: (space: S
     <button
       type="button"
       onClick={() => onPick("terminal")}
-      className="mt-4 flex w-full items-center gap-4 rounded-3xl border border-(--line) bg-(--panel) p-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-(--gem)/60"
+      className="mt-4 hidden w-full items-center gap-4 rounded-3xl md:flex border border-(--line) bg-(--panel) p-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-(--gem)/60"
     >
       <span className="shrink-0 rounded-xl border border-white/10 bg-black/60 px-3 py-2.5 font-jetbrains text-[13px] text-(--gem)">
         $ _<span className="ml-0.5 inline-block h-3.5 w-1.5 animate-blink bg-(--gem) align-middle" />

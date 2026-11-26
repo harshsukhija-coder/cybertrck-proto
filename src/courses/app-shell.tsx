@@ -109,9 +109,6 @@ const MobileTopBar = ({ username, onLogout }: Omit<NavProps, "active">) => {
             <a href="#/" className={item}>
               classic desktop
             </a>
-            <a href="#/term" className={item}>
-              terminal mode
-            </a>
             <button type="button" onClick={onLogout} className={item}>
               log out
             </button>
