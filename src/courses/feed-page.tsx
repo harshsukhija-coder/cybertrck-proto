@@ -9,6 +9,8 @@ import { useBadges } from "./badges/use-badges";
 import { ChapterCover } from "./chapter-cover";
 import { buildFeed, interestLabel, type FeedItem } from "./feed-build";
 import { ChapterPost, CoursesPost, FactPost, GamePost, LivePostCard, PollPost } from "./feed-post";
+import { GlassItem, LayoutSwitch } from "./feed-glass";
+import { useFeedLayout, type FeedLayout } from "./feed-layout-store";
 import { QuickPlayPost } from "./games/quick-post";
 import { GameView, GamesGrid } from "./games/games-section";
 import { GuidePost } from "./guide/guide-post";
@@ -196,7 +198,9 @@ const greeting = () => {
   return hour < 5 ? "up late" : hour < 12 ? "good morning" : hour < 18 ? "good afternoon" : "good evening";
 };
 
-const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
+type FeedProps = { prefs: Prefs; username: string; layout: FeedLayout; onLayout: (layout: FeedLayout) => void };
+
+const Feed = ({ prefs, username, layout, onLayout }: FeedProps) => {
   const [filter, setFilter] = useState<InterestId | null>(null);
   const live = useLivePosts(filter ? [filter] : prefs.interests);
   const items = buildFeed(prefs, filter, live.posts);
@@ -221,13 +225,16 @@ const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="px-4 sm:px-0">
-        <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">
-          {greeting()}, {username}
-        </p>
-        <h1 className="font-display text-2xl font-bold lowercase tracking-[-0.03em]">
-          your <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">feed</span>
-        </h1>
+      <div className="flex items-end justify-between gap-3 px-4 sm:px-0">
+        <div className="min-w-0">
+          <p className="truncate font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">
+            {greeting()}, {username}
+          </p>
+          <h1 className="font-display text-2xl font-bold lowercase tracking-[-0.03em]">
+            your <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">feed</span>
+          </h1>
+        </div>
+        <LayoutSwitch layout={layout} onChange={onLayout} />
       </div>
       <div className="px-4 sm:px-0">
         <StoryBar interests={prefs.interests} />
@@ -263,11 +270,23 @@ const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
         )}
       </div>
 
-      <div className="flex flex-col gap-6">
-        {items.map((item, i) => (
-          <FeedPost key={itemKey(item)} item={item} seed={i} />
-        ))}
-      </div>
+      {layout === "stream" && (
+        <div className="flex flex-col gap-6">
+          {items.map((item, i) => (
+            <FeedPost key={itemKey(item)} item={item} seed={i} />
+          ))}
+        </div>
+      )}
+      {layout === "glass" && (
+        <div className="flex flex-col gap-5 px-3 sm:px-0">
+          {items.map((item, i) => (item.kind === "badge" ? <NextBadge key="badge" /> : <GlassItem key={itemKey(item)} item={item} seed={i} />))}
+        </div>
+      )}
+      {layout === "bento" && (
+        <div className="columns-2 gap-3 px-3 sm:columns-3 sm:px-0 [&>*]:mb-3 [&>*]:break-inside-avoid">
+          {items.map((item, i) => (item.kind === "badge" ? null : <GlassItem key={itemKey(item)} item={item} seed={i} compact />))}
+        </div>
+      )}
 
       <div className="flex flex-col items-center gap-2 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-(--gem) font-display text-xl text-(--gem)">✓</span>
@@ -306,6 +325,7 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
   const view = parseView(route);
   const { gem, setGem } = useGem();
   const { prefs, setPrefs } = usePrefs();
+  const { layout, setLayout } = useFeedLayout();
   const scroller = useRef<HTMLDivElement>(null);
   const page = view.kind === "academy" ? view.kind : `${view.kind}/${"id" in view ? view.id : ""}`;
 
@@ -334,10 +354,10 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
       username={username}
       onLogout={onLogout}
       gemColor={gem.color}
-      width={view.kind === "feed" ? "narrow" : view.kind === "academy" ? "full" : "wide"}
+      width={view.kind === "feed" ? (layout === "bento" ? "wide" : "narrow") : view.kind === "academy" ? "full" : "wide"}
       rail={view.kind === "feed" && <RightRail prefs={prefs} gem={gem} onPickGem={setGem} />}
     >
-      {view.kind === "feed" && <Feed prefs={prefs} username={username} />}
+      {view.kind === "feed" && <Feed prefs={prefs} username={username} layout={layout} onLayout={setLayout} />}
       {view.kind === "courses" && <LearnHub />}
       {view.kind === "course" && <CourseView courseId={view.id} />}
       {view.kind === "academy" && <AcademyPage route={view.route} embedded />}

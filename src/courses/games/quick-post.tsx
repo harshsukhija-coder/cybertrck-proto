@@ -3,33 +3,16 @@ import { ChapterCover } from "../chapter-cover";
 import { GamepadIcon } from "../feed-icons";
 import { PostFrame } from "../feed-post";
 import { gameHash, type GameMeta } from "./games";
-import { QUICK_DECKS } from "./quick-rounds";
+import { useQuickRound } from "./use-quick-round";
 
 const CAPTIONS = ["one question. no pressure. (some pressure.)", "most people get this wrong. do you?", "10 seconds. go 👇", "answer, then flex in the comments"];
 
 /** One round of a game, playable right in the feed */
 export const QuickPlayPost = ({ game, round, reason, seed }: { game: GameMeta; round: number; reason?: string; seed: number }) => {
-  const [deck] = useState(() => QUICK_DECKS[game.id]?.() ?? []);
-  const [index, setIndex] = useState(round % Math.max(1, deck.length));
-  const [picked, setPicked] = useState<string | null>(null);
-  const [streak, setStreak] = useState(0);
   const [liked, setLiked] = useState(false);
-  const r = deck[index];
+  const { r, index, picked, correct, streak, pick, another } = useQuickRound(game, round);
   if (!r) return null;
-
-  const correct = picked === r.answer;
   const color = game.duo[1];
-
-  const pick = (option: string) => {
-    if (picked !== null) return;
-    setPicked(option);
-    setStreak(s => (option === r.answer ? s + 1 : 0));
-  };
-
-  const another = () => {
-    setPicked(null);
-    setIndex(i => (i + 1) % deck.length);
-  };
 
   return (
     <PostFrame
