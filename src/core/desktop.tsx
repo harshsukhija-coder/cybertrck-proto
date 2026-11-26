@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
+import { Suspense, lazy, useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { AttacksFolderIcon, ConceptsFolderIcon, FileIcon, FolderIcon, ProjectsFolderIcon, TerminalIcon, ToolsFolderIcon, TrashIcon } from "../icons/DesktopIcons";
 import { OfftrckBrand } from "../icons/OfftrckMark";
 import { encryptionCourse, firewallCourse, mitmCourse, nmapCourse, trojanCourse, vpnCourse, wifiCourse } from "./courses";
@@ -14,6 +14,8 @@ import { useIsMobile } from "./use-media";
 import { useNetworkStatus } from "./use-network-status";
 import Window from "./window";
 
+const TerminalWindow = lazy(() => import("../terminal/terminal-window"));
+
 type DesktopApp = {
   id: string;
   label: string;
@@ -27,7 +29,7 @@ const apps: DesktopApp[] = [
   { id: "cyber-concepts", label: "cyber-concepts", Icon: ConceptsFolderIcon },
   { id: "cyber-attacks", label: "cyber-attacks", Icon: AttacksFolderIcon },
   { id: "cyber-projects", label: "cyber-projects", Icon: ProjectsFolderIcon },
-  { id: "terminal", label: "terminal", Icon: TerminalIcon, message: "bash: permission denied. finish nMap first." },
+  { id: "terminal", label: "terminal", Icon: TerminalIcon },
   { id: "home", label: "home", Icon: FolderIcon, message: "/home/friday: 5 folders, 0 secrets (so far)." },
   { id: "todo", label: "todo.txt", Icon: FileIcon, message: "todo.txt -> 1. learn nmap  2. don't get fired" },
   { id: "trash", label: "trash", Icon: TrashIcon, message: "trash is empty. friday is very clean." },
@@ -52,10 +54,14 @@ type WindowDef = {
   // Small offsets so stacked windows don't sit exactly on top of each other
   offset: string;
 } & (
-  | { folder: Folder; course?: never; project?: never }
-  | { course: Course; folder?: never; project?: never }
-  | { project: Project; folder?: never; course?: never }
+  | { folder: Folder; course?: never; project?: never; terminal?: never }
+  | { course: Course; folder?: never; project?: never; terminal?: never }
+  | { project: Project; folder?: never; course?: never; terminal?: never }
+  | { terminal: true; folder?: never; course?: never; project?: never }
 );
+
+/** Typing-heavy, so it only opens on tablets and bigger */
+const BIG_SCREEN_ONLY = new Set(["terminal"]);
 
 const windowDefs: WindowDef[] = [
   { id: "cyber-tools", label: "cyber-tools", folder: cyberTools, offset: "-translate-y-10 md:-translate-x-24 md:-translate-y-16" },
@@ -70,6 +76,7 @@ const windowDefs: WindowDef[] = [
   { id: "mitm", label: "man in the middle", course: mitmCourse, offset: "md:translate-x-14 md:translate-y-10" },
   { id: "firewalls", label: "firewalls", course: firewallCourse, offset: "md:translate-x-10 md:translate-y-14" },
   { id: "try-harder", label: "try harder firewall", project: tryHarderProject, offset: "md:translate-x-8 md:translate-y-8" },
+  { id: "terminal", label: "terminal", terminal: true, offset: "md:-translate-x-6 md:-translate-y-2" },
 ];
 
 type DesktopProps = {
@@ -158,7 +165,8 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
     openWindow(id);
   };
 
-  const openDefs = windowDefs.filter(def => stateOf(def.id) !== "closed");
+  const openDefs = windowDefs.filter(def => stateOf(def.id) !== "closed" && !(isMobile && BIG_SCREEN_ONLY.has(def.id)));
+  const desktopApps = isMobile ? apps.filter(app => !BIG_SCREEN_ONLY.has(app.id)) : apps;
   const visibleOpen = openDefs.filter(def => stateOf(def.id) === "open");
   const mobileCovered = isMobile && visibleOpen.length > 0;
   const hideDesktopBar = isMobile && (navHidden || mobileCovered);
@@ -345,7 +353,7 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
               : "flex w-fit flex-col flex-wrap gap-2 p-4"
           }
         >
-          {apps.map(app => {
+          {desktopApps.map(app => {
             const isSelected = selected === app.id;
             return (
               <button
@@ -389,7 +397,16 @@ const Desktop = ({ username, onLogout }: DesktopProps) => {
               onMouseDownCapture={() => raise(def.id)}
             >
               <div className={isMobile ? "h-full w-full" : def.offset}>
-                {def.folder ? (
+                {def.terminal ? (
+                  <Suspense fallback={null}>
+                    <TerminalWindow
+                      username={username}
+                      onLogout={onLogout}
+                      onMinimize={() => setWindowState(def.id, "minimized")}
+                      onClose={() => setWindowState(def.id, "closed")}
+                    />
+                  </Suspense>
+                ) : def.folder ? (
                   <FolderWindow
                     folder={def.folder}
                     minimized={false}

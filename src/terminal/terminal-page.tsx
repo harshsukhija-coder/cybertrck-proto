@@ -189,11 +189,28 @@ const pickFile = (accept: string) => {
   input.click();
 };
 
-type Props = { username: string | null; onLogin: (name: string) => void; onLogout: () => void };
+/** Set when the terminal lives in a desktop window instead of filling the page */
+export type Frame = { onMinimize: () => void; onClose: () => void };
 
-const TerminalSession = ({ username, onLogin, onLogout }: Props) => {
+type Props = { username: string | null; onLogin: (name: string) => void; onLogout: () => void; frame?: Frame };
+
+/** Desktop windows unmount when minimised, so their sessions are kept here */
+const windowSessions = new Map<string, Term>();
+
+const windowSession = (username: string, onLogin: (name: string) => void, onLogout: () => void) => {
+  const existing = windowSessions.get(username);
+  if (existing) return existing;
+  const t = createTerm(username, onLogin, () => {
+    windowSessions.delete(username);
+    onLogout();
+  }, pickFile);
+  windowSessions.set(username, t);
+  return t;
+};
+
+const TerminalSession = ({ username, onLogin, onLogout, frame }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [term] = useState(() => createTerm(username, onLogin, onLogout, pickFile));
+  const [term] = useState(() => (frame && username ? windowSession(username, onLogin, onLogout) : createTerm(username, onLogin, onLogout, pickFile)));
   useSyncExternalStore(term.subscribe, term.getVersion);
   const [value, setValue] = useState("");
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
@@ -208,11 +225,12 @@ const TerminalSession = ({ username, onLogin, onLogout }: Props) => {
   });
 
   useEffect(() => {
-    document.title = "terminal · offtrck";
-  }, []);
+    if (!frame) document.title = "terminal · offtrck";
+  }, [frame]);
 
   useEffect(() => {
     if (!isMobile) inputRef.current?.focus();
+    if (frame) return;
     const onKey = (event: globalThis.KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target === inputRef.current || target.isContentEditable || /INPUT|TEXTAREA/.test(target.tagName)) return;
@@ -231,7 +249,7 @@ const TerminalSession = ({ username, onLogin, onLogout }: Props) => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [term, isMobile]);
+  }, [term, isMobile, frame]);
 
   const send = (text: string) => {
     term.submit(text);
@@ -298,8 +316,8 @@ const TerminalSession = ({ username, onLogin, onLogout }: Props) => {
 
   return (
     <div
-      style={{ "--acc": term.accent, height: keyboardInset ? `calc(100dvh - ${keyboardInset}px)` : "100dvh" } as CSSProperties}
-      className="relative flex flex-col bg-[#07080a] font-jetbrains text-[13px] leading-[1.6] text-[#c9ced6] selection:bg-(--acc)/30 md:text-[14px]"
+      style={{ "--acc": term.accent, height: frame ? "100%" : keyboardInset ? `calc(100dvh - ${keyboardInset}px)` : "100dvh" } as CSSProperties}
+      className="relative flex flex-col overflow-hidden bg-[#07080a] font-jetbrains text-[13px] leading-[1.6] text-[#c9ced6] selection:bg-(--acc)/30 md:text-[14px]"
       onDragOver={event => {
         event.preventDefault();
         setDragging(true);
@@ -307,19 +325,34 @@ const TerminalSession = ({ username, onLogin, onLogout }: Props) => {
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
     >
-      <header className="flex h-10 shrink-0 items-center gap-2.5 border-b border-white/[0.07] px-3 pt-[env(safe-area-inset-top)] text-[12px] text-[#7c8594] md:px-5">
+      <header
+        className={`flex h-10 shrink-0 items-center gap-2.5 border-b border-white/[0.07] px-3 text-[12px] text-[#7c8594] md:px-5 ${
+          frame ? "window-handle cursor-grab active:cursor-grabbing" : "pt-[env(safe-area-inset-top)]"
+        }`}
+      >
         <OfftrckMark className="h-4 w-4 shrink-0 text-(--acc)" />
         <span className="min-w-0 truncate">
           <span className="text-[#c9ced6]">{term.username}</span>@offtrck: {term.cwd}
           {term.program ? <span className="text-(--acc)"> · {term.program.name}</span> : null}
         </span>
         <span className="ml-auto flex shrink-0 items-center gap-1">
-          <button type="button" onClick={() => send("help")} className="rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
+          <button type="button" onClick={() => send("help")} className="window-button rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
             help
           </button>
-          <a href="#/feed" className="rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
-            gui ↗
-          </a>
+          {frame ? (
+            <>
+              <button type="button" onClick={frame.onMinimize} aria-label="minimize" className="window-button grid h-6 w-6 place-items-center rounded hover:bg-white/5 hover:text-[#eceef1]">
+                —
+              </button>
+              <button type="button" onClick={frame.onClose} aria-label="close" className="window-button grid h-6 w-6 place-items-center rounded hover:bg-[#ff6b7a] hover:text-white">
+                ✕
+              </button>
+            </>
+          ) : (
+            <a href="#/feed" className="rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
+              gui ↗
+            </a>
+          )}
         </span>
       </header>
 
