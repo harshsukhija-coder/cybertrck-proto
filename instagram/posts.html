@@ -372,6 +372,54 @@
   .bt .ops { margin-top: 12px; display: grid; gap: 8px; }
   .bt .ops span { border: 1px solid var(--line); border-radius: 14px; padding: 9px 14px; font-size: 18px; color: var(--muted); }
   .bt .ops span.good { border-color: var(--green); color: var(--text); background: rgba(46,230,166,.08); }
+
+  /* share sheet */
+  .sheet { margin-top: 44px; padding: 30px; }
+  .sheet-top { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+  .sheet-top .prev { position: relative; height: 350px; border-radius: 24px; overflow: hidden; }
+  .sheet-top .prev img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .sheet-top .prev b { position: absolute; left: 18px; right: 18px; bottom: 16px; font-family: "Unbounded"; font-weight: 700; font-size: 30px; letter-spacing: -0.03em; line-height: 1.05; color: #fff; }
+  .sheet-top .prev span { position: absolute; left: 18px; top: 16px; font-family: "JetBrains Mono"; font-size: 15px; font-weight: 700; letter-spacing: .14em; color: #fff; text-transform: uppercase; }
+  .sheet .lbl2 { font-family: "JetBrains Mono"; font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  .cap { margin-top: 12px; padding: 22px 24px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.03); font-size: 24px; line-height: 1.45; }
+  .cap .tags { color: var(--accent); }
+  .cap .lnk { color: var(--muted); }
+  .dice { margin-top: 16px; display: inline-flex; gap: 10px; align-items: center; border: 1px solid var(--accent); color: var(--accent); border-radius: 99px; padding: 12px 22px; font-size: 22px; font-weight: 700; }
+  .socials { margin-top: 26px; padding-top: 26px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; }
+  .socials span { display: inline-flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 99px; padding: 14px 22px; font-size: 23px; font-weight: 600; }
+  .socials span i { width: 14px; height: 14px; border-radius: 99px; background: var(--c); }
+  .socials span.pri { background: var(--accent); color: #08090d; border: 0; }
+
+  /* research papers */
+  .paper { margin-top: 44px; padding: 36px 38px; border-color: rgba(196,181,253,.4); }
+  .paper .src { display: flex; align-items: center; gap: 16px; font-size: 24px; }
+  .paper .src i { width: 56px; height: 56px; border-radius: 99px; background: #c4b5fd; color: #08090d; display: grid; place-items: center; font-style: normal; font-family: "Unbounded"; font-weight: 700; font-size: 22px; }
+  .paper .src span { color: var(--muted); }
+  .paper .why3 { margin-top: 26px; font-family: "JetBrains Mono"; font-size: 19px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .paper .jr { margin-top: 18px; font-family: "JetBrains Mono"; font-size: 19px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  .paper h3 { margin-top: 12px; font-family: "Unbounded"; font-weight: 600; font-size: 40px; letter-spacing: -0.03em; line-height: 1.15; }
+  .paper p { margin-top: 18px; font-size: 26px; line-height: 1.45; color: var(--muted); }
+  .paper .row2 { margin-top: 26px; display: flex; align-items: center; justify-content: space-between; }
+  .paper .cites { font-family: "Anton"; font-size: 46px; color: #c4b5fd; }
+  .paper .cites span { font-family: "JetBrains Mono"; font-size: 20px; color: var(--dim); letter-spacing: .08em; margin-left: 10px; }
+
+  /* themes */
+  .themes { margin-top: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .th { border: 1px solid var(--line); border-radius: 28px; padding: 12px 12px 16px; }
+  .th.on { border-color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .th .pv { height: 190px; border-radius: 20px; padding: 16px; background: var(--pg); }
+  .th .pv div { height: 100%; border-radius: 14px; padding: 16px; background: var(--cd); display: flex; flex-direction: column; gap: 10px; }
+  .th .pv i { height: 12px; border-radius: 9px; background: var(--tx); }
+  .th .pv i:nth-child(1) { width: 70%; opacity: .85; }
+  .th .pv i:nth-child(2) { width: 48%; opacity: .35; }
+  .th .pv i:nth-child(3) { margin-top: auto; width: 70px; height: 20px; background: var(--accent); }
+  .th .pv.split { padding: 0; background: linear-gradient(135deg, #07080c 50%, #f4f2ec 50%); }
+  .th p { margin-top: 12px; padding: 0 6px; font-family: "JetBrains Mono"; font-size: 23px; font-weight: 600; }
+  .th p span { display: block; font-weight: 400; font-size: 17px; color: var(--dim); margin-top: 4px; }
+  .gems { margin-top: 34px; display: flex; align-items: center; gap: 22px; }
+  .gems .lbl2 { font-family: "JetBrains Mono"; font-size: 19px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-right: 8px; }
+  .gems i { width: 66px; height: 66px; border-radius: 99px; background: var(--c); display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 26px; color: #08090d; }
+  .gems i.on { box-shadow: 0 0 0 5px var(--bg), 0 0 0 9px var(--c); }
 </style>
 </head>
 <body>
@@ -1147,6 +1195,93 @@
     </div>
   </div>
   <div class="foot"><span>lessons, games, polls, live posts</span><span><b>link in bio</b></span></div>
+</section>
+
+<!-- ============ share, research papers, themes ============ -->
+
+<!-- 36 · what's new -->
+<section class="post" id="p36" style="--accent: var(--purple)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">36</div></div>
+  <div class="body">
+    <div class="kicker">just dropped</div>
+    <h1 class="xl">3 new <em>drops.</em></h1>
+    <div class="steps">
+      <div class="panel step"><div class="n" style="background: var(--green)">↗</div><div><h3>share any post</h3><p>to insta, X, linkedin or whatsapp, with a caption ready to go</p></div></div>
+      <div class="panel step"><div class="n" style="background: #c4b5fd">📄</div><div><h3>research papers</h3><p>fresh papers in the topics you picked, right in your feed</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--amber)">🎨</div><div><h3>themes</h3><p>6 looks, 5 accent colours. yes, light mode too</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>swipe to see each one</span><span><b>next: share →</b></span></div>
+</section>
+
+<!-- 37 · share any post -->
+<section class="post" id="p37" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">37</div></div>
+  <div class="body">
+    <div class="kicker">new · share</div>
+    <h1 class="md">learned it? <em>post it.</em></h1>
+    <div class="panel sheet">
+      <div class="sheet-top">
+        <div class="prev"><img src="../src/assets/courses/ip.jpg" alt="" /><span>offtrck.net</span><b>ip addresses</b></div>
+        <div>
+          <div class="lbl2">caption</div>
+          <div class="cap">pov: ip addresses finally makes sense 🧠<br />took 10 min →<br /><span class="lnk">learn with me → offtrck.net</span><br /><span class="tags">#offtrck #networking</span></div>
+          <div class="dice">🎲 another caption</div>
+        </div>
+      </div>
+      <div class="socials">
+        <span class="pri">↗ share</span>
+        <span style="--c: #e1306c"><i></i>instagram</span>
+        <span style="--c: #fff"><i></i>X</span>
+        <span style="--c: #0a66c2"><i></i>linkedin</span>
+        <span style="--c: #25d366"><i></i>whatsapp</span>
+      </div>
+    </div>
+    <p class="sub" style="font-size: 31px">lessons, games, polls, facts. tap ↗ and get <b>a new caption every time.</b></p>
+  </div>
+  <div class="foot"><span>no comments, just shares</span><span><b>next: papers →</b></span></div>
+</section>
+
+<!-- 38 · research papers -->
+<section class="post" id="p38" style="--accent: #c4b5fd">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">38</div></div>
+  <div class="body">
+    <div class="kicker">new · research papers</div>
+    <h1 class="md">real research. <em>in your feed.</em></h1>
+    <div class="panel paper">
+      <div class="src"><i>R</i><b>research papers</b><span>· 📄 research</span></div>
+      <div class="why3">✦ you're into hacking &amp; security</div>
+      <div class="jr">new paper · proceedings of the acm on software engineering</div>
+      <h3>Sifting the Noise: A Comparative Study of LLM Agents in Vulnerability False Positive Filtering</h3>
+      <p>security scanners flag lots of "bugs" that aren't real. this paper tests if AI agents can sort the real ones from the noise.</p>
+      <div class="row2"><div class="cites">16<span>CITATIONS · FREE TO READ</span></div><span class="btn acc">read it ↗</span></div>
+    </div>
+    <p class="sub" style="font-size: 31px">picked from <b>the last 90 days</b>, only from trusted journals, only in <b>your</b> topics.</p>
+  </div>
+  <div class="foot"><span>networking · security · money · marketing…</span><span><b>next: themes →</b></span></div>
+</section>
+
+<!-- 39 · themes -->
+<section class="post" id="p39" style="--accent: var(--amber)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">39</div></div>
+  <div class="body">
+    <div class="kicker">new · themes</div>
+    <h1 class="md">your app. <em>your vibe.</em></h1>
+    <div class="themes">
+      <div class="th"><div class="pv split"></div><p>auto<span>matches your phone</span></p></div>
+      <div class="th" style="--pg: #07080c; --cd: #111318; --tx: #eef0f6"><div class="pv"><div><i></i><i></i><i></i></div></div><p>midnight<span>the classic dark</span></p></div>
+      <div class="th" style="--pg: #050d1a; --cd: #0e1c31; --tx: #eaf2ff"><div class="pv"><div><i></i><i></i><i></i></div></div><p>ocean<span>deep blue night</span></p></div>
+      <div class="th" style="--pg: #110c09; --cd: #211813; --tx: #f6ece3"><div class="pv"><div><i></i><i></i><i></i></div></div><p>mocha<span>warm and cosy</span></p></div>
+      <div class="th" style="--pg: #000; --cd: #0f0f0f; --tx: #f5f5f5"><div class="pv"><div><i></i><i></i><i></i></div></div><p>oled<span>pure black</span></p></div>
+      <div class="th on" style="--pg: #f4f2ec; --cd: #fff; --tx: #15171c"><div class="pv"><div><i></i><i></i><i></i></div></div><p>paper<span>light mode ☀️</span></p></div>
+    </div>
+    <div class="gems">
+      <span class="lbl2">accent</span>
+      <i style="--c: #4f8cff"></i><i style="--c: #ff4d6d"></i><i class="on" style="--c: #ffb020">✓</i><i style="--c: #2ee6a6"></i><i style="--c: #b36bff"></i>
+    </div>
+    <p class="sub" style="font-size: 31px">paper for sunny days. oled for <b>2am scrolling.</b> works on your phone too.</p>
+  </div>
+  <div class="foot"><span>tap 🎨 in the menu</span><span><b>link in bio</b></span></div>
 </section>
 
 <script>

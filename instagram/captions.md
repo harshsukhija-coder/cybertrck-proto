@@ -1,11 +1,12 @@
 # offtrck · Instagram posts
 
-35 posts in four series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
+39 posts in five series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
 
 - **01–13:** offtrck academy launch.
 - **14–23:** what's new: terminal mode, the live feed, and paths (skill check + roadmaps).
 - **24–32:** 6 new games, and games popping up in the feed.
-- **33–35:** new feed layouts: glass and bento. Captions are at the end of this file.
+- **33–35:** new feed layouts: glass and bento.
+- **36–39:** share any post, research papers in the feed, and themes. Captions are at the end of this file.
 
 ## Series 1 · offtrck academy launch
 
@@ -860,3 +861,96 @@ stream, glass or bento? tell us your pick 👇
 #offtrck #bentogrid #uidesign #appdesign #microlearning #techfeed
 ```
 **Alt text:** A grid of frosted tiles: photo tiles for ip addresses, compound interest and the crack it game, a fact tile with the number 72, a poll about profit with "no" marked correct, and a live hacker news post.
+
+---
+
+## Series 5 · share, research papers, themes
+
+4 posts, in posting order: what's new (36), share (37), research papers (38) and themes (39). They also work as one 4-slide carousel, with the caption from 36.
+
+---
+
+## 36 · 3 new drops
+**Image:** `posts/36.png`
+
+**Caption**
+```
+3 new drops just landed 🚨
+
+↗ share any post to your socials
+📄 fresh research papers in your feed
+🎨 themes. yes, light mode is finally here
+
+swipe for the tour 👉
+
+#offtrck #newfeature #appupdate #learntech #edtech #genz
+```
+**Alt text:** The words "3 new drops." above three cards: "share any post", "research papers" and "themes", each with a short line about what it does.
+
+---
+
+## 37 · learned it? post it.
+**Image:** `posts/37.png`
+
+**Caption**
+```
+learned it? post it. 📲
+
+tap ↗ on any lesson, game, poll or fact and you get:
+🖼 a ready-made image
+✍️ a caption that actually slaps
+🎲 don't like it? hit "another caption"
+
+then send it to insta, X, linkedin or whatsapp in one tap.
+
+tag us when you flex 💅
+
+#offtrck #learnwithme #studytok #edtech #sharethis #learntech
+```
+**Alt text:** A share pop-up with a photo card for "ip addresses", the caption "pov: ip addresses finally makes sense, took 10 min", an "another caption" button with a dice, and buttons for share, instagram, X, linkedin and whatsapp.
+
+---
+
+## 38 · real research. in your feed.
+**Image:** `posts/38.png`
+
+**Caption**
+```
+nerd hours just got easier 🤓📄
+
+your feed now shows fresh research papers in the topics you picked:
+🔬 published in the last 90 days
+✅ only from trusted journals
+🆓 most are free to read
+
+skim the summary. open it if it hooks you.
+
+which topic should we add papers for next? 👇
+
+#offtrck #research #science #cybersecurity #learntech #studygram
+```
+**Alt text:** A feed post from "research papers" showing a new paper titled "Sifting the Noise: A Comparative Study of LLM Agents in Vulnerability False Positive Filtering", with a one-line summary, "16 citations, free to read" and a "read it" button.
+
+---
+
+## 39 · your app. your vibe.
+**Image:** `posts/39.png`
+
+**Caption**
+```
+your app. your vibe. 🎨
+
+pick a look:
+🌗 auto: matches your phone
+🌑 midnight · 🌊 ocean · ☕ mocha · ⚫ oled
+☀️ paper: light mode, finally
+
+then pick an accent colour 💙❤️💛💚💜
+
+works on your phone too. tap 🎨 in the menu.
+
+which one are you? drop it below 👇
+
+#offtrck #lightmode #darkmode #appdesign #uidesign #aesthetic
+```
+**Alt text:** Six theme preview tiles (auto, midnight, ocean, mocha, oled and paper, with paper selected), a row of five accent colour circles with yellow selected, and the line "paper for sunny days. oled for 2am scrolling."
