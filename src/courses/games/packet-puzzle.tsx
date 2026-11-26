@@ -132,7 +132,7 @@ export const PacketPuzzle = () => {
 
       <div
         className={`flex min-h-24 flex-wrap content-center items-center gap-x-2 gap-y-1 rounded-3xl border px-5 py-4 transition-colors ${
-          roundDone ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-[#111318]"
+          roundDone ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-(--card)"
         }`}
       >
         <span className="w-full font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">

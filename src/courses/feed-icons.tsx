@@ -22,6 +22,15 @@ export const CommentIcon = ({ className }: IconProps) => (
   </svg>
 );
 
+export const PaletteIcon = ({ className }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.9 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8h2.1A4.3 4.3 0 0 0 21 10.4C21 6.3 17 3 12 3Z" />
+    <circle cx="7.5" cy="11" r="1.1" fill="currentColor" />
+    <circle cx="10.5" cy="7" r="1.1" fill="currentColor" />
+    <circle cx="15.5" cy="7.5" r="1.1" fill="currentColor" />
+  </svg>
+);
+
 export const ShareIcon = ({ className }: IconProps) => (
   <svg {...base} className={className}>
     <path d="M21.5 3 10.2 14.3M21.5 3l-7 18.5-4.3-7.2L3 10l18.5-7Z" />

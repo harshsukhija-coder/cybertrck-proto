@@ -216,7 +216,7 @@ const Feed = ({ prefs, username, layout, onLayout }: FeedProps) => {
         className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
           active ? "text-black" : "border border-(--line) bg-(--panel) text-(--muted) hover:text-(--fg)"
         }`}
-        style={active ? { background: color ?? "var(--fg)" } : undefined}
+        style={active ? (color ? { background: color } : { background: "var(--fg)", color: "var(--bg)" }) : undefined}
       >
         {label}
       </button>

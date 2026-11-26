@@ -68,7 +68,7 @@ export const ChoiceGame = ({ gameId, newGame, headline, right = "nailed it! " }:
         ]}
       />
 
-      <div key={index} className="animate-tile-in rounded-3xl border border-white/10 bg-[#111318] p-5 text-center">
+      <div key={index} className="animate-tile-in rounded-3xl border border-white/10 bg-(--card) p-5 text-center">
         <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--gem)">{round.kicker}</p>
         <p className={round.big ? "mt-3 animate-like-pop text-7xl leading-none" : "mt-2 font-display text-xl font-bold leading-snug"}>{round.prompt}</p>
       </div>

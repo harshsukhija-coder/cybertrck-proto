@@ -150,7 +150,7 @@ export const LabView = ({ lab, labKey, best }: { lab: Lab; labKey: string; best?
       </Section>
 
       <Section n={2} title="the network">
-        <div className="rounded-2xl border border-white/10 bg-[#0c0f16] p-3 sm:p-5">
+        <div className="keep-white rounded-2xl border border-white/10 bg-[#0c0f16] p-3 sm:p-5">
           <TopologyDiagram topology={lab.topology} />
         </div>
         <div className="no-scrollbar mt-4 overflow-x-auto rounded-2xl border border-white/10">

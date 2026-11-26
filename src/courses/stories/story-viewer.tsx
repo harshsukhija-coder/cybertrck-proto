@@ -233,7 +233,7 @@ export const StoryViewer = ({ stories, start, seen, onClose }: Props) => {
   const sideButton = "hidden h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20 disabled:opacity-0 sm:grid";
 
   return (
-    <div role="dialog" aria-modal aria-label={`${story.label} story`} className="fixed inset-0 z-50 flex items-center justify-center gap-5 bg-black/90 backdrop-blur-md animate-pop">
+    <div role="dialog" aria-modal aria-label={`${story.label} story`} className="keep-white fixed inset-0 z-50 flex items-center justify-center gap-5 bg-black/90 backdrop-blur-md animate-pop">
       <button type="button" aria-label="Previous" onClick={prev} disabled={pos.s === 0 && pos.i === 0} className={sideButton}>
         ‹
       </button>

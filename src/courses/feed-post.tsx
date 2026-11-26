@@ -273,7 +273,7 @@ export const PostFrame = (props: FrameProps) => {
       )}
       <header className="flex items-center gap-3 px-4 py-3 sm:px-3">
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--gem) text-black ring-2 ring-white/10 ring-offset-2 ring-offset-[#07080c]"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--gem) text-black ring-2 ring-white/10 ring-offset-2 ring-offset-(--bg)"
           style={props.accent ? { background: props.accent } : undefined}
         >
           {props.avatar}
@@ -293,7 +293,7 @@ export const PostFrame = (props: FrameProps) => {
         </button>
       </header>
 
-      <div className="relative overflow-hidden sm:rounded-[22px]">{props.media}</div>
+      <div className="keep-white relative overflow-hidden sm:rounded-[22px]">{props.media}</div>
 
       <div className="mt-2 flex items-center gap-1 px-2.5 sm:px-1.5">
         <button
@@ -329,7 +329,7 @@ export const PostFrame = (props: FrameProps) => {
             {likers.map(name => (
               <span
                 key={name}
-                className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#07080c] bg-white/20 text-[9px] font-bold uppercase"
+                className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-(--bg) bg-white/20 text-[9px] font-bold uppercase"
               >
                 {name[0]}
               </span>

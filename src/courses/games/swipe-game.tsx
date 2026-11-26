@@ -137,7 +137,7 @@ export const SwipeGame = ({ gameId, cards, left, right, promptClass = "font-disp
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          className="absolute inset-0 flex cursor-grab touch-none flex-col items-center justify-center rounded-3xl border border-white/10 bg-[#111318] p-8 text-center shadow-2xl shadow-black/50 active:cursor-grabbing"
+          className="absolute inset-0 flex cursor-grab touch-none flex-col items-center justify-center rounded-3xl border border-white/10 bg-(--card) p-8 text-center shadow-2xl shadow-black/50 active:cursor-grabbing"
           style={{
             transform: `translateX(${x}px) rotate(${x / 16}deg)`,
             transition: dragging ? "none" : `transform ${FLY_MS}ms ease-out`,

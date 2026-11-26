@@ -1,7 +1,8 @@
 import { readBadges } from "../../courses/badges/use-badges";
 import { ALL_CHAPTERS } from "../../courses/data";
 import { GAMES } from "../../courses/games/games";
-import { GEMS } from "../../courses/gems";
+import { GEMS, pickGem } from "../../courses/gems";
+import { THEMES, currentTheme, setTheme } from "../../courses/theme-store";
 import { readProgress, summarizeProgress } from "../../courses/progress";
 import { columns, narrow, padEnd, plural, rule } from "../format";
 import { completePath, nodeAt, resolvePath } from "../fs";
@@ -182,21 +183,30 @@ export const shellCommands: Command[] = [
   { name: "echo", usage: "echo <text>", about: "print some text", group: "terminal", hidden: true, run: (t, _a, raw) => t.segs([{ text: raw }]) },
   {
     name: "theme",
-    usage: "theme [colour]",
-    about: "change the highlight colour",
+    usage: "theme [look or colour]",
+    about: "change the app's look (dark, light…) and highlight colour",
     group: "terminal",
     run: (t, args) => {
-      const gem = GEMS.find(g => g.id === args[0]?.toLowerCase() || g.name.toLowerCase() === args[0]?.toLowerCase());
+      const want = args[0]?.toLowerCase();
+      const look = THEMES.find(x => x.id === want || (want === "light" && x.id === "paper") || (want === "dark" && x.id === "midnight"));
+      if (look) {
+        setTheme(look.id);
+        return t.print(`app look set to {accent:${look.label}} (${look.about}). the terminal stays terminal-dark.`);
+      }
+      const gem = GEMS.find(g => g.id === want || g.name.toLowerCase() === want);
       if (!gem) {
-        t.print("pick a colour:");
-        GEMS.forEach(g => t.print(`  [[{${g.color}:●} ${g.name.toLowerCase()}|theme ${g.id}]]`));
+        const now = currentTheme();
+        t.print(`look {dim:(now ${now})}:`);
+        t.print(`  ${THEMES.map(x => `[[${x.label}|theme ${x.id}]]`).join("  ")}`);
+        t.print("highlight colour:");
+        t.print(`  ${GEMS.map(g => `[[{${g.color}:●} ${g.name.toLowerCase()}|theme ${g.id}]]`).join("  ")}`);
         return;
       }
-      localStorage.setItem(GEM_KEY, gem.id);
+      pickGem(gem.id);
       t.accent = gem.color;
-      t.print(`theme set to {accent:${gem.name.toLowerCase()}}. it's used on the website too.`);
+      t.print(`colour set to {accent:${gem.name.toLowerCase()}}. it's used in the app too.`);
     },
-    complete: () => GEMS.map(g => g.id),
+    complete: () => [...THEMES.map(x => x.id), ...GEMS.map(g => g.id)],
   },
   {
     name: "gui",

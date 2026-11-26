@@ -32,7 +32,7 @@ export const PathTrail = ({ path, status }: { path: LearningPath; status: PathSt
               </span>
             )}
             <span
-              className={`relative grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${done ? "text-black" : here ? "bg-[#07080c]" : "border-2 border-white/15 bg-[#07080c] text-(--muted)"}`}
+              className={`relative grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${done ? "text-black" : here ? "bg-(--bg)" : "border-2 border-white/15 bg-(--bg) text-(--muted)"}`}
               style={done ? { background: path.color } : here ? { boxShadow: `0 0 0 2px ${path.color}`, color: path.color } : undefined}
             >
               {here && <span className="absolute inset-0 animate-pulse-ring rounded-full" style={{ boxShadow: `0 0 0 2px ${path.color}` }} aria-hidden />}

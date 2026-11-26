@@ -116,7 +116,7 @@ export const PortRush = () => {
         />
       </div>
 
-      <div className="flex h-52 flex-col items-center justify-center rounded-3xl border border-white/10 bg-[#111318]">
+      <div className="flex h-52 flex-col items-center justify-center rounded-3xl border border-white/10 bg-(--card)">
         <p className="font-jetbrains text-[11px] uppercase tracking-wider text-(--muted)">port</p>
         <p key={question.target.port} className="animate-like-pop font-poster text-8xl leading-none">
           {question.target.port}

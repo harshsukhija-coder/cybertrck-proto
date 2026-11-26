@@ -102,7 +102,7 @@ export const HigherLower = () => {
       />
       <div className="relative grid gap-3 sm:grid-cols-2">
         <AppCard key={`l-${left.name}`} app={left} showUsers={!!reveal} state={stateFor("left")} onPick={() => pick("left")} />
-        <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-(--line) bg-[#07080c] font-poster text-lg uppercase">
+        <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-(--line) bg-(--bg) font-poster text-lg uppercase">
           vs
         </span>
         <AppCard key={`r-${right.name}`} app={right} showUsers={!!reveal} state={stateFor("right")} onPick={() => pick("right")} />

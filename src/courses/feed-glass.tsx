@@ -16,7 +16,7 @@ import type { Course, CourseChapter } from "./types";
 /** Frosted glass on the dark page */
 const GLASS = "border border-white/10 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_50px_-20px_rgba(0,0,0,0.6)]";
 /** Frosted glass sitting on top of a photo */
-const FROST = "border border-white/20 bg-black/40 backdrop-blur-xl";
+const FROST = "keep-white border border-white/20 bg-black/40 text-white backdrop-blur-xl";
 
 const short = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(n));
 
@@ -33,7 +33,7 @@ const Shell = ({ accent, compact, children, id }: { accent: string; compact: boo
 type PhotoProps = { src: string; focus?: string; exposure?: number; ratio: string; onError?: () => void; children?: ReactNode };
 
 const Photo = ({ src, focus, exposure, ratio, onError, children }: PhotoProps) => (
-  <div className={`relative overflow-hidden rounded-[22px] bg-white/5 ${ratio}`}>
+  <div className={`keep-white relative overflow-hidden rounded-[22px] bg-white/5 text-white ${ratio}`}>
     <img
       src={src}
       alt=""
@@ -500,7 +500,7 @@ export const LayoutSwitch = ({ layout, onChange }: { layout: FeedLayout; onChang
         aria-checked={layout === l.id}
         title={l.about}
         onClick={() => onChange(l.id)}
-        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${layout === l.id ? "bg-white text-black" : "text-(--muted) hover:text-(--fg)"}`}
+        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${layout === l.id ? "bg-(--fg) text-(--bg)" : "text-(--muted) hover:text-(--fg)"}`}
       >
         <LayoutIcon id={l.id} />
         <span className="hidden sm:inline">{l.label}</span>

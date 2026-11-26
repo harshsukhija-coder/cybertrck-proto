@@ -121,7 +121,7 @@ export const QueryBuilder = () => {
 
       <div
         className={`flex min-h-20 flex-wrap content-center items-center gap-2 rounded-3xl border px-4 py-4 font-jetbrains transition-colors ${
-          roundDone ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-[#111318]"
+          roundDone ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-(--card)"
         }`}
       >
         <span className="text-(--muted)">&gt;</span>

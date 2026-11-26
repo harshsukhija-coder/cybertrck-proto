@@ -56,7 +56,7 @@ const Controls = ({ stepper, count }: { stepper: ReturnType<typeof useStepper>; 
 );
 
 const Frame = ({ label, controls, children, frameRef }: { label: string; controls?: ReactNode; children: ReactNode; frameRef?: React.Ref<HTMLDivElement> }) => (
-  <div ref={frameRef} className="overflow-hidden rounded-2xl border border-white/10 bg-[#0c0f16]">
+  <div ref={frameRef} className="keep-white overflow-hidden rounded-2xl border border-white/10 bg-[#0c0f16]">
     <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-2.5">
       <span className="flex items-center gap-2 font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--accent)">
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-(--accent)" />

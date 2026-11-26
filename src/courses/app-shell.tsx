@@ -1,8 +1,23 @@
-import { forwardRef, useState, type CSSProperties, type ReactNode } from "react";
+import { forwardRef, useCallback, useState, type CSSProperties, type ReactNode } from "react";
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { BadgeToast } from "./badges/badge-toast";
 import { useBadgeWatcher } from "./badges/use-badges";
-import { BookIcon, GamepadIcon, HomeIcon, MedalIcon, MonitorIcon, RouteIcon, SparkIcon } from "./feed-icons";
+import { BookIcon, GamepadIcon, HomeIcon, MedalIcon, MonitorIcon, PaletteIcon, RouteIcon, SparkIcon } from "./feed-icons";
+import { ThemeSheet } from "./theme-sheet";
+
+/** Any button that opens the theme sheet */
+const ThemeButton = ({ className, children }: { className: string; children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  return (
+    <>
+      <button type="button" title="theme" aria-label="Change theme" onClick={() => setOpen(true)} className={className}>
+        {children}
+      </button>
+      {open && <ThemeSheet onClose={close} />}
+    </>
+  );
+};
 
 export type Section = "feed" | "learn" | "paths" | "games" | "badges";
 
@@ -43,6 +58,10 @@ const SideNav = ({ active, username, onLogout }: NavProps) => (
     </nav>
 
     <div className="mt-auto flex flex-col gap-1">
+      <ThemeButton className="flex items-center gap-4 rounded-2xl px-3 py-2.5 text-sm text-(--muted) transition-colors hover:bg-white/5 hover:text-(--fg)">
+        <PaletteIcon className="h-5 w-5 shrink-0" />
+        <span className="hidden xl:inline">theme</span>
+      </ThemeButton>
       <a
         href="#/feed/start"
         title="edit my vibe"
@@ -86,12 +105,15 @@ const MobileTopBar = ({ username, onLogout }: Omit<NavProps, "active">) => {
   const [open, setOpen] = useState(false);
   const item = "block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-white/5";
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-(--line) bg-black/60 px-4 backdrop-blur-xl md:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-(--line) bg-(--bg)/70 px-4 backdrop-blur-xl md:hidden">
       <a href="#/feed" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
         <OfftrckMark className="h-5 w-5 text-(--gem)" />
         offtrck
       </a>
-      <div className="relative">
+      <div className="relative flex items-center gap-1.5">
+        <ThemeButton className="grid h-9 w-9 place-items-center rounded-full text-(--muted) transition-colors hover:bg-white/5 hover:text-(--fg)">
+          <PaletteIcon className="h-5 w-5" />
+        </ThemeButton>
         <button
           type="button"
           aria-label="Account menu"
@@ -102,7 +124,7 @@ const MobileTopBar = ({ username, onLogout }: Omit<NavProps, "active">) => {
           {username[0]}
         </button>
         {open && (
-          <div className="absolute right-0 top-11 w-52 animate-pop rounded-2xl border border-(--line) bg-[#0d0f14] p-1.5 shadow-2xl" onClick={() => setOpen(false)}>
+          <div className="absolute right-0 top-11 w-52 animate-pop rounded-2xl border border-(--line) bg-(--surface) p-1.5 shadow-2xl" onClick={() => setOpen(false)}>
             <p className="truncate px-3 py-2 text-xs text-(--muted)">signed in as {username}</p>
             <a href="#/feed/start" className={item}>
               edit my vibe
@@ -121,7 +143,7 @@ const MobileTopBar = ({ username, onLogout }: Omit<NavProps, "active">) => {
 };
 
 const MobileTabBar = ({ active }: { active?: Section }) => (
-  <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-(--line) bg-black/75 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+  <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-(--line) bg-(--bg)/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
     {NAV.map(({ href, label, section, Icon }) => {
       const on = section === active;
       return (

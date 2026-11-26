@@ -20,7 +20,7 @@ export const BadgeMedal = ({ badge, earned, className = "w-20" }: Props) => {
         {badge.emoji}
       </span>
       {!earned && (
-        <span className="absolute -bottom-[2%] -right-[2%] grid h-[34%] w-[34%] place-items-center rounded-full border border-(--line) bg-[#16181e]" style={{ fontSize: "15cqw" }}>
+        <span className="absolute -bottom-[2%] -right-[2%] grid h-[34%] w-[34%] place-items-center rounded-full border border-(--line) bg-(--card)" style={{ fontSize: "15cqw" }}>
           🔒
         </span>
       )}

@@ -60,10 +60,10 @@ export const LagTest = () => {
 
   const last = times.at(-1);
   const pad = {
-    ready: { tone: "bg-[#111318] border-white/10", big: "tap to start", small: `${LAG_TRIES} tries. wait for green, then tap as fast as you can.` },
+    ready: { tone: "bg-(--card) border-white/10", big: "tap to start", small: `${LAG_TRIES} tries. wait for green, then tap as fast as you can.` },
     waiting: { tone: "bg-rose-500/80 border-rose-300/40", big: "wait…", small: "don't tap yet" },
     go: { tone: "bg-emerald-400 border-emerald-200 text-black", big: "TAP!", small: "" },
-    result: { tone: "bg-[#111318] border-white/10", big: `${last} ms`, small: "tap for the next one" },
+    result: { tone: "bg-(--card) border-white/10", big: `${last} ms`, small: "tap for the next one" },
     early: { tone: "bg-amber-400/90 border-amber-200 text-black", big: "too soon!", small: `that try counts as ${EARLY_PENALTY} ms. tap to go again.` },
   }[phase];
 

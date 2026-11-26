@@ -90,7 +90,7 @@ export const BinaryBlitz = () => {
         <div className={`h-full rounded-full transition-[width] duration-100 ease-linear ${urgent ? "bg-rose-400" : "bg-(--gem)"}`} style={{ width: `${(timeLeft / BLITZ_SECONDS) * 100}%` }} />
       </div>
 
-      <div className="flex h-40 flex-col items-center justify-center rounded-3xl border border-white/10 bg-[#111318]">
+      <div className="flex h-40 flex-col items-center justify-center rounded-3xl border border-white/10 bg-(--card)">
         <p className="font-jetbrains text-[11px] uppercase tracking-wider text-(--muted)">make</p>
         <p key={target} className="animate-like-pop font-poster text-8xl leading-none">
           {target}

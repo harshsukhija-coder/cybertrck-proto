@@ -16,7 +16,7 @@ export const BadgeToast = ({ ids, onClose }: { ids: string[]; onClose: () => voi
 
   return (
     <div className="fixed inset-x-0 bottom-20 z-40 flex justify-center px-4 md:bottom-6" role="status">
-      <div className="flex w-full max-w-sm animate-pop items-center gap-3 rounded-3xl border border-(--line) bg-[#111318]/95 p-3 pr-4 shadow-2xl shadow-black/60 backdrop-blur-xl">
+      <div className="flex w-full max-w-sm animate-pop items-center gap-3 rounded-3xl border border-(--line) bg-(--card)/95 p-3 pr-4 shadow-2xl shadow-black/60 backdrop-blur-xl">
         <BadgeMedal badge={badge} earned className="w-14" />
         <div className="min-w-0 flex-1">
           <p className="font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: badge.color }}>

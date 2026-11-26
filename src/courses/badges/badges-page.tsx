@@ -71,7 +71,7 @@ const BadgeDetail = ({ state, username }: { state: BadgeState; username: string 
         role="dialog"
         aria-label={badge.name}
         onClick={e => e.stopPropagation()}
-        className="max-h-[92vh] w-full max-w-2xl animate-pop overflow-y-auto rounded-t-[28px] border border-(--line) bg-[#0d0f14] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-[28px] sm:p-7"
+        className="max-h-[92vh] w-full max-w-2xl animate-pop overflow-y-auto rounded-t-[28px] border border-(--line) bg-(--surface) p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-[28px] sm:p-7"
       >
         <div className="flex items-start gap-4">
           <BadgeMedal badge={badge} earned={!!earnedAt} className="w-20 sm:w-24" />

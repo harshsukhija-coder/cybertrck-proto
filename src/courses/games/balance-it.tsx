@@ -67,7 +67,7 @@ export const BalanceIt = () => {
         ]}
       />
 
-      <div key={index} className="animate-tile-in rounded-3xl border border-white/10 bg-[#111318] p-5">
+      <div key={index} className="animate-tile-in rounded-3xl border border-white/10 bg-(--card) p-5">
         <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--gem)">{round.business}</p>
         <p className="mt-2 font-display text-xl font-bold leading-snug">{QUESTION[round.missing](round.values)}</p>
         <div className="mt-5 flex items-center gap-1.5">

@@ -453,24 +453,100 @@ body {
     scrollbar-color: rgba(61, 220, 132, 0.2) transparent;
 }
 
-/* Courses page: dark, see-through surfaces; --gem is set inline from the chosen accent */
-.cv-root {
+/*
+ * App themes, picked in the theme sheet and stored as <html data-theme="…">.
+ * --bg page, --surface pop-ups and sheets, --card game boards and tiles.
+ * --gem (the accent) is set inline from the chosen accent colour.
+ */
+:root,
+[data-theme="midnight"] {
     --bg: #07080c;
+    --surface: #0d0f14;
+    --card: #111318;
     --fg: #eef0f6;
     --muted: rgba(238, 240, 246, 0.55);
     --line: rgba(255, 255, 255, 0.08);
     --panel: rgba(255, 255, 255, 0.03);
+    --grid: rgba(255, 255, 255, 0.045);
+    --scroll: rgba(255, 255, 255, 0.15);
+    color-scheme: dark;
+}
+
+[data-theme="ocean"] {
+    --bg: #050d1a;
+    --surface: #0a1627;
+    --card: #0e1c31;
+    --fg: #eaf2ff;
+    --muted: rgba(220, 232, 255, 0.58);
+    --line: rgba(160, 200, 255, 0.1);
+    --panel: rgba(160, 200, 255, 0.04);
+    --grid: rgba(160, 200, 255, 0.06);
+}
+
+[data-theme="mocha"] {
+    --bg: #110c09;
+    --surface: #1a130f;
+    --card: #211813;
+    --fg: #f6ece3;
+    --muted: rgba(246, 236, 227, 0.56);
+    --line: rgba(255, 220, 190, 0.1);
+    --panel: rgba(255, 220, 190, 0.035);
+    --grid: rgba(255, 220, 190, 0.05);
+}
+
+[data-theme="oled"] {
+    --bg: #000;
+    --surface: #0a0a0a;
+    --card: #0f0f0f;
+    --fg: #f5f5f5;
+    --muted: rgba(245, 245, 245, 0.55);
+    --line: rgba(255, 255, 255, 0.1);
+    --panel: rgba(255, 255, 255, 0.025);
+    --grid: rgba(255, 255, 255, 0.03);
+}
+
+/* Light theme: "white" text and tints turn into dark ink, so the same classes work on paper */
+[data-theme="paper"] {
+    --bg: #f4f2ec;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --fg: #15171c;
+    --muted: rgba(21, 23, 28, 0.6);
+    --line: rgba(21, 23, 28, 0.12);
+    --panel: rgba(255, 255, 255, 0.75);
+    --grid: rgba(21, 23, 28, 0.06);
+    --scroll: rgba(21, 23, 28, 0.2);
+    color-scheme: light;
+}
+
+/* Only inside the app pages; the terminal and classic desktop keep their own look */
+[data-theme="paper"] .cv-root {
+    --color-white: #15171c;
+}
+
+/* White pills with black text turn into dark pills with light text */
+[data-theme="paper"] .cv-root .bg-white.text-black:not(.keep-white *) {
+    color: #f4f2ec;
+}
+
+/* Photos and dark artwork keep real white text in every theme */
+.keep-white {
+    --color-white: #fff;
+}
+
+.cv-root {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    scrollbar-color: var(--scroll) transparent;
     background: var(--bg);
     color: var(--fg);
+    transition: background-color 250ms ease, color 250ms ease;
 }
 
 /* Faint grid that fades out away from the top */
 .cv-grid {
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
     background-size: 56px 56px;
     mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent 75%);
 }

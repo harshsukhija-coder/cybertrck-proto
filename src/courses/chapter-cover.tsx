@@ -20,7 +20,7 @@ export const ChapterCover = ({ chapter, wordClass = "text-5xl", className = "" }
   const [shadow, highlight] = chapter.duo;
 
   return (
-    <div className={`relative isolate overflow-hidden ${className}`} style={{ background: highlight }}>
+    <div className={`keep-white relative isolate overflow-hidden ${className}`} style={{ background: highlight }}>
       <img
         src={chapter.photo}
         alt=""

@@ -55,7 +55,7 @@ export const AcademyPost = () => (
       </span>
     </div>
     <a href="#/academy" className="group mt-3 block">
-      <div className="relative overflow-hidden bg-[#0c0f16] p-4 sm:rounded-2xl sm:ring-1 sm:ring-white/10">
+      <div className="keep-white relative overflow-hidden bg-[#0c0f16] p-4 sm:rounded-2xl sm:ring-1 sm:ring-white/10">
         <TopologyDiagram topology={DEMO_LAB.topology} />
         <span className="absolute bottom-5 left-1/2 -translate-x-1/2 rotate-6 rounded-lg bg-[#0c0f16] border-2 border-emerald-300 px-2.5 py-0.5 font-poster text-2xl uppercase text-emerald-300 transition-transform group-hover:rotate-0">
           pass ✓
