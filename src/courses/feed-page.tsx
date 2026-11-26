@@ -9,6 +9,7 @@ import { useBadges } from "./badges/use-badges";
 import { ChapterCover } from "./chapter-cover";
 import { buildFeed, interestLabel, type FeedItem } from "./feed-build";
 import { ChapterPost, CoursesPost, FactPost, GamePost, LivePostCard, PollPost } from "./feed-post";
+import { QuickPlayPost } from "./games/quick-post";
 import { GameView, GamesGrid } from "./games/games-section";
 import { GuidePost } from "./guide/guide-post";
 import { PathsPage } from "./guide/guide-page";
@@ -51,6 +52,8 @@ const itemKey = (item: FeedItem) => {
       return `${item.course.id}-${item.chapter.id}`;
     case "game":
       return item.game.id;
+    case "quick":
+      return `quick-${item.game.id}-${item.round}`;
     case "poll":
       return item.poll.id;
     case "fact":
@@ -165,6 +168,8 @@ const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
       return <ChapterPost course={item.course} chapter={item.chapter} layout={item.layout} reason={item.reason} seed={seed} />;
     case "game":
       return <GamePost game={item.game} reason={item.reason} seed={seed} />;
+    case "quick":
+      return <QuickPlayPost game={item.game} round={item.round} reason={item.reason} seed={seed} />;
     case "poll":
       return <PollPost poll={item.poll} reason={item.reason} seed={seed} />;
     case "fact":

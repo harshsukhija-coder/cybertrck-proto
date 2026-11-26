@@ -1,6 +1,7 @@
 import { readBadges } from "../../courses/badges/use-badges";
 import { ALL_CHAPTERS, COURSES, findCourse } from "../../courses/data";
 import { buildFeed, interestLabel, type FeedItem } from "../../courses/feed-build";
+import { QUICK_DECKS } from "../../courses/games/quick-rounds";
 import { pathStatus, readGuide } from "../../courses/guide/guide-store";
 import { getLivePosts, markLiveSeen } from "../../courses/live/live-feed";
 import type { LivePost } from "../../courses/live/live-sources";
@@ -188,6 +189,18 @@ const showItem = (t: Term, item: FeedItem) => {
       t.print(item.game.caption);
       t.print(`[[▶ play|play ${item.game.id}]]`);
       break;
+    case "quick": {
+      const deck = QUICK_DECKS[item.game.id]?.() ?? [];
+      const i = item.round % Math.max(1, deck.length);
+      const r = deck[i];
+      if (!r) break;
+      t.print(`{cyan:⚡ quick play · ${item.game.title}}${reason}`);
+      if (r.kicker !== item.game.title) t.print(`{dim:${r.kicker}}`);
+      if (r.big) t.block([r.prompt]);
+      else t.print(`**${r.prompt}**`);
+      t.print(r.options.map((o, k) => `[[${o}|quick ${item.game.id} ${i} ${k + 1}]]`).join("   "));
+      break;
+    }
     case "poll":
       t.print(`{pink:📊 poll}${reason}`);
       t.print(`**${item.poll.q}**`);

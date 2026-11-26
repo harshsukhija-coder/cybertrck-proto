@@ -3,6 +3,10 @@ import { Rich } from "../academy/academy-ui";
 import { ChapterCover } from "../chapter-cover";
 import { COURSES, chapterHash, findCourse } from "../data";
 import { BalanceIt } from "./balance-it";
+import { BinaryBlitz } from "./binary-blitz";
+import { ChoiceGame } from "./choice-game";
+import { emojiHeadline, moneyHeadline, newEmojiGame, newMoneyGame } from "./fun-rounds";
+import { LagTest } from "./lag-test";
 import { readBest } from "./game-utils";
 import { HigherLower } from "./higher-lower";
 import { PacketPuzzle } from "./packet-puzzle";
@@ -13,6 +17,8 @@ import {
   ASSET_LIABILITY_CARDS,
   DEBIT_CREDIT_CARDS,
   GAMES,
+  MYTH_CARDS,
+  PASSWORD_CARDS,
   PHISH_CARDS,
   SCAM_CARDS,
   TCP_UDP_CARDS,
@@ -81,6 +87,26 @@ const GameBody = ({ id }: { id: GameId }) => {
       );
     case "balance-it":
       return <BalanceIt />;
+    case "myth-or-fact":
+      return <SwipeGame gameId={id} cards={MYTH_CARDS} left={{ label: "myth", color: "#ff8a3d" }} right={{ label: "fact", color: "#8fb4ff" }} />;
+    case "crack-it":
+      return (
+        <SwipeGame
+          gameId={id}
+          cards={PASSWORD_CARDS}
+          left={{ label: "weak", color: "#ff4d6d" }}
+          right={{ label: "strong", color: "#2ee6a6" }}
+          promptClass="font-jetbrains"
+        />
+      );
+    case "emoji-decode":
+      return <ChoiceGame gameId={id} newGame={newEmojiGame} headline={emojiHeadline} right="decoded! " />;
+    case "lag-test":
+      return <LagTest />;
+    case "binary-blitz":
+      return <BinaryBlitz />;
+    case "money-machine":
+      return <ChoiceGame gameId={id} newGame={newMoneyGame} headline={moneyHeadline} right="spot on! " />;
   }
 };
 

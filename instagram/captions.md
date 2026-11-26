@@ -1,9 +1,10 @@
 # offtrck · Instagram posts
 
-23 posts in two series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
+32 posts in three series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
 
 - **01–13:** offtrck academy launch.
-- **14–23:** what's new: terminal mode, the live feed, and paths (skill check + roadmaps). Captions are at the end of this file.
+- **14–23:** what's new: terminal mode, the live feed, and paths (skill check + roadmaps).
+- **24–32:** 6 new games, and games popping up in the feed. Captions are at the end of this file.
 
 ## Series 1 · offtrck academy launch
 
@@ -385,7 +386,7 @@ save this one 📌 your terminal mode cheat sheet:
 feed → your feed, live posts included
 stories → today's facts and your path
 learn → read a chapter, card by card
-play → 10 mini games
+play → 16 mini games
 academy → blogs, quizzes and labs
 lab 4 → drop your Packet Tracer file, get graded
 missions → hacking story missions
@@ -561,3 +562,226 @@ link in bio 🔗
 #offtrck #learntech #techeducation #freecourse #roadmap #terminal
 ```
 **Alt text:** A terminal running "path check security" with the result "you already know 3/5 stages", the words "all new. all free.", a checklist of the four new features and a "try it now" button.
+
+---
+
+## Series 3 · new games
+
+9 posts, in posting order: an intro (24), one post per game (25–30), games in the feed (31), and a recap (32).
+
+**Suggested schedule:** one post a day. If you'd rather post fewer, the shortest version is 24, 25, 28, 31 and 32. Posts 25–30 work well as a carousel too.
+
+---
+
+## 24 · 6 new games
+**Image:** `posts/24.png`
+
+**Caption**
+```
+6 new games just dropped. 🎮
+
+🧐 myth or fact? swipe on tech myths
+🔓 crack it? would a hacker guess this password?
+🔥🧱 emoji decode: read tech in emoji
+⚡ lag test: is it your wifi, or is it you?
+🤖 binary blitz: flip bits against the clock
+💸 money time machine: guess what your money grows into
+
+every game starts with a 30-second refresher, so you're never lost. that's 16 games in total now.
+
+which one are you playing first? 👇
+
+#offtrck #learnbyplaying #edtech #techgames #cybersecurity #moneytips
+```
+**Alt text:** Six game cards with photos: myth or fact, crack it, emoji decode, lag test, binary blitz and money time machine.
+
+---
+
+## 25 · myth or fact?
+**Image:** `posts/25.png`
+
+**Caption**
+```
+"incognito mode hides what i do from the wifi owner."
+
+myth. ❌
+
+incognito only stops your own device from saving history. the wifi owner, your school or your office can still see which sites you visit.
+
+myth or fact? is a new swipe game with 10 tech claims you've definitely heard before:
+📶 more bars = faster internet?
+🔒 the padlock means a site is safe?
+🍎 macs can't get viruses?
+
+swipe left for myth, right for fact. every card tells you why.
+
+tag the friend who still believes one of these 👇
+
+#offtrck #mythbusting #techmyths #privacy #internetsafety #didyouknow
+```
+**Alt text:** A swipe card saying "incognito mode hides your browsing from the wifi owner", stamped "myth", with an explanation underneath.
+
+---
+
+## 26 · crack it?
+**Image:** `posts/26.png`
+
+**Caption**
+```
+P@ssw0rd! looks clever. a cracking tool guesses it in under a second. 🔓
+
+crack it? is a new swipe game: would a hacker crack this password, or not?
+
+what you'll learn:
+❌ names + birth years are the first thing attackers try
+❌ swapping letters for symbols doesn't fool anyone
+❌ one password on 20 sites = one leak unlocks all 20
+✅ 4 random words beat 8 "clever" characters
+
+be honest, how many of your passwords are weak? 👀
+
+#offtrck #passwords #cybersecurity #staysafeonline #infosec #securityawareness
+```
+**Alt text:** A swipe card with the password "P@ssw0rd!" stamped "weak", and a note saying four random words are stronger.
+
+---
+
+## 27 · emoji decode
+**Image:** `posts/27.png`
+
+**Caption**
+```
+🐴🎁 = ?
+
+if you said trojan, you speak fluent tech. 🧠
+
+emoji decode is a new game: you see a few emojis, and you pick the tech or money word they spell out. 10 rounds. keep your streak alive. 🔥
+
+try these in the comments:
+🎣📧
+🐂📈
+🦄🚀
+
+drop your answers 👇 (no googling)
+
+#offtrck #emojichallenge #emojiquiz #techwords #cybersecurity #funlearning
+```
+**Alt text:** The emojis horse and gift, with four answers (firewall, trojan, cookie, phishing). Trojan is marked correct.
+
+---
+
+## 28 · lag test
+**Image:** `posts/28.png`
+
+**Caption**
+```
+blaming the wifi again? 🎮
+
+lag test is a new game: wait for the screen to turn green, then tap as fast as you can. 5 tries.
+
+then we compare you to ping:
+📶 good wifi ping: around 20–50 ms
+🧠 a human reaction: around 200–300 ms
+
+so most of the "lag" is… your brain. 😄 (sorry.)
+
+along the way you'll learn what ping actually is, and why it matters in online games.
+
+post your score 👇 under 200 ms and you're a pro.
+
+#offtrck #gaming #reactiontime #ping #lag #gamers
+```
+**Alt text:** A big green "tap!" button, with bars comparing a 248 ms reaction time to a 30 ms wifi ping.
+
+---
+
+## 29 · binary blitz
+**Image:** `posts/29.png`
+
+**Caption**
+```
+computers only know 0 and 1. can you think like one for 45 seconds? 🤖
+
+binary blitz is a new game:
+1️⃣ you see a number, like 42
+2️⃣ flip the bits so they add up to it (32 + 8 + 2 ✓)
+3️⃣ match as many as you can before time runs out
+
+each bit is worth 128, 64, 32, 16, 8, 4, 2 or 1. that's it, that's binary.
+
+fun fact: every ip address is just four of these. 192 = 11000000.
+
+what's your score? 👇
+
+#offtrck #binary #learntocode #computerscience #networking #brainteaser
+```
+**Alt text:** The number 42 with eight bit tiles below it. The tiles worth 32, 8 and 2 are switched on, and they add up to 42.
+
+---
+
+## 30 · money time machine
+**Image:** `posts/30.png`
+
+**Caption**
+```
+you invest ₹10,000 at 12% a year. what is it worth after 20 years? 💸
+
+a) ₹34,000
+b) ₹96,500
+c) ₹67,500
+d) ₹1,54,000
+
+answer: b. most people guess a. 😅
+
+₹34,000 is what you'd get without compounding. with compounding you earn interest on your interest, and it adds up fast.
+
+quick trick, the rule of 72: divide 72 by the rate to see how many years it takes to double. 12% → about 6 years.
+
+money time machine is a new game with 8 rounds like this. what did you guess? 👇
+
+#offtrck #compoundinterest #personalfinance #investing #moneytips #financialliteracy
+```
+**Alt text:** A question asking what ₹10,000 at 12% for 20 years grows to, with ₹96,500 marked correct and a note about the rule of 72.
+
+---
+
+## 31 · games in your feed
+**Image:** `posts/31.png`
+
+**Caption**
+```
+games now pop up right in your feed. 🎯
+
+scroll and you'll find:
+⚡ quick play posts: answer one question right there in the post
+🎮 full games, ready to play
+
+they land in a different spot every visit, so your feed never feels the same. picked "learn by playing"? you'll see them more often.
+
+got one right? tap "another one ↻". want more? "play the full game →".
+
+#offtrck #learnbyplaying #feed #microlearning #edtech #studygram
+```
+**Alt text:** A feed post called "quick play · crack it?" asking whether "iloveyou" would be cracked, with "weak" marked correct and buttons for another question or the full game.
+
+---
+
+## 32 · play more
+**Image:** `posts/32.png`
+
+**Caption**
+```
+play more. 🟢
+
+✅ 6 new games, 16 in total
+✅ quick play right in your feed
+✅ every game works in terminal mode too
+✅ a 30-second refresher before each one
+
+pick a game, beat your best score, then come back and flex it in the comments 👇
+
+link in bio 🔗
+
+#offtrck #learnbyplaying #techgames #edtech #learntech #funlearning
+```
+**Alt text:** A terminal solving binary blitz (00101010 = 42), the words "play more.", a checklist of what's new and a "play now" button.

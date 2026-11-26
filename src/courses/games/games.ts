@@ -8,6 +8,12 @@ import viralPhoto from "../../assets/courses/viral.jpg";
 import kettlePhoto from "../../assets/courses/acc-kettle.jpg";
 import ledgerPhoto from "../../assets/courses/acc-ledger.jpg";
 import scalePhoto from "../../assets/courses/acc-scale.jpg";
+import ipPhoto from "../../assets/courses/ip.jpg";
+import injectPhoto from "../../assets/courses/inject.jpg";
+import hooksPhoto from "../../assets/courses/hooks.jpg";
+import routerPhoto from "../../assets/courses/router.jpg";
+import osiPhoto from "../../assets/courses/osi.jpg";
+import compoundPhoto from "../../assets/courses/compound.jpg";
 import type { CoverArt } from "../chapter-cover";
 import type { InterestId } from "../prefs";
 
@@ -21,7 +27,13 @@ export type GameId =
   | "scam-or-legit"
   | "debit-or-credit"
   | "asset-or-liability"
-  | "balance-it";
+  | "balance-it"
+  | "myth-or-fact"
+  | "crack-it"
+  | "emoji-decode"
+  | "lag-test"
+  | "binary-blitz"
+  | "money-machine";
 
 /** What you need to know before playing, plus the chapter that explains it properly */
 export type Primer = { points: string[]; course: string; chapter: string };
@@ -233,6 +245,121 @@ export const GAMES: GameMeta[] = [
       chapter: "balance-sheet",
     },
   },
+  {
+    id: "myth-or-fact",
+    title: "myth or fact?",
+    word: "myth?",
+    tagline: "\"incognito hides you from the wifi owner.\" myth or fact? swipe.",
+    how: "swipe or use ← →",
+    caption: "your uncle swears more wifi bars = faster internet. time to settle it 🧐",
+    photo: ipPhoto,
+    duo: ["#0b1633", "#8fb4ff"],
+    focus: "50% 50%",
+    tags: ["privacy", "internet", "home"],
+    plays: 7318,
+    course: "networking",
+    primer: {
+      points: ["half of what people \"know\" about tech is wrong. you'll see 10 claims.", "swipe **left for myth**, **right for fact**.", "every card tells you why, so even a miss teaches you something."],
+      course: "networking",
+      chapter: "ip-addresses",
+    },
+  },
+  {
+    id: "crack-it",
+    title: "crack it?",
+    word: "crack?",
+    tagline: "would a hacker crack this password in seconds? swipe before they do.",
+    how: "swipe or use ← →",
+    caption: "P@ssw0rd! looks clever. a cracking tool guesses it in under a second 🔓",
+    photo: injectPhoto,
+    duo: ["#2a0612", "#ff6b8b"],
+    focus: "50% 50%",
+    tags: ["security", "privacy"],
+    plays: 6105,
+    course: "databases",
+    primer: {
+      points: ["crackers try common passwords, names, dates and keyboard rows **first**.", "swapping letters for symbols (`p@ssw0rd`) doesn't fool them. they try that too.", "**length wins**: 4 random words beat 8 \"clever\" characters."],
+      course: "databases",
+      chapter: "sql-injection",
+    },
+  },
+  {
+    id: "emoji-decode",
+    title: "emoji decode",
+    word: "🔥🧱",
+    tagline: "🔥🧱 = firewall. can you decode 10 more before your streak breaks?",
+    how: "tap the right word",
+    caption: "🐴🎁 🎣📧 🐂📈. if you can read this, you speak fluent tech. drop your score 👇",
+    photo: hooksPhoto,
+    duo: ["#2a0a33", "#f0abfc"],
+    focus: "50% 50%",
+    tags: ["marketing", "security", "money", "internet"],
+    plays: 11840,
+    course: "marketing",
+    primer: {
+      points: ["each round shows a few emojis that spell out a tech or money word.", "tap the word they mean. 10 rounds.", "say it out loud if you're stuck. 🐴🎁 = a gift horse… a **trojan**."],
+      course: "marketing",
+      chapter: "hooks",
+    },
+  },
+  {
+    id: "lag-test",
+    title: "lag test",
+    word: "lag?",
+    tagline: "tap the moment it turns green. is it you or your ping?",
+    how: "tap when it's green",
+    caption: "blaming the wifi again? your reaction time might be worse than your ping 🎮",
+    photo: routerPhoto,
+    duo: ["#002a1c", "#5ff0b5"],
+    focus: "50% 50%",
+    exposure: 1.2,
+    tags: ["gaming", "streaming", "home"],
+    plays: 9402,
+    course: "networking",
+    primer: {
+      points: ["**ping** is how long data takes to reach a server and come back, in milliseconds.", "your own **reaction time** adds delay too. most people sit around 200–300 ms.", "wait for green, then tap. 5 tries. tapping early costs you."],
+      course: "networking",
+      chapter: "routers-switches",
+    },
+  },
+  {
+    id: "binary-blitz",
+    title: "binary blitz",
+    word: "0101",
+    tagline: "flip the bits to make the number. 45 seconds. go.",
+    how: "tap bits to flip them",
+    caption: "computers only know 0 and 1. can you think like one for 45 seconds? 🤖",
+    photo: osiPhoto,
+    duo: ["#00221f", "#2ee6d0"],
+    focus: "50% 50%",
+    tags: ["internet", "home", "web"],
+    plays: 4589,
+    course: "networking",
+    primer: {
+      points: ["8 bits, worth **128 64 32 16 8 4 2 1**.", "turn bits on so they add up to the number. `00001010` = 8 + 2 = **10**.", "ip addresses are just four of these: `192` = `11000000`."],
+      course: "networking",
+      chapter: "ip-addresses",
+    },
+  },
+  {
+    id: "money-machine",
+    title: "money time machine",
+    word: "₹ → ₹₹₹",
+    tagline: "₹10,000 at 12% for 20 years. what comes out? trust maths, not vibes.",
+    how: "pick the right amount",
+    caption: "most people guess way too low. compounding is wilder than your gut thinks 🚀",
+    photo: compoundPhoto,
+    duo: ["#002914", "#4ade80"],
+    focus: "50% 50%",
+    tags: ["money", "business"],
+    plays: 5763,
+    course: "money",
+    primer: {
+      points: ["**compound interest**: you earn interest on your interest too.", "the **rule of 72**: divide 72 by the rate to get the years it takes to double. 12% → about 6 years.", "8 rounds. pick the amount the money grows to."],
+      course: "money",
+      chapter: "compound-interest",
+    },
+  },
 ];
 
 export const gameHash = (id: GameId) => `#/feed/games/${id}`;
@@ -352,3 +479,55 @@ export const PUZZLE_MESSAGES = [
   "have you tried turning it off",
   "it was dns all along obviously",
 ];
+
+export const MYTH_CARDS: SwipeCard[] = [
+  { prompt: "incognito mode hides your browsing from the wifi owner", side: "left", why: "incognito only skips saving history on your device. the network still sees which sites you visit." },
+  { prompt: "more wifi bars always means faster internet", side: "left", why: "bars show signal to your router, not how fast the internet behind it is." },
+  { prompt: "the padlock (https) means a site is safe", side: "left", why: "it only means the connection is encrypted. scam sites use https too." },
+  { prompt: "turning it off and on again really fixes things", side: "right", why: "a restart clears stuck memory and resets connections. it genuinely works." },
+  { prompt: "5 ghz wifi is faster but doesn't reach as far", side: "right", why: "higher frequency carries more data but struggles through walls." },
+  { prompt: "macs can't get viruses", side: "left", why: "rarer, but mac malware is real and growing every year." },
+  { prompt: "deleting a post removes it from the internet", side: "left", why: "screenshots, backups and caches can keep it alive forever." },
+  { prompt: "your ip address can show roughly which city you're in", side: "right", why: "ip addresses are handed out by region, so sites can guess your city." },
+  { prompt: "\"the cloud\" is just someone else's computer", side: "right", why: "cloud files live on real servers in real data centres." },
+  { prompt: "public wifi with a password keeps others out of your traffic", side: "left", why: "everyone with that password shares the network. https and a vpn protect you, the password doesn't." },
+  { prompt: "most of the internet travels through cables under the sea", side: "right", why: "over 95% of international data goes through undersea fibre cables, not satellites." },
+  { prompt: "closing apps on your phone saves battery", side: "left", why: "reopening apps from scratch often uses more power than leaving them paused." },
+];
+
+export const PASSWORD_CARDS: SwipeCard[] = [
+  { prompt: "password123", side: "left", why: "it's on every list of most common passwords. cracked instantly." },
+  { prompt: "Riya@2005", side: "left", why: "a name plus a birth year is the first thing attackers try." },
+  { prompt: "correct-horse-battery-staple", side: "right", why: "4 random words: very long, still easy to remember." },
+  { prompt: "qwertyuiop", side: "left", why: "a keyboard row. cracking tools try these in the first second." },
+  { prompt: "P@ssw0rd!", side: "left", why: "swapping letters for symbols is the oldest trick. crackers try it automatically." },
+  { prompt: "mango-tractor-violin-42", side: "right", why: "long, random words plus a number. would take centuries to guess." },
+  { prompt: "iloveyou", side: "left", why: "one of the most leaked passwords of all time." },
+  { prompt: "Xk9#mQ2$vL7!pR", side: "right", why: "14 random characters. let a password manager make and remember these." },
+  { prompt: "blue sofa eats 7 cold samosas", side: "right", why: "a silly sentence is long, unique and easy to remember." },
+  { prompt: "your best password, reused on 20 sites", side: "left", why: "one leak unlocks all 20. every site needs its own." },
+];
+
+/** Emoji riddles; wrong options are drawn from the other answers */
+export const EMOJI_ROUNDS: { emoji: string; answer: string; why: string }[] = [
+  { emoji: "🔥🧱", answer: "firewall", why: "a wall that keeps bad traffic out." },
+  { emoji: "🐴🎁", answer: "trojan", why: "malware hiding inside something that looks like a gift." },
+  { emoji: "🎣📧", answer: "phishing", why: "a fake message that \"fishes\" for your password." },
+  { emoji: "🍪🌐", answer: "cookie", why: "a tiny file a website saves to remember you." },
+  { emoji: "☁️💾", answer: "cloud storage", why: "your files, saved on someone else's servers." },
+  { emoji: "🐛💻", answer: "bug", why: "a mistake in code. the first one was a real moth stuck in a computer in 1947." },
+  { emoji: "🐂📈", answer: "bull market", why: "prices charging up, like a bull's horns." },
+  { emoji: "🐻📉", answer: "bear market", why: "prices swiping down, like a bear's paw." },
+  { emoji: "🦄🚀", answer: "unicorn startup", why: "a young company worth over $1 billion. rare, like unicorns." },
+  { emoji: "🐳🪙", answer: "crypto whale", why: "someone holding so much of a coin they can move its price." },
+  { emoji: "🕷️🕸️", answer: "web crawler", why: "a bot that visits pages so search engines can find them." },
+  { emoji: "🧅🌐", answer: "tor (onion routing)", why: "your traffic is wrapped in layers, like an onion." },
+  { emoji: "🍝💻", answer: "spaghetti code", why: "code so tangled nobody can follow it." },
+  { emoji: "🔑🔒📨", answer: "encryption", why: "scrambling a message so only the key holder can read it." },
+  { emoji: "📣🎯", answer: "targeted ads", why: "ads aimed at exactly the people most likely to click." },
+  { emoji: "🧲👀", answer: "clickbait", why: "a headline built to pull your click, not to inform." },
+];
+
+/** Bit values, left to right */
+export const BITS = [128, 64, 32, 16, 8, 4, 2, 1];
+export const toBinary = (n: number) => n.toString(2).padStart(8, "0");

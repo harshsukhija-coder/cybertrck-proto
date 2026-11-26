@@ -1,11 +1,30 @@
 import { findCourse } from "../../courses/data";
 import { BALANCE_EXPLAIN, BALANCE_QUESTION, BALANCE_ROUNDS, balanceHeadline, newBalanceGame, rupees } from "../../courses/games/balance-rounds";
+import {
+  BLITZ_SECONDS,
+  EARLY_PENALTY,
+  LAG_TRIES,
+  SKIP_PENALTY,
+  blitzHeadline,
+  emojiHeadline,
+  lagDetail,
+  lagHeadline,
+  moneyHeadline,
+  newEmojiGame,
+  newMoneyGame,
+  newTarget,
+  type ChoiceRound,
+} from "../../courses/games/fun-rounds";
 import { readBest, shuffle, submitBest } from "../../courses/games/game-utils";
+import { QUICK_DECKS } from "../../courses/games/quick-rounds";
 import {
   ASSET_LIABILITY_CARDS,
   AUDIENCES,
+  BITS,
   DEBIT_CREDIT_CARDS,
   GAMES,
+  MYTH_CARDS,
+  PASSWORD_CARDS,
   PHISH_CARDS,
   PORTS,
   PUZZLE_MESSAGES,
@@ -48,6 +67,8 @@ const SWIPES: Partial<Record<GameId, { cards: SwipeCard[] } & Sides>> = {
   "scam-or-legit": { cards: SCAM_CARDS, left: "scam", right: "legit" },
   "debit-or-credit": { cards: DEBIT_CREDIT_CARDS, left: "debit", right: "credit" },
   "asset-or-liability": { cards: ASSET_LIABILITY_CARDS, left: "asset", right: "liability" },
+  "myth-or-fact": { cards: MYTH_CARDS, left: "myth", right: "fact" },
+  "crack-it": { cards: PASSWORD_CARDS, left: "weak", right: "strong" },
 };
 
 const swipeHeadline = (score: number, total: number) =>
@@ -363,6 +384,138 @@ const playBalanceIt = (t: Term, game: GameMeta) => {
   show();
 };
 
+// ---------- multiple choice (emoji decode, money time machine) ----------
+
+const playChoice = (t: Term, game: GameMeta, rounds: ChoiceRound[], headline: (score: number) => string) => {
+  let i = 0;
+  let score = 0;
+  const show = () => {
+    const r = rounds[i];
+    t.print("");
+    t.print(`{dim:round ${i + 1}/${rounds.length} ·} {accent:${r.kicker}}`);
+    if (r.big) t.block([r.prompt]);
+    else t.print(`**${r.prompt}**`);
+    printOptions(t, r.options, true);
+  };
+  run(t, game, {
+    prompt: () => `round ${i + 1}/${rounds.length} · ${score} right ›`,
+    chips: () => [...optionChips(rounds[i]?.options.length ?? 4, true), QUIT_CHIP],
+    input: line => {
+      const r = rounds[i];
+      const picked = pickIndex(line, r.options.length) ?? r.options.findIndex(o => line.length > 1 && o.toLowerCase().startsWith(line.toLowerCase()));
+      if (picked === null || picked < 0) return t.print(`{yellow:type a number from 1 to ${r.options.length}.}`);
+      const right = r.options[picked] === r.answer;
+      score += right ? 1 : 0;
+      t.print(`${right ? `{green:✓ ${r.answer}}` : `{red:✕ it's ${r.answer}.}`} {dim:${r.why}}`);
+      i++;
+      if (i < rounds.length) return show();
+      const newBest = submitBest(game.id, score);
+      const best = readBest(game.id);
+      gameOver(t, game, { headline: headline(score), score: `${score}/${rounds.length}`, best: best !== null ? `your best: ${best}/${rounds.length}` : undefined, newBest });
+    },
+  });
+  show();
+};
+
+// ---------- lag test ----------
+
+const playLagTest = (t: Term, game: GameMeta) => {
+  const times: number[] = [];
+  let phase: "idle" | "waiting" | "go" = "idle";
+  let goAt = 0;
+  let timer = 0;
+  const arm = () => {
+    phase = "waiting";
+    t.print("");
+    t.print(`{dim:try ${times.length + 1}/${LAG_TRIES} ·} {red:wait for it…}`);
+    timer = window.setTimeout(() => {
+      phase = "go";
+      goAt = performance.now();
+      t.block(["{green:██ GO! PRESS ENTER ██}"]);
+    }, 1200 + Math.random() * 2300);
+  };
+  const record = (ms: number) => {
+    times.push(ms);
+    phase = "idle";
+    if (times.length < LAG_TRIES) return arm();
+    const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+    const newBest = submitBest(game.id, avg, true);
+    const best = readBest(game.id);
+    t.print(`{dim:${lagDetail(avg)}}`);
+    gameOver(t, game, { headline: lagHeadline(avg), score: `${avg} ms`, best: best !== null ? `your best: ${best} ms (lower is better)` : undefined, newBest });
+  };
+  run(t, game, {
+    prompt: () => (phase === "go" ? "NOW ›" : phase === "waiting" ? "wait… ›" : "enter to start ›"),
+    chips: () => [{ label: "⏎ tap", send: "" }, QUIT_CHIP],
+    stop: () => window.clearTimeout(timer),
+    input: () => {
+      if (phase === "idle") return arm();
+      if (phase === "waiting") {
+        window.clearTimeout(timer);
+        t.print(`{yellow:too soon! that try counts as ${EARLY_PENALTY} ms.}`);
+        return record(EARLY_PENALTY);
+      }
+      const ms = Math.round(performance.now() - goAt);
+      t.print(`{accent:**${ms} ms**}`);
+      record(ms);
+    },
+  });
+  t.print(`{dim:${LAG_TRIES} tries. when you see GO, press enter as fast as you can. pressing early counts as ${EARLY_PENALTY} ms.}`);
+  t.print("press **enter** to start.");
+};
+
+// ---------- binary blitz ----------
+
+const playBinaryBlitz = (t: Term, game: GameMeta) => {
+  const endsAt = { at: Date.now() + BLITZ_SECONDS * 1000 };
+  let target = newTarget();
+  let score = 0;
+  let done = false;
+  const show = () => {
+    t.print("");
+    t.print(`make {accent:**${target}**} in binary`);
+  };
+  const finish = () => {
+    if (done) return;
+    done = true;
+    window.clearInterval(timer);
+    t.print("");
+    t.print("{yellow:⏰ time's up!}");
+    const newBest = submitBest(game.id, score);
+    const best = readBest(game.id);
+    gameOver(t, game, { headline: blitzHeadline(score), score: `${score} points`, best: best !== null ? `your best: ${best}` : undefined, newBest });
+  };
+  const timer = window.setInterval(() => (Date.now() >= endsAt.at ? finish() : t.refresh()), 250);
+  const left = () => Math.max(0, Math.ceil((endsAt.at - Date.now()) / 1000));
+  run(t, game, {
+    prompt: () => `⏱ ${left()}s · ${score} pts ›`,
+    chips: () => [{ label: `skip (−${SKIP_PENALTY}s)`, send: "skip" }, QUIT_CHIP],
+    stop: () => {
+      done = true;
+      window.clearInterval(timer);
+    },
+    input: line => {
+      if (Date.now() >= endsAt.at) return finish();
+      if (line === "skip" || line === "s") {
+        endsAt.at -= SKIP_PENALTY * 1000;
+        t.print(`{dim:it was ${target.toString(2).padStart(8, "0")}. −${SKIP_PENALTY}s}`);
+        target = newTarget(target);
+        return show();
+      }
+      const bits = line.replace(/\s/g, "");
+      if (!/^[01]{1,8}$/.test(bits)) return t.print("{yellow:type up to 8 ones and zeros, like} `00001010`{yellow:, or} **skip**.");
+      const value = parseInt(bits, 2);
+      if (value !== target) return t.print(`{red:✕ that's ${value}.} {dim:${value < target ? "too low" : "too high"}, try again.}`);
+      score++;
+      t.print(`{green:✓ ${bits.padStart(8, "0")} = ${target}}`);
+      target = newTarget(target);
+      show();
+    },
+  });
+  t.print(`{dim:bits are worth} ${BITS.join(" ")}{dim:. type the 8-bit number, like} \`00001010\` {dim:for 10. ${BLITZ_SECONDS} seconds. go!}`);
+  show();
+};
+
 // ---------- menu, primer and launcher ----------
 
 const startGame = (t: Term, game: GameMeta) => {
@@ -373,6 +526,10 @@ const startGame = (t: Term, game: GameMeta) => {
   if (game.id === "higher-lower") return playHigherLower(t, game);
   if (game.id === "query-builder") return playQueryBuilder(t, game);
   if (game.id === "balance-it") return playBalanceIt(t, game);
+  if (game.id === "emoji-decode") return playChoice(t, game, newEmojiGame(), emojiHeadline);
+  if (game.id === "money-machine") return playChoice(t, game, newMoneyGame(), moneyHeadline);
+  if (game.id === "lag-test") return playLagTest(t, game);
+  if (game.id === "binary-blitz") return playBinaryBlitz(t, game);
 };
 
 const primer = (t: Term, game: GameMeta) => {
@@ -427,7 +584,44 @@ const play = (t: Term, args: string[]) => {
   primer(t, game);
 };
 
+/** One round of a game, like the quick play posts in the feed */
+const quick = (t: Term, args: string[]) => {
+  const game = GAMES.find(g => g.id === args[0]) ?? GAMES.find(g => !!args[0] && g.id.startsWith(args[0].toLowerCase()) && g.id in QUICK_DECKS);
+  const deck = game ? QUICK_DECKS[game.id]?.() : undefined;
+  if (!game || !deck) {
+    const ids = Object.keys(QUICK_DECKS);
+    if (!args[0]) return quick(t, [ids[Math.floor(Math.random() * ids.length)]]);
+    return t.print(`{red:no quick play for} ${args[0]}. {dim:try one of:} ${ids.map(id => `[[${id}|quick ${id}]]`).join("  ")}`);
+  }
+  const i = args[1] && /^\d+$/.test(args[1]) ? Number(args[1]) % deck.length : Math.floor(Math.random() * deck.length);
+  const r = deck[i];
+  const answer = (k: number) => {
+    const right = r.options[k] === r.answer;
+    t.print(`${right ? `{green:✓ you got it! ${r.answer}}` : `{red:✕ it's ${r.answer}.}`} {dim:${r.why}}`);
+    t.print(`[[another one ↻|quick ${game.id} ${(i + 1) % deck.length}]]   [[▶ play the full game|play ${game.id}]]`);
+  };
+  const picked = args[2] ? pickIndex(args[2], r.options.length) : null;
+  if (picked !== null) return answer(picked);
+  t.print(`{cyan:⚡ quick play · ${game.title}}${r.kicker === game.title ? "" : ` {dim:· ${r.kicker}}`}`);
+  if (r.big) t.block([r.prompt]);
+  else t.print(`**${r.prompt}**`);
+  printOptions(t, r.options, true);
+  t.start({
+    name: "quick",
+    prompt: () => "your answer ›",
+    chips: () => [...r.options.map((o, k) => ({ label: `${k + 1} ${o}`, send: String(k + 1) })), QUIT_CHIP],
+    input: line => {
+      if (isQuit(line)) return t.exit();
+      const k = pickIndex(line, r.options.length) ?? r.options.findIndex(o => line.length > 1 && o.toLowerCase().startsWith(line.toLowerCase()));
+      if (k === null || k < 0) return t.print(`{yellow:type a number from 1 to ${r.options.length}.}`);
+      t.exit();
+      answer(k);
+    },
+  });
+};
+
 export const gameCommands: Command[] = [
   { name: "games", usage: "games", about: "every game, grouped by course", group: "play", run: listGames },
   { name: "play", usage: "play <game>", about: "play a game (with a quick primer first)", group: "play", run: play, complete: () => GAMES.map(g => g.id) },
+  { name: "quick", usage: "quick [game]", about: "one quick question from a game, like in the feed", group: "play", run: quick, complete: () => Object.keys(QUICK_DECKS) },
 ];

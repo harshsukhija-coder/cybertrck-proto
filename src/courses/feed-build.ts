@@ -1,6 +1,7 @@
 import { COURSES } from "./data";
 import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
 import { GAMES, type GameMeta } from "./games/games";
+import { hasQuickDeck } from "./games/quick-rounds";
 import { pathsFor, type LearningPath } from "./guide/paths";
 import type { LivePost } from "./live/live-sources";
 import { layoutsFor, type ChapterLayout } from "./post-layouts";
@@ -10,6 +11,8 @@ import type { Course, CourseChapter } from "./types";
 export type FeedItem =
   | { kind: "chapter"; course: Course; chapter: CourseChapter; layout: ChapterLayout; reason?: string }
   | { kind: "game"; game: GameMeta; reason?: string }
+  /** One round of a game, answered right in the post */
+  | { kind: "quick"; game: GameMeta; round: number; reason?: string }
   | { kind: "poll"; poll: Poll; reason?: string }
   | { kind: "fact"; fact: Fact; reason?: string }
   | { kind: "live"; post: LivePost; reason?: string }
@@ -26,6 +29,17 @@ const GUIDE_SLOTS = [0, 4, 9, 15, 22, 30];
 
 /** Order chapter layouts rotate through, so neighbouring posts never look the same */
 const LAYOUT_CYCLE: ChapterLayout[] = ["carousel", "story", "quiz", "poster", "split", "notes"];
+
+/** New every visit, so games land in different spots, but the feed doesn't jump around while you scroll */
+const SESSION_SEED = Math.floor(Math.random() * 2 ** 31);
+
+/** Small seeded random number generator (mulberry32) */
+const seeded = (seed: number) => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+  return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+};
 
 export const interestLabel = (id: InterestId) => INTERESTS.find(i => i.id === id)?.label ?? id;
 
@@ -67,7 +81,13 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
   }
 
   const loves = (id: string) => prefs.styles.some(s => s === id);
-  const extras = { game: byScore(GAMES), poll: byScore(POLLS), fact: byScore(FACTS) };
+  const random = seeded(SESSION_SEED);
+  /** Interest matches still tend to come first, but the order is different every visit */
+  const games = GAMES.filter(g => matches(g.tags))
+    .map(game => ({ game, rank: score(game.tags) + random() * 2 }))
+    .sort((a, b) => b.rank - a.rank)
+    .map(g => g.game);
+  const extras = { game: [...games], poll: byScore(POLLS), fact: byScore(FACTS) };
   const cycle: ExtraKind[] = [
     ...(loves("games") ? (["game"] as const) : []),
     ...(loves("quiz") ? (["poll"] as const) : []),
@@ -112,6 +132,29 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
     return !!path;
   };
 
+  // Surprise game drops: a full game or a one-question quick play, at random gaps
+  const quickGames = games.filter(g => hasQuickDeck(g.id));
+  const quickRounds = new Map<string, number>();
+  const dropChance = loves("games") ? 0.45 : 0.28;
+  let quickTurn = 0;
+  const pushDrop = () => {
+    const [roll, kindRoll, roundRoll] = [random(), random(), random()];
+    const last = items.at(-1)?.kind;
+    if (last === "game" || last === "quick" || roll > dropChance) return;
+    if (quickGames.length && (kindRoll < 0.6 || !extras.game.length)) {
+      const recent = items.slice(-12).flatMap(item => (item.kind === "game" ? [item.game.id] : []));
+      const offset = quickGames.findIndex((_, k) => !recent.includes(quickGames[(quickTurn + k) % quickGames.length].id));
+      quickTurn += Math.max(0, offset);
+      const game = quickGames[quickTurn++ % quickGames.length];
+      const round = quickRounds.get(game.id) ?? Math.floor(roundRoll * 1000);
+      quickRounds.set(game.id, round + 1);
+      items.push({ kind: "quick", game, round, reason: reasonFor(game.tags, prefs.interests) ?? "a quick one, just for fun" });
+    } else if (extras.game.length) {
+      const game = extras.game.shift()!;
+      items.push({ kind: "game", game, reason: reasonFor(game.tags, prefs.interests) ?? "a game, just for fun" });
+    }
+  };
+
   let previous: ChapterLayout | undefined;
   chapters.forEach(({ course, chapter }, i) => {
     const options = layoutsFor(chapter);
@@ -130,12 +173,14 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
         pushLive();
       }
     }
+    pushDrop();
   });
 
   // Once our chapters run out, keep going with the web, still with one of ours every few posts
   let sinceOurs = 0;
   while (liveQueue.length) {
     pushLive();
+    pushDrop();
     if (++sinceOurs < 2) continue;
     sinceOurs = 0;
     if (pushGuide()) continue;
