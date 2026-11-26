@@ -1,0 +1,108 @@
+import { COURSES } from "./data";
+import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
+import { GAMES, type GameMeta } from "./games/games";
+import { layoutsFor, type ChapterLayout } from "./post-layouts";
+import { INTERESTS, type InterestId, type Prefs } from "./prefs";
+import type { Course, CourseChapter } from "./types";
+
+export type FeedItem =
+  | { kind: "chapter"; course: Course; chapter: CourseChapter; layout: ChapterLayout; reason?: string }
+  | { kind: "game"; game: GameMeta; reason?: string }
+  | { kind: "poll"; poll: Poll; reason?: string }
+  | { kind: "fact"; fact: Fact; reason?: string }
+  | { kind: "courses" }
+  | { kind: "academy" }
+  | { kind: "badge" };
+
+type ExtraKind = "game" | "poll" | "fact";
+
+/** Order chapter layouts rotate through, so neighbouring posts never look the same */
+const LAYOUT_CYCLE: ChapterLayout[] = ["carousel", "story", "quiz", "poster", "split", "notes"];
+
+export const interestLabel = (id: InterestId) => INTERESTS.find(i => i.id === id)?.label ?? id;
+
+/** Why a post is in your feed: the first interest it shares with you */
+const reasonFor = (tags: InterestId[], interests: InterestId[]) => {
+  const match = tags.find(t => interests.includes(t));
+  return match ? `because you're into ${interestLabel(match)}` : undefined;
+};
+
+const overlap = (tags: InterestId[], interests: InterestId[]) => tags.filter(t => interests.includes(t)).length;
+
+/**
+ * Chapters from every course, taken in turns so neighbours are never from the same course,
+ * with games, polls and fun facts mixed in based on how the user likes to learn.
+ */
+export const buildFeed = (prefs: Prefs, filter: InterestId | null): FeedItem[] => {
+  const matches = (tags: InterestId[]) => !filter || tags.includes(filter);
+  const score = (tags: InterestId[]) => overlap(tags, prefs.interests);
+  const byScore = <T extends { tags: InterestId[] }>(list: T[]) => list.filter(x => matches(x.tags)).sort((a, b) => score(b.tags) - score(a.tags));
+
+  const queues = COURSES.map(course => {
+    const chapters = course.chapters.filter(c => matches(c.tags));
+    return {
+      course,
+      chapters: chapters.sort((a, b) => score(b.tags) - score(a.tags) || a.number - b.number),
+      affinity: chapters.reduce((sum, c) => sum + score(c.tags), 0),
+    };
+  })
+    .filter(q => q.chapters.length)
+    .sort((a, b) => b.affinity - a.affinity);
+
+  const chapters: { course: Course; chapter: CourseChapter }[] = [];
+  while (queues.some(q => q.chapters.length)) {
+    for (const q of queues) {
+      const chapter = q.chapters.shift();
+      if (chapter) chapters.push({ course: q.course, chapter });
+    }
+  }
+
+  const loves = (id: string) => prefs.styles.some(s => s === id);
+  const extras = { game: byScore(GAMES), poll: byScore(POLLS), fact: byScore(FACTS) };
+  const cycle: ExtraKind[] = [
+    ...(loves("games") ? (["game"] as const) : []),
+    ...(loves("quiz") ? (["poll"] as const) : []),
+    ...(loves("stories") ? (["fact"] as const) : []),
+    "poll",
+    "game",
+    "fact",
+  ];
+  const every = loves("deep") && !loves("games") ? 2 : 1;
+
+  let turn = 0;
+  const nextExtra = (avoidCourse: string): FeedItem | null => {
+    for (let tries = 0; tries < cycle.length; tries++) {
+      const kind = cycle[turn++ % cycle.length];
+      if (kind === "game" && extras.game.length) {
+        const game = extras.game.shift()!;
+        return { kind, game, reason: loves("games") ? "because you learn by playing" : reasonFor(game.tags, prefs.interests) };
+      }
+      if (kind === "poll" || kind === "fact") {
+        const queue: (Poll | Fact)[] = extras[kind];
+        if (!queue.length) continue;
+        const index = Math.max(0, queue.findIndex(x => x.courseId !== avoidCourse));
+        const [picked] = queue.splice(index, 1);
+        const reason = reasonFor(picked.tags, prefs.interests);
+        return kind === "poll" ? { kind, poll: picked as Poll, reason } : { kind, fact: picked as Fact, reason };
+      }
+    }
+    return null;
+  };
+
+  const items: FeedItem[] = [];
+  let previous: ChapterLayout | undefined;
+  chapters.forEach(({ course, chapter }, i) => {
+    const options = layoutsFor(chapter);
+    const layout = LAYOUT_CYCLE.map((_, k) => LAYOUT_CYCLE[(i + k) % LAYOUT_CYCLE.length]).find(l => l !== previous && options.includes(l)) ?? "carousel";
+    previous = layout;
+    items.push({ kind: "chapter", course, chapter, layout, reason: reasonFor(chapter.tags, prefs.interests) });
+    if (i === 3 && !filter) items.push({ kind: "courses" });
+    if (i === 6 && !filter) items.push({ kind: "badge" });
+    if (i === 1 && (!filter || filter === "internet" || filter === "home")) items.push({ kind: "academy" });
+    if ((i + 1) % every === 0) {
+      const extra = nextExtra(course.id);
+      if (extra) items.push(extra);
+    }
+  });
+  return items;
+};

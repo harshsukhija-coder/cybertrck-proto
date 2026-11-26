@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import AcademyPage from "./courses/academy/academy-page";
 import CoursesPage from "./courses/courses-page";
 import FeedApp from "./courses/feed-page";
@@ -7,6 +7,9 @@ import Desktop from "./core/desktop";
 import FoundersPage from "./core/founders-page";
 import LoginScreen, { type Space } from "./core/login-screen";
 
+const TerminalPage = lazy(() => import("./terminal/terminal-page"));
+
+const TERMINAL_ROUTES = new Set(["#/term", "#/terminal"]);
 const TEAM_ROUTES = new Set(["#/team", "#/founders"]);
 
 const SESSION_KEY = "offtrck.session.user";
@@ -28,10 +31,14 @@ function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  const login = (name: string, space: Space) => {
+  const signIn = (name: string) => {
     setUsername(name);
     sessionStorage.setItem(SESSION_KEY, name);
-    window.location.hash = space === "feed" ? "#/feed" : "#/";
+  };
+
+  const login = (name: string, space: Space) => {
+    signIn(name);
+    window.location.hash = space === "feed" ? "#/feed" : space === "terminal" ? "#/term" : "#/";
   };
 
   const logout = () => {
@@ -41,6 +48,13 @@ function App() {
   };
 
   if (TEAM_ROUTES.has(route)) return <FoundersPage />;
+  if (TERMINAL_ROUTES.has(route)) {
+    return (
+      <Suspense fallback={<div className="h-full bg-[#07080a]" />}>
+        <TerminalPage username={username} onLogin={signIn} onLogout={logout} />
+      </Suspense>
+    );
+  }
   if (route.startsWith("#/learn/")) {
     const [courseId = "", chapterId = ""] = route.slice("#/learn/".length).split("/");
     return <LessonReader key={route} courseId={courseId} chapterId={chapterId} />;

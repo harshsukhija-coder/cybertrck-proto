@@ -36,6 +36,22 @@ export const markSeen = (slideId: string) => {
   window.dispatchEvent(new Event(SEEN_EVENT));
 };
 
+/** Cached stories if they're fresh, otherwise new ones from the APIs */
+export const getStories = async (): Promise<Story[]> => {
+  const cache = readCache();
+  if (cache && Date.now() - cache.at < FRESH_MS) return cache.stories;
+  try {
+    const fresh = await loadStories(new AbortController().signal);
+    if (fresh.length) {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), stories: fresh } satisfies Cache));
+      return fresh;
+    }
+  } catch {
+    /* fall back to whatever is cached */
+  }
+  return cache?.stories ?? [];
+};
+
 export const useStories = (interests: InterestId[]) => {
   const [cache] = useState(readCache);
   const [stories, setStories] = useState<Story[] | null>(cache?.stories ?? null);

@@ -46,7 +46,9 @@ export type Prefs = { interests: InterestId[]; styles: StyleId[]; pace: PaceId }
 
 const STORAGE_KEY = "offtrck.feed.prefs";
 
-const load = (): Prefs | null => {
+export const savePrefs = (prefs: Prefs) => localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+
+export const readPrefs = (): Prefs | null => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? (JSON.parse(saved) as Prefs) : null;
@@ -56,10 +58,10 @@ const load = (): Prefs | null => {
 };
 
 export const usePrefs = () => {
-  const [prefs, setPrefs] = useState<Prefs | null>(load);
+  const [prefs, setPrefs] = useState<Prefs | null>(readPrefs);
 
   useEffect(() => {
-    if (prefs) localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    if (prefs) savePrefs(prefs);
   }, [prefs]);
 
   return { prefs, setPrefs };

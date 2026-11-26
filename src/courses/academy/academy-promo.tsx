@@ -31,7 +31,7 @@ export const AcademyBanner = () => (
       </span>
       <span className="mt-1.5 block font-display text-xl font-bold lowercase leading-tight tracking-[-0.02em]">ready to go deeper? build real networks.</span>
       <span className="mt-1 block text-sm text-(--muted)">
-        {COUNTS.articles} blogs, {COUNTS.quizzes} quizzes and {COUNTS.labs} Cisco Packet Tracer labs, graded the moment you upload. Pass the final exam to unlock the network pro badge.
+        {COUNTS.articles} blogs, {COUNTS.quizzes} quizzes and {COUNTS.labs} Cisco Packet Tracer labs, graded the moment you upload. Pass the final challenge to unlock the network pro badge.
       </span>
     </span>
     <span className="shrink-0 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition group-hover:-translate-y-0.5 @2xl:self-center">

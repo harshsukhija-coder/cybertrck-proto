@@ -58,6 +58,14 @@ const SideNav = ({ active, username, onLogout }: NavProps) => (
         <MonitorIcon className="h-5 w-5 shrink-0" />
         <span className="hidden xl:inline">classic desktop</span>
       </a>
+      <a
+        href="#/term"
+        title="terminal mode"
+        className="flex items-center gap-4 rounded-2xl px-3 py-2.5 text-sm text-(--muted) transition-colors hover:bg-white/5 hover:text-(--fg)"
+      >
+        <span className="grid h-5 w-5 shrink-0 place-items-center font-jetbrains text-[13px] font-bold">&gt;_</span>
+        <span className="hidden xl:inline">terminal mode</span>
+      </a>
       <div className="mt-3 flex items-center gap-3 rounded-2xl px-2 py-2 xl:border xl:border-(--line) xl:bg-(--panel)">
         <a href="#/feed/badges" title="your profile" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 font-display text-sm font-bold uppercase">
           {username[0]}
@@ -100,6 +108,9 @@ const MobileTopBar = ({ username, onLogout }: Omit<NavProps, "active">) => {
             </a>
             <a href="#/" className={item}>
               classic desktop
+            </a>
+            <a href="#/term" className={item}>
+              terminal mode
             </a>
             <button type="button" onClick={onLogout} className={item}>
               log out

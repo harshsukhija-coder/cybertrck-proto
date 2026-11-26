@@ -20,7 +20,7 @@ const HOW = [
   { icon: "📖", title: "read and play", text: "short blogs with animations you can poke at" },
   { icon: "✅", title: "prove it", text: `a quiz after every module (${QUIZ_PASS}% to pass)` },
   { icon: "🛠️", title: "build it for real", text: "solve a problem in Cisco Packet Tracer, upload the file, get graded" },
-  { icon: "🛰️", title: "earn the badge", text: "pass the final exam to unlock the network pro badge, then share it" },
+  { icon: "🛰️", title: "earn the badge", text: "pass the final challenge to unlock the network pro badge, then share it" },
 ];
 
 const ModuleCard = ({ module }: { module: Module }) => {
@@ -104,14 +104,14 @@ const Overview = () => {
           <div className="min-w-0 flex-1">
             <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{done === 0 ? "start here" : finished ? "all done" : "up next"}</p>
             <p className="mt-1 truncate font-display text-lg font-bold lowercase">
-              {finished ? "you're a network pro 🛰️" : next ? next.lesson.title : examUnlocked ? "the final exam" : ""}
+              {finished ? "you're a network pro 🛰️" : next ? next.lesson.title : examUnlocked ? "the final challenge" : ""}
             </p>
             <p className="text-sm text-(--muted)">
               {gradedPassed}/{gradedTotal} quizzes and labs passed
             </p>
           </div>
           <a
-            href={finished ? badgeHash("network-pro") : next ? lessonHash(next.module, next.lesson) : "#/academy/exam"}
+            href={finished ? badgeHash("network-pro") : next ? lessonHash(next.module, next.lesson) : "#/academy/challenge"}
             className="w-full shrink-0 rounded-full bg-(--accent) px-6 py-3 text-center font-semibold text-black transition hover:-translate-y-0.5 sm:w-auto"
           >
             {done === 0 ? "start the course →" : finished ? "share your badge →" : "continue →"}
@@ -143,14 +143,14 @@ const Overview = () => {
           ))}
           <li className="grid gap-4 sm:grid-cols-2">
             <a
-              href={examUnlocked ? "#/academy/exam" : undefined}
+              href={examUnlocked ? "#/academy/challenge" : undefined}
               className={`flex items-center gap-4 rounded-3xl border p-5 sm:p-6 ${examUnlocked ? "border-(--accent)/40 bg-(--accent)/[0.06] transition hover:bg-(--accent)/10" : "border-(--line) bg-white/[0.02] opacity-60"}`}
             >
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/5 text-(--accent)">
                 <KindIcon kind="exam" className="h-6 w-6" />
               </span>
               <span className="min-w-0">
-                <span className="block font-display text-lg font-bold lowercase">final exam</span>
+                <span className="block font-display text-lg font-bold lowercase">final challenge</span>
                 <span className="block text-sm text-(--muted)">
                   {examPassed ? `passed · ${progress.exam}%` : examUnlocked ? `${FINAL_EXAM.length} questions · ${EXAM_PASS}% to pass` : "🔒 pass every quiz and lab first"}
                 </span>
@@ -160,7 +160,7 @@ const Overview = () => {
               <BadgeMedal badge={PRO_BADGE} earned={finished} className="w-12" />
               <span className="min-w-0">
                 <span className="block font-display text-lg font-bold lowercase">network pro badge</span>
-                <span className="block text-sm text-(--muted)">{finished ? "unlocked: share it with your friends" : "pass the final exam to unlock it"}</span>
+                <span className="block text-sm text-(--muted)">{finished ? "unlocked: share it with your friends" : "pass the final challenge to unlock it"}</span>
               </span>
             </a>
           </li>
@@ -224,9 +224,9 @@ const LessonPage = ({ module, lesson }: { module: Module; lesson: Lesson }) => {
             <span className="mt-1 block truncate font-semibold">{next.lesson.title}</span>
           </a>
         ) : (
-          <a href="#/academy/exam" className="rounded-2xl bg-(--accent) p-4 text-black transition hover:-translate-y-0.5 sm:text-right">
+          <a href="#/academy/challenge" className="rounded-2xl bg-(--accent) p-4 text-black transition hover:-translate-y-0.5 sm:text-right">
             <span className="font-jetbrains text-[10px] uppercase tracking-wider opacity-70">last step →</span>
-            <span className="mt-1 block font-semibold">the final exam</span>
+            <span className="mt-1 block font-semibold">the final challenge</span>
           </a>
         )}
       </nav>
@@ -242,7 +242,7 @@ const Exam = () => {
         <span className="text-5xl">🔒</span>
         <h1 className="mt-5 font-display text-3xl font-bold lowercase">not yet!</h1>
         <p className="mt-3 text-white/60">
-          The final exam unlocks once every quiz and practical is passed. You're at {gradedPassed}/{gradedTotal}.
+          The final challenge unlocks once every quiz and practical is passed. You're at {gradedPassed}/{gradedTotal}.
         </p>
         <a href="#/academy" className="mt-8 inline-block rounded-full bg-(--accent) px-6 py-3 font-semibold text-black">
           back to the course
@@ -252,7 +252,7 @@ const Exam = () => {
   }
   return (
     <div className="mx-auto max-w-2xl px-5 pb-24 pt-10 sm:px-6 sm:pt-14">
-      <QuizView kind="exam" title={`${ACADEMY_TITLE}: final exam`} questions={FINAL_EXAM} passMark={EXAM_PASS} best={progress.exam} onFinish={saveExam} />
+      <QuizView kind="exam" title={`${ACADEMY_TITLE}: final challenge`} questions={FINAL_EXAM} passMark={EXAM_PASS} best={progress.exam} onFinish={saveExam} />
       {(progress.exam ?? 0) >= EXAM_PASS && (
         <a href={badgeHash("network-pro")} className="mt-8 flex animate-pop items-center justify-center gap-2 rounded-full bg-emerald-400 py-4 font-semibold text-black transition hover:-translate-y-0.5">
           🛰️ you unlocked the network pro badge. share it →
@@ -299,9 +299,9 @@ const AcademyPage = ({ route, embedded = false }: { route: string; embedded?: bo
   let accent = DEFAULT_ACCENT;
   let crumb: React.ReactNode;
 
-  if (first === "exam") {
+  if (first === "challenge" || first === "exam") {
     body = <Exam />;
-    crumb = "final exam";
+    crumb = "final challenge";
   } else if (found) {
     accent = found.module.color;
     crumb = (

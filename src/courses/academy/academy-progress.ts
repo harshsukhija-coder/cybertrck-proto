@@ -18,7 +18,7 @@ export type AcademyProgress = {
 
 const empty = (): AcademyProgress => ({ read: [], quiz: {}, labs: {} });
 
-const load = (): AcademyProgress => {
+export const readAcademy = (): AcademyProgress => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return { ...empty(), ...(JSON.parse(saved) as AcademyProgress) };
@@ -29,7 +29,7 @@ const load = (): AcademyProgress => {
 };
 
 const save = (update: (p: AcademyProgress) => void) => {
-  const progress = load();
+  const progress = readAcademy();
   update(progress);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   window.dispatchEvent(new Event(CHANGE_EVENT));
@@ -55,19 +55,7 @@ export const saveExam = (score: number) =>
     p.exam = Math.max(p.exam ?? 0, score);
   });
 
-export const useAcademy = () => {
-  const [progress, setProgress] = useState(load);
-
-  useEffect(() => {
-    const refresh = () => setProgress(load());
-    window.addEventListener(CHANGE_EVENT, refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
-
+export const summarizeAcademy = (progress: AcademyProgress) => {
   const statusOf = (key: string, kind: "article" | "quiz" | "lab") => {
     if (kind === "article") return progress.read.includes(key) ? "done" : "todo";
     const score = kind === "quiz" ? progress.quiz[key] : progress.labs[key]?.score;
@@ -93,4 +81,20 @@ export const useAcademy = () => {
     finished: examUnlocked && examPassed,
     next: ALL_LESSONS.find(x => statusOf(lessonKey(x.module, x.lesson), x.lesson.kind) !== "done"),
   };
+};
+
+export const useAcademy = () => {
+  const [progress, setProgress] = useState(readAcademy);
+
+  useEffect(() => {
+    const refresh = () => setProgress(readAcademy());
+    window.addEventListener(CHANGE_EVENT, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(CHANGE_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  return summarizeAcademy(progress);
 };

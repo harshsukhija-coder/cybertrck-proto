@@ -57,7 +57,7 @@ const AcademyCard = () => {
         <p className="mt-4 font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-[#4f8cff]">networking academy · the deep version</p>
         <h3 className="mt-1.5 font-display text-xl font-bold lowercase leading-tight">build real networks in cisco packet tracer</h3>
         <p className="mt-1 text-sm text-(--muted)">
-          {MODULES.length} modules, {COUNTS.labs} graded labs and a final exam that unlocks the <b className="text-(--fg)">network pro</b> badge.
+          {MODULES.length} modules, {COUNTS.labs} graded labs and a final challenge that unlocks the <b className="text-(--fg)">network pro</b> badge.
           {done > 0 && ` you're ${Math.round((done / total) * 100)}% through.`}
         </p>
       </div>

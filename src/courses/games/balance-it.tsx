@@ -1,52 +1,7 @@
 import { useState } from "react";
 import { GameOver, Hud } from "./game-kit";
-import { shuffle, useBest } from "./game-utils";
-
-type Part = "assets" | "liabilities" | "equity";
-
-type Round = {
-  business: string;
-  values: Record<Part, number>;
-  missing: Part;
-  options: number[];
-};
-
-const ROUNDS = 8;
-const STEP = 5000;
-const BUSINESSES = ["riya's chai stall", "a corner bakery", "a phone repair shop", "a tuition centre", "a t-shirt brand", "a food truck", "a cycle shop", "a small café"];
-
-const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-const randomSteps = (min: number, max: number) => (min + Math.floor(Math.random() * (max - min + 1))) * STEP;
-
-const QUESTION: Record<Part, (v: Record<Part, number>) => string> = {
-  equity: v => `owns ${rupees(v.assets)} of stuff and owes ${rupees(v.liabilities)}. how much is the owner's?`,
-  liabilities: v => `owns ${rupees(v.assets)} of stuff. the owner put in ${rupees(v.equity)}. how much does it owe?`,
-  assets: v => `owes ${rupees(v.liabilities)} and the owner's share is ${rupees(v.equity)}. what does it own?`,
-};
-
-const EXPLAIN: Record<Part, (v: Record<Part, number>) => string> = {
-  equity: v => `equity = assets − liabilities = ${rupees(v.assets)} − ${rupees(v.liabilities)}.`,
-  liabilities: v => `liabilities = assets − equity = ${rupees(v.assets)} − ${rupees(v.equity)}.`,
-  assets: v => `assets = liabilities + equity = ${rupees(v.liabilities)} + ${rupees(v.equity)}.`,
-};
-
-const makeRound = (business: string): Round => {
-  const liabilities = randomSteps(2, 16);
-  const equity = randomSteps(2, 16);
-  const values = { assets: liabilities + equity, liabilities, equity };
-  const missing = (["assets", "liabilities", "equity"] as const)[Math.floor(Math.random() * 3)];
-  const answer = values[missing];
-  /** The classic mistake: adding when you should subtract, and the other way round */
-  const trap = missing === "assets" ? Math.abs(liabilities - equity) || answer + 2 * STEP : values.assets + (missing === "equity" ? liabilities : equity);
-  const wrong = new Set<number>([trap]);
-  while (wrong.size < 2 || wrong.has(answer)) {
-    wrong.delete(answer);
-    wrong.add(Math.max(STEP, answer + (Math.random() < 0.5 ? -1 : 1) * randomSteps(1, 3)));
-  }
-  return { business, values, missing, options: shuffle([answer, ...[...wrong].slice(0, 2)]) };
-};
-
-const newGame = () => shuffle(BUSINESSES).slice(0, ROUNDS).map(makeRound);
+import { BALANCE_EXPLAIN as EXPLAIN, BALANCE_QUESTION as QUESTION, BALANCE_ROUNDS as ROUNDS, balanceHeadline, newBalanceGame as newGame, rupees } from "./balance-rounds";
+import { useBest } from "./game-utils";
 
 const Box = ({ label, value, hidden }: { label: string; value: number; hidden: boolean }) => (
   <div className={`min-w-0 flex-1 rounded-2xl border px-2 py-3 text-center ${hidden ? "border-(--gem) bg-(--gem)/10" : "border-(--line) bg-white/[0.03]"}`}>
@@ -93,7 +48,7 @@ export const BalanceIt = () => {
   if (!round) {
     return (
       <GameOver
-        headline={score === ROUNDS ? "the books balance. hire this person." : score >= 6 ? "solid accountant energy" : "the auditor is not impressed"}
+        headline={balanceHeadline(score)}
         score={`${score}/${ROUNDS}`}
         detail={best !== null ? `your best: ${best}/${ROUNDS}` : ""}
         newBest={newBest}

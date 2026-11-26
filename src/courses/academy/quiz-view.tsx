@@ -30,7 +30,7 @@ export const QuizView = ({ title, kind, questions, passMark, best, onFinish }: P
     return (
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-10">
         <p className="flex items-center gap-2 font-jetbrains text-[11px] uppercase tracking-[0.18em] text-(--accent)">
-          <KindIcon kind={kind === "exam" ? "exam" : "quiz"} className="h-4 w-4" /> {kind === "exam" ? "final exam" : "quiz"}
+          <KindIcon kind={kind === "exam" ? "exam" : "quiz"} className="h-4 w-4" /> {kind === "exam" ? "final challenge" : "quiz"}
         </p>
         <h1 className="mt-4 font-display text-[clamp(1.75rem,5vw,2.75rem)] font-bold lowercase leading-[1.08] tracking-[-0.035em]">{title}</h1>
         <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-md">
