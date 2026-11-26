@@ -327,6 +327,51 @@
   .qp .btns { margin-top: 22px; display: flex; gap: 12px; }
   .qp .btns span { border: 1px solid var(--line); border-radius: 99px; padding: 12px 22px; font-size: 22px; font-weight: 700; }
   .qp .btns span.acc { background: var(--accent); color: #08090d; border: 0; }
+
+  /* layouts */
+  .seg { display: inline-flex; gap: 6px; padding: 8px; border-radius: 99px; border: 1px solid var(--line); background: rgba(255,255,255,.04); margin-top: 40px; align-self: flex-start; }
+  .seg span { padding: 14px 30px; border-radius: 99px; font-size: 28px; font-weight: 600; color: var(--muted); }
+  .seg span.on { background: #fff; color: #08090d; }
+  .trio { margin-top: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .trio .ph { height: 520px; border-radius: 34px; border: 1px solid var(--line); background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .trio .lab { margin-top: 18px; text-align: center; font-family: "JetBrains Mono"; font-size: 22px; line-height: 1.6; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .trio .lab b { color: var(--text); }
+  .ph .post-s { border-radius: 16px; background: var(--panel-2); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .ph .post-s i { height: 16px; width: 60%; border-radius: 8px; background: rgba(255,255,255,.12); }
+  .ph .post-s img { width: 100%; height: 300px; object-fit: cover; border-radius: 10px; }
+  .ph .g-card { position: relative; border-radius: 22px; overflow: hidden; height: 100%; }
+  .ph .g-card img, .ph .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ph .g-card .fp { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 90px; border-radius: 16px; }
+  .ph .g-card .pp { position: absolute; left: 10px; top: 10px; width: 130px; height: 34px; border-radius: 99px; }
+  .frost { border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.35); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+  .ph.bento { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 70px; gap: 8px; }
+  .ph .tile { position: relative; border-radius: 14px; overflow: hidden; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .ph .tile.t3 { grid-row: span 3; } .ph .tile.t2 { grid-row: span 2; }
+  .ph .tile b { position: absolute; left: 10px; top: 8px; font-family: "Anton"; font-weight: 400; font-size: 40px; color: var(--c); }
+  .glass-big { margin-top: 40px; border-radius: 48px; padding: 14px; border: 1px solid rgba(255,255,255,.12); background: color-mix(in srgb, var(--accent) 7%, rgba(255,255,255,.03)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+  .glass-big .photo { position: relative; height: 640px; border-radius: 36px; overflow: hidden; }
+  .glass-big .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .glass-big .who { position: absolute; left: 22px; top: 22px; display: flex; align-items: center; gap: 14px; padding: 8px 24px 8px 8px; border-radius: 99px; font-size: 24px; }
+  .glass-big .who i { width: 46px; height: 46px; border-radius: 99px; background: var(--accent); color: #08090d; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 20px; }
+  .glass-big .who span { color: rgba(255,255,255,.6); }
+  .glass-big .min { position: absolute; right: 22px; top: 22px; padding: 10px 20px; border-radius: 99px; font-family: "JetBrains Mono"; font-weight: 700; font-size: 20px; }
+  .glass-big .panel2 { position: absolute; left: 16px; right: 16px; bottom: 16px; padding: 28px 30px; border-radius: 30px; }
+  .glass-big .panel2 h3 { font-family: "Unbounded"; font-weight: 700; font-size: 48px; letter-spacing: -0.04em; }
+  .glass-big .panel2 p { margin-top: 10px; font-size: 28px; color: rgba(255,255,255,.78); }
+  .glass-big .acts { display: flex; align-items: center; gap: 12px; padding: 20px 10px 6px; }
+  .glass-big .acts span { border: 1px solid var(--line); background: rgba(255,255,255,.06); border-radius: 99px; padding: 12px 24px; font-size: 24px; font-weight: 600; }
+  .glass-big .acts span.go { margin-left: auto; background: var(--accent); color: #08090d; border: 0; font-weight: 700; }
+  .bento-big { margin-top: 40px; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 104px; gap: 14px; grid-auto-flow: column; grid-template-rows: repeat(5, 104px); }
+  .bt { position: relative; border-radius: 26px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); background: color-mix(in srgb, var(--c, #fff) 7%, rgba(255,255,255,.03)); padding: 20px; }
+  .bt img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .bt.r2 { grid-row: span 2; } .bt.r3 { grid-row: span 3; }
+  .bt .lbl { position: absolute; left: 10px; right: 10px; bottom: 10px; padding: 14px 18px; border-radius: 18px; font-family: "Unbounded"; font-weight: 600; font-size: 22px; letter-spacing: -0.02em; }
+  .bt .k { font-family: "JetBrains Mono"; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .bt .big { font-family: "Anton"; font-size: 84px; line-height: .95; color: var(--c); margin-top: 8px; }
+  .bt .t { font-family: "Unbounded"; font-weight: 600; font-size: 21px; letter-spacing: -0.02em; line-height: 1.25; margin-top: 8px; }
+  .bt .ops { margin-top: 12px; display: grid; gap: 8px; }
+  .bt .ops span { border: 1px solid var(--line); border-radius: 14px; padding: 9px 14px; font-size: 18px; color: var(--muted); }
+  .bt .ops span.good { border-color: var(--green); color: var(--text); background: rgba(46,230,166,.08); }
 </style>
 </head>
 <body>
@@ -1027,6 +1072,81 @@
     <div class="cta">play now →</div>
   </div>
   <div class="foot"><span>link in bio</span><span><b>offtrck games</b></span></div>
+</section>
+
+<!-- ============ feed layouts ============ -->
+
+<!-- 33 · pick your layout -->
+<section class="post" id="p33">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">33</div></div>
+  <div class="body">
+    <div class="kicker">new · feed layouts</div>
+    <h1 class="md">your feed. <em>your layout.</em></h1>
+    <div class="seg"><span>stream</span><span class="on">glass</span><span>bento</span></div>
+    <div class="trio">
+      <div>
+        <div class="ph">
+          <div class="post-s"><i></i><img src="../src/assets/courses/network.jpg" alt="" /><i style="width: 40%"></i></div>
+          <div class="post-s"><i></i></div>
+        </div>
+        <p class="lab"><b>stream</b><br />one by one</p>
+      </div>
+      <div>
+        <div class="ph">
+          <div class="g-card"><img src="../src/assets/courses/ip.jpg" alt="" /><span class="pp frost"></span><span class="fp frost"></span></div>
+        </div>
+        <p class="lab"><b>glass</b><br />see-through</p>
+      </div>
+      <div>
+        <div class="ph bento">
+          <div class="tile t3"><img src="../src/assets/courses/acc-jars.jpg" alt="" /></div>
+          <div class="tile t2" style="--c: var(--amber)"><b>72</b></div>
+          <div class="tile t2"><img src="../src/assets/courses/inject.jpg" alt="" /></div>
+          <div class="tile t2" style="--c: var(--green)"><b>?</b></div>
+          <div class="tile t2"><img src="../src/assets/courses/router.jpg" alt="" /></div>
+        </div>
+        <p class="lab"><b>bento</b><br />see more</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>switch anytime</span><span><b>next: glass →</b></span></div>
+</section>
+
+<!-- 34 · glass -->
+<section class="post" id="p34" style="--accent: #4f8cff">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">34</div></div>
+  <div class="body">
+    <div class="kicker">layout · glass</div>
+    <h1 class="md">see-through cards. <em>real photos.</em></h1>
+    <div class="glass-big">
+      <div class="photo">
+        <img src="../src/assets/courses/ip.jpg" alt="" />
+        <span class="who frost"><i>I</i><b>offtrck.net</b><span>· ch 2</span></span>
+        <span class="min frost">10 min</span>
+        <div class="panel2 frost"><h3>ip addresses</h3><p>can someone find your house from your IP?</p></div>
+      </div>
+      <div class="acts"><span>♡ 1.9k</span><span>👀 peek</span><span class="go">start →</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>tap 👀 peek for a hint</span><span><b>next: bento →</b></span></div>
+</section>
+
+<!-- 35 · bento -->
+<section class="post" id="p35" style="--accent: var(--amber)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">35</div></div>
+  <div class="body">
+    <div class="kicker">layout · bento</div>
+    <h1 class="md">see <em>more</em> in one screen.</h1>
+    <div class="bento-big">
+      <div class="bt r3"><img src="../src/assets/courses/ip.jpg" alt="" /><span class="lbl frost">ip addresses</span></div>
+      <div class="bt r2"><img src="../src/assets/courses/compound.jpg" alt="" /><span class="lbl frost">compound interest</span></div>
+      <div class="bt r2" style="--c: var(--amber)"><div class="k">did you know</div><div class="big">72</div><div class="t">the rule that doubles your money</div></div>
+      <div class="bt r3" style="--c: var(--green)"><div class="k">poll</div><div class="t">₹1 lakh in sales. is that profit?</div><div class="ops"><span>yes</span><span class="good">no ✓</span></div></div>
+      <div class="bt r3"><img src="../src/assets/courses/inject.jpg" alt="" /><span class="lbl frost">▶ crack it?</span></div>
+      <div class="bt r2" style="--c: #ff6600"><div class="k">● live · hacker news</div><div class="t">GnuPG security advisory</div></div>
+    </div>
+  </div>
+  <div class="foot"><span>lessons, games, polls, live posts</span><span><b>link in bio</b></span></div>
 </section>
 
 <script>

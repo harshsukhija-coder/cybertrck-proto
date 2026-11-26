@@ -1,10 +1,11 @@
 # offtrck · Instagram posts
 
-32 posts in three series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
+35 posts in four series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
 
 - **01–13:** offtrck academy launch.
 - **14–23:** what's new: terminal mode, the live feed, and paths (skill check + roadmaps).
-- **24–32:** 6 new games, and games popping up in the feed. Captions are at the end of this file.
+- **24–32:** 6 new games, and games popping up in the feed.
+- **33–35:** new feed layouts: glass and bento. Captions are at the end of this file.
 
 ## Series 1 · offtrck academy launch
 
@@ -785,3 +786,77 @@ link in bio 🔗
 #offtrck #learnbyplaying #techgames #edtech #learntech #funlearning
 ```
 **Alt text:** A terminal solving binary blitz (00101010 = 42), the words "play more.", a checklist of what's new and a "play now" button.
+
+---
+
+## Series 4 · feed layouts
+
+3 posts, in posting order: pick your layout (33), glass (34) and bento (35). They also work as one 3-slide carousel.
+
+---
+
+## 33 · your feed, your layout
+**Image:** `posts/33.png`
+
+**Caption**
+```
+your feed. your layout. 📱
+
+you can now switch how your feed looks:
+
+▭ stream: one post at a time, like before
+◐ glass: see-through cards over real photos
+▦ bento: a grid of small tiles, so you see more at once
+
+same lessons, games, polls and live posts. just a different way to scroll.
+
+switch anytime with the buttons next to "your feed". which one are you picking? 👇
+
+#offtrck #uidesign #glassmorphism #bentogrid #appdesign #learntech
+```
+**Alt text:** Three phone screens side by side showing the stream, glass and bento layouts, with a switch at the top where "glass" is selected.
+
+---
+
+## 34 · glass
+**Image:** `posts/34.png`
+
+**Caption**
+```
+the glass layout. ✨
+
+every lesson is a full photo with see-through, frosted panels on top:
+🏷 who posted it and how long it takes
+📝 the title and the question that makes you curious
+👀 tap "peek" to get a hint of the answer before you start
+
+polls, quick games and your roadmap all work right inside the cards too.
+
+less clutter. more photo. same learning.
+
+#offtrck #glassmorphism #uidesign #darkmode #edtech #learnnetworking
+```
+**Alt text:** A see-through card with a photo of a house at night, frosted labels for "offtrck.net · ch 2" and "10 min", a frosted panel reading "ip addresses: can someone find your house from your IP?", and buttons for like, peek and start.
+
+---
+
+## 35 · bento
+**Image:** `posts/35.png`
+
+**Caption**
+```
+see more in one screen. 🍱
+
+the bento layout turns your feed into a grid of small tiles:
+📸 lessons and games as photo tiles
+💡 fun facts as big numbers
+📊 polls you can answer right in the tile
+● live posts from around the web
+
+great for a quick look on a big screen: spot what grabs you, then tap in.
+
+stream, glass or bento? tell us your pick 👇
+
+#offtrck #bentogrid #uidesign #appdesign #microlearning #techfeed
+```
+**Alt text:** A grid of frosted tiles: photo tiles for ip addresses, compound interest and the crack it game, a fact tile with the number 72, a poll about profit with "no" marked correct, and a live hacker news post.
