@@ -13,6 +13,7 @@ import { getStories, markSeen, readSeen } from "../../courses/stories/use-storie
 import type { Course, CourseChapter, LessonSlide } from "../../courses/types";
 import { NEXT_CHIP, QUIT_CHIP, bar, isQuit, optionChips, pickIndex, plural, printOptions, rule, table } from "../format";
 import type { Command, Term } from "../term";
+import { shareChip } from "./post-share";
 
 const learning = () => summarizeProgress(readProgress());
 
@@ -256,6 +257,8 @@ const showItem = (t: Term, item: FeedItem) => {
       break;
     }
   }
+  const chip = shareChip(item);
+  if (chip) t.print(chip);
 };
 
 const feed = async (t: Term, args: string[]) => {

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { INTERESTS, STYLES, type Prefs } from "../prefs";
 import { useProgress } from "../progress";
+import { SharePanel } from "../share/share-panel";
 import { BadgeMedal } from "./badge-medal";
-import { buildCaption, drawBadgeCard, formatDate, shareLinks } from "./badge-share";
+import { buildCaption, drawBadgeCard, formatDate } from "./badge-share";
 import { badgeHash, findBadge, type Badge } from "./badges";
 import { useBadges, type BadgeState } from "./use-badges";
 
@@ -40,129 +41,16 @@ const BadgeTile = ({ state }: { state: BadgeState }) => {
   );
 };
 
-const copy = (text: string) => navigator.clipboard?.writeText(text).catch(() => undefined);
-
-const SharePanel = ({ badge, username, earnedAt }: { badge: Badge; username: string; earnedAt: string }) => {
-  const [image, setImage] = useState<{ blob: Blob; url: string } | null>(null);
-  const [caption, setCaption] = useState(() => buildCaption(badge));
-  const [notice, setNotice] = useState("");
-
-  useEffect(() => {
-    let url = "";
-    let cancelled = false;
-    drawBadgeCard(badge, username, earnedAt).then(blob => {
-      if (cancelled) return;
-      url = URL.createObjectURL(blob);
-      setImage({ blob, url });
-    });
-    return () => {
-      cancelled = true;
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [badge, username, earnedAt]);
-
-  useEffect(() => {
-    if (!notice) return;
-    const t = window.setTimeout(() => setNotice(""), 3500);
-    return () => window.clearTimeout(t);
-  }, [notice]);
-
-  const fileName = `offtrck-${badge.id}.png`;
-  const download = () => {
-    if (!image) return;
-    const a = document.createElement("a");
-    a.href = image.url;
-    a.download = fileName;
-    a.click();
-  };
-
-  const file = image ? new File([image.blob], fileName, { type: "image/png" }) : null;
-  const canShareFile = !!file && !!navigator.canShare?.({ files: [file] });
-
-  const nativeShare = async () => {
-    try {
-      if (canShareFile && file) await navigator.share({ files: [file], text: caption, title: `offtrck badge: ${badge.name}` });
-      else await navigator.share({ text: caption });
-    } catch {
-      /* the user closed the share sheet */
-    }
-  };
-
-  const button = "rounded-full border border-(--line) bg-(--panel) px-4 py-2.5 text-sm font-semibold transition hover:border-white/30";
-
+const BadgeShare = ({ badge, username, earnedAt }: { badge: Badge; username: string; earnedAt: string }) => {
+  const makeImage = useCallback(() => drawBadgeCard(badge, username, earnedAt), [badge, username, earnedAt]);
   return (
-    <div className="mt-6 grid gap-5 sm:grid-cols-[220px_minmax(0,1fr)]">
-      <div className="mx-auto w-full max-w-[260px] self-start overflow-hidden rounded-2xl border border-(--line) bg-black sm:max-w-none">
-        {image ? <img src={image.url} alt={`share image for the ${badge.name} badge`} className="block aspect-[4/5] w-full" /> : <div className="aspect-[4/5] animate-pulse bg-white/5" />}
-      </div>
-
-      <div className="min-w-0">
-        <label className="font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)" htmlFor="badge-caption">
-          your caption (edit it if you like)
-        </label>
-        <textarea
-          id="badge-caption"
-          value={caption}
-          onChange={e => setCaption(e.target.value)}
-          rows={7}
-          className="mt-2 w-full resize-none rounded-2xl border border-(--line) bg-black/40 p-3 text-sm leading-relaxed outline-none focus:border-white/30"
-        />
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {"share" in navigator && (
-            <button type="button" onClick={nativeShare} className="rounded-full px-4 py-2.5 text-sm font-semibold text-black" style={{ background: badge.color }}>
-              share…
-            </button>
-          )}
-          <button type="button" onClick={download} disabled={!image} className={button}>
-            ⬇ save image
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              copy(caption);
-              setNotice("caption copied ✓");
-            }}
-            className={button}
-          >
-            copy caption
-          </button>
-        </div>
-
-        <p className="mt-5 font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)">post it on</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              download();
-              copy(caption);
-              setNotice("image saved and caption copied. open instagram and paste it in your post ✓");
-            }}
-            className={button}
-          >
-            Instagram
-          </button>
-          {shareLinks(caption).map(link => (
-            <a
-              key={link.id}
-              href={link.href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => {
-                copy(caption);
-                if (link.id === "facebook" || link.id === "linkedin") setNotice("caption copied. attach the saved image for the best post ✓");
-              }}
-              className={button}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <p className="mt-3 min-h-5 text-sm text-(--gem)" role="status">
-          {notice}
-        </p>
-      </div>
-    </div>
+    <SharePanel
+      makeImage={makeImage}
+      initialCaption={buildCaption(badge)}
+      fileName={`offtrck-${badge.id}.png`}
+      title={`offtrck badge: ${badge.name}`}
+      color={badge.color}
+    />
   );
 };
 
@@ -199,7 +87,7 @@ const BadgeDetail = ({ state, username }: { state: BadgeState; username: string 
         </div>
 
         {earnedAt ? (
-          <SharePanel badge={badge} username={username} earnedAt={earnedAt} />
+          <BadgeShare badge={badge} username={username} earnedAt={earnedAt} />
         ) : (
           <div className="mt-6">
             <div className="h-2 overflow-hidden rounded-full bg-white/10">

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { ChapterCover } from "../chapter-cover";
 import { GamepadIcon } from "../feed-icons";
 import { PostFrame } from "../feed-post";
+import { shareQuick } from "../share/post-share";
 import { gameHash, type GameMeta } from "./games";
 import { useQuickRound } from "./use-quick-round";
 
-const CAPTIONS = ["one question. no pressure. (some pressure.)", "most people get this wrong. do you?", "10 seconds. go 👇", "answer, then flex in the comments"];
+const CAPTIONS = ["one question. no pressure. (some pressure.)", "most people get this wrong. do you?", "10 seconds. go 👇", "got it? share it with someone who won't"];
 
 /** One round of a game, playable right in the feed */
 export const QuickPlayPost = ({ game, round, reason, seed }: { game: GameMeta; round: number; reason?: string; seed: number }) => {
@@ -91,7 +92,7 @@ export const QuickPlayPost = ({ game, round, reason, seed }: { game: GameMeta; r
       likes={Math.round(game.plays / 5) + seed * 7}
       caption={CAPTIONS[seed % CAPTIONS.length]}
       tags={game.tags}
-      comments={Math.round(game.plays / 120)}
+      share={() => shareQuick(game, r)}
       age={`${seed + 2}h ago`}
       seed={seed}
     />

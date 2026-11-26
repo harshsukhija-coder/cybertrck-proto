@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { ChapterCover } from "./chapter-cover";
 import { COURSES, chapterHash, findCourse } from "./data";
 import type { Fact, Poll } from "./feed-extras";
-import { BookmarkIcon, ChevronIcon, CommentIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
+import { BookmarkIcon, ChevronIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
 import { gameHash, type GameMeta } from "./games/games";
 import { markLiveSeen } from "./live/live-feed";
 import type { LivePost } from "./live/live-sources";
 import { slideOf, type ChapterLayout } from "./post-layouts";
+import { shareChapter, shareFact, shareGame, shareLive, sharePoll, type SharePost } from "./share/post-share";
+import { ShareSheet } from "./share/share-sheet";
 import type { Course, CourseChapter, LessonSlide } from "./types";
 
 const DOUBLE_TAP_MS = 300;
@@ -239,9 +241,8 @@ type FrameProps = {
   likes: number;
   caption: string;
   tags: string[];
-  comments: number;
-  /** Real posts link to their real comments */
-  commentsLink?: string;
+  /** Built when the share button is tapped, so it can include what's on screen right now */
+  share: () => SharePost;
   age: string;
   seed: number;
   id: string;
@@ -250,6 +251,8 @@ type FrameProps = {
 export const PostFrame = (props: FrameProps) => {
   const [saved, setSaved] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [sharing, setSharing] = useState<SharePost | null>(null);
+  const closeShare = useCallback(() => setSharing(null), []);
   const likers = [LIKERS[props.seed % LIKERS.length], LIKERS[(props.seed + 2) % LIKERS.length]];
 
   return (
@@ -300,10 +303,7 @@ export const PostFrame = (props: FrameProps) => {
             className={`h-7 w-7 ${props.liked ? "animate-like-pop text-[#ff3b5c]" : ""}`}
           />
         </button>
-        <button type="button" aria-label="Comment" className="rounded-full p-2 transition-colors hover:bg-white/5">
-          <CommentIcon className="h-7 w-7" />
-        </button>
-        <button type="button" aria-label="Share" className="rounded-full p-2 transition-colors hover:bg-white/5">
+        <button type="button" aria-label="Share" onClick={() => setSharing(props.share())} className="rounded-full p-2 transition-colors hover:bg-white/5">
           <ShareIcon className="h-[26px] w-[26px]" />
         </button>
         <button
@@ -343,15 +343,9 @@ export const PostFrame = (props: FrameProps) => {
             more
           </button>
         )}
-        {props.commentsLink ? (
-          <a href={props.commentsLink} target="_blank" rel="noreferrer" className="block text-sm text-(--muted) hover:text-(--fg)">
-            {props.comments ? `view all ${props.comments.toLocaleString()} comments ↗` : "start the conversation ↗"}
-          </a>
-        ) : (
-          <p className="text-sm text-(--muted)">view all {props.comments} comments</p>
-        )}
         <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{props.age}</p>
       </div>
+      {sharing && <ShareSheet post={sharing} onClose={closeShare} />}
     </article>
   );
 };
@@ -599,7 +593,7 @@ export const ChapterPost = ({
       likes={chapter.likes}
       caption={chapter.caption}
       tags={chapter.tags}
-      comments={Math.round(chapter.likes / 27)}
+      share={() => shareChapter(course, chapter)}
       age={`${seed * 3 + 2}h ago`}
       seed={seed}
     />
@@ -641,7 +635,7 @@ export const GamePost = ({ game, reason, seed }: { game: GameMeta; reason?: stri
       likes={Math.round(game.plays / 4)}
       caption={game.caption}
       tags={game.tags}
-      comments={Math.round(game.plays / 90)}
+      share={() => shareGame(game)}
       age={`${seed * 2 + 1}h ago`}
       seed={seed}
     />
@@ -720,7 +714,7 @@ export const PollPost = ({ poll, reason, seed }: { poll: Poll; reason?: string; 
       likes={900 + seed * 137}
       caption={POLL_CAPTIONS[seed % POLL_CAPTIONS.length]}
       tags={poll.tags}
-      comments={40 + seed * 7}
+      share={() => sharePoll(poll)}
       age={`${seed + 1}h ago`}
       seed={seed}
     />
@@ -770,7 +764,7 @@ export const FactPost = ({ fact, reason, seed }: { fact: Fact; reason?: string; 
       likes={2100 + seed * 211}
       caption={FACT_CAPTIONS[seed % FACT_CAPTIONS.length]}
       tags={fact.tags}
-      comments={60 + seed * 9}
+      share={() => shareFact(fact)}
       age={`${seed + 2}h ago`}
       seed={seed}
     />
@@ -860,8 +854,7 @@ export const LivePostCard = ({ post, reason, seed }: { post: LivePost; reason?: 
       likes={Math.max(1, post.likes ?? 1)}
       caption={LIVE_CAPTIONS[seed % LIVE_CAPTIONS.length]}
       tags={post.hashtags}
-      comments={post.comments ?? 0}
-      commentsLink={post.link}
+      share={() => shareLive(post)}
       age={timeAgo(post.at)}
       seed={seed}
     />

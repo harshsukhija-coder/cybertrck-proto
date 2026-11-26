@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { COURSES, chapterHash, findCourse } from "./data";
 import type { FeedItem } from "./feed-build";
 import type { Fact, Poll } from "./feed-extras";
@@ -9,6 +9,8 @@ import { useGuide } from "./guide/guide-store";
 import { pathHash, type LearningPath } from "./guide/paths";
 import { markLiveSeen } from "./live/live-feed";
 import type { LivePost } from "./live/live-sources";
+import { shareChapter, shareFact, shareGame, shareGuide, shareLive, sharePoll, shareQuick, type SharePost } from "./share/post-share";
+import { ShareSheet } from "./share/share-sheet";
 import type { Course, CourseChapter } from "./types";
 
 /** Frosted glass on the dark page */
@@ -102,6 +104,29 @@ const Go = ({ href, color, children, external }: { href: string; color: string; 
   </a>
 );
 
+/** Opens the share pop-up; `make` runs on tap so it captures what's on screen */
+const SharePill = ({ make, onPhoto }: { make: () => SharePost; onPhoto?: boolean }) => {
+  const [sharing, setSharing] = useState<SharePost | null>(null);
+  const close = useCallback(() => setSharing(null), []);
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Share"
+        onClick={() => setSharing(make())}
+        className={
+          onPhoto
+            ? `absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-sm transition hover:bg-black/60 ${FROST}`
+            : "rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold transition hover:bg-white/10"
+        }
+      >
+        {onPhoto ? "↗" : "↗ share"}
+      </button>
+      {sharing && <ShareSheet post={sharing} onClose={close} />}
+    </>
+  );
+};
+
 const Actions = ({ children }: { children: ReactNode }) => <div className="flex items-center gap-2 px-2 pb-1.5 pt-3">{children}</div>;
 
 const Choice = ({ label, state, onClick, fill }: { label: string; state: "idle" | "right" | "wrong" | "dim"; onClick: () => void; fill?: number }) => (
@@ -155,6 +180,7 @@ const ChapterCard = ({ course, chapter, reason, compact, seed }: { course: Cours
           >
             {peek ? "↺ the question" : "👀 peek"}
           </button>
+          <SharePill make={() => shareChapter(course, chapter)} />
           <Go href={chapterHash(course, chapter)} color={course.color}>
             start →
           </Go>
@@ -182,7 +208,8 @@ const GameCard = ({ game, reason, compact }: { game: GameMeta; reason?: string; 
     {!compact && (
       <Actions>
         <LikePill base={Math.round(game.plays / 4)} />
-        <span className="text-xs text-(--muted)">{short(game.plays)} plays</span>
+        <SharePill make={() => shareGame(game)} />
+        <span className="hidden text-xs text-(--muted) sm:inline">{short(game.plays)} plays</span>
         <Go href={gameHash(game.id)} color={game.duo[1]}>
           play →
         </Go>
@@ -201,6 +228,7 @@ const QuickCard = ({ game, round, reason, compact }: { game: GameMeta; round: nu
         <span className={`absolute left-3 top-3 rounded-full px-3 py-1 font-jetbrains text-[10px] font-bold uppercase tracking-widest ${FROST}`}>
           ⚡ quick play{streak > 1 ? ` · ${streak}🔥` : ""}
         </span>
+        {!compact && <SharePill onPhoto make={() => shareQuick(game, r)} />}
       </Photo>
       <div className={compact ? "p-2.5" : "p-4"}>
         {!compact && <Reason text={reason} />}
@@ -261,6 +289,11 @@ const PollCard = ({ poll, reason, compact }: { poll: Poll; reason?: string; comp
         </div>
         {picked !== null && <p className="mt-3 animate-tile-in text-xs text-(--muted)">{poll.why}</p>}
       </div>
+      {!compact && (
+        <Actions>
+          <SharePill make={() => sharePoll(poll)} />
+        </Actions>
+      )}
     </Shell>
   );
 };
@@ -280,7 +313,8 @@ const FactCard = ({ fact, compact }: { fact: Fact; compact: boolean }) => {
       {!compact && (
         <Actions>
           <LikePill base={2400} />
-          <span className="text-xs text-(--muted)">from {course.title}</span>
+          <SharePill make={() => shareFact(fact)} />
+          <span className="ml-auto text-xs text-(--muted)">from {course.title}</span>
         </Actions>
       )}
     </Shell>
@@ -326,6 +360,7 @@ const LiveCard = ({ post, reason, compact }: { post: LivePost; reason?: string; 
         </div>
         <Actions>
           {!compact && <LikePill base={post.likes ?? 120} />}
+          {!compact && <SharePill make={() => shareLive(post)} />}
           <Go href={post.link} color={post.color} external>
             ↗ {compact ? "open" : post.linkLabel}
           </Go>
@@ -348,6 +383,7 @@ const GuideCard = ({ path, reason, compact }: { path: LearningPath; reason?: str
             <p className={`mt-3 font-display font-bold lowercase leading-tight ${compact ? "text-base" : "text-2xl"}`}>how much do you know about {path.title}?</p>
             {!compact && <p className="mt-1.5 text-sm text-(--muted)">a 1-minute check. we skip what you know and show your next steps.</p>}
             <Actions>
+              {!compact && <SharePill make={() => shareGuide(path)} />}
               <Go href={pathHash(path.id, true)} color={path.color}>
                 take the check →
               </Go>
@@ -366,6 +402,7 @@ const GuideCard = ({ path, reason, compact }: { path: LearningPath; reason?: str
             <p className={`mt-1 font-display font-bold lowercase ${compact ? "text-base" : "text-2xl"}`}>{path.stages[s.stage]?.name ?? "path complete 🏆"}</p>
             {s.next[0] && <p className="mt-1.5 text-sm text-(--muted)">next: {s.next[0].label}</p>}
             <Actions>
+              {!compact && <SharePill make={() => shareGuide(path)} />}
               <Go href={pathHash(path.id)} color={path.color}>
                 my next steps →
               </Go>

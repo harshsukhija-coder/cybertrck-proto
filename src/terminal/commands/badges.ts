@@ -1,6 +1,7 @@
 import { summarizeAcademy, readAcademy } from "../../courses/academy/academy-progress";
 import { BADGES, type Badge } from "../../courses/badges/badges";
-import { buildCaption, drawBadgeCard, formatDate, shareLinks } from "../../courses/badges/badge-share";
+import { buildCaption, drawBadgeCard, formatDate } from "../../courses/badges/badge-share";
+import { shareLinks } from "../../courses/share/share-utils";
 import { readBadges, saveUnlocked, type BadgeState } from "../../courses/badges/use-badges";
 import { ALL_CHAPTERS, COURSES } from "../../courses/data";
 import { readBest } from "../../courses/games/game-utils";
@@ -9,6 +10,7 @@ import { PACES, readPrefs } from "../../courses/prefs";
 import { readProgress, summarizeProgress } from "../../courses/progress";
 import { bar, plural, rule } from "../format";
 import type { Command, Term } from "../term";
+import { sharePost } from "./post-share";
 
 const TIER = { bronze: "{orange:bronze}", silver: "{muted:silver}", gold: "{yellow:gold}" } as const;
 
@@ -63,6 +65,7 @@ const showBadge = (t: Term, args: string[]) => {
 };
 
 const share = async (t: Term, args: string[]) => {
+  if (args[0] === "post") return sharePost(t, args.slice(1));
   const state = readBadges().find(b => b.badge.id === args[0]);
   if (!state) {
     const earned = readBadges().filter(b => b.earnedAt);
@@ -124,7 +127,7 @@ export const announceBadges = (t: Term) => {
 export const badgeCommands: Command[] = [
   { name: "badges", usage: "badges", about: "badges you earned and how to get the rest", group: "you", run: listBadges },
   { name: "badge", usage: "badge <name>", about: "one badge in detail", group: "you", hidden: true, run: showBadge, complete: () => BADGES.map(b => b.id) },
-  { name: "share", usage: "share <badge>", about: "share a badge: caption, image and links", group: "you", run: share, complete: () => BADGES.map(b => b.id) },
+  { name: "share", usage: "share <badge>", about: "share a badge or a feed post: caption, image and links", group: "you", run: share, complete: () => BADGES.map(b => b.id) },
   { name: "stats", aliases: ["me", "profile", "progress"], usage: "stats", about: "minutes, streak and progress everywhere", group: "you", run: stats },
   { name: "find", aliases: ["search", "grep"], usage: "find <word>", about: "search every chapter, game and badge", group: "files", run: (t, args) => search(t, args.join(" ")) },
 ];

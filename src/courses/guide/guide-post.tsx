@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PostFrame } from "../feed-post";
+import { shareGuide } from "../share/post-share";
 import { useGuide } from "./guide-store";
 import { PathSummary, SkillCheck } from "./guide-ui";
 import type { LearningPath } from "./paths";
@@ -52,7 +53,7 @@ export const GuidePost = ({ path, reason, seed }: { path: LearningPath; reason?:
       likes={1200 + seed * 91}
       caption={(checking ? CHECK_CAPTIONS : ROADMAP_CAPTIONS)[seed % 3]}
       tags={path.interests}
-      comments={30 + seed * 5}
+      share={() => shareGuide(path)}
       age={`${seed + 1}h ago`}
       seed={seed}
     />
