@@ -1,6 +1,8 @@
 import { readBadges } from "../../courses/badges/use-badges";
 import { ALL_CHAPTERS, COURSES, findCourse } from "../../courses/data";
 import { buildFeed, interestLabel, type FeedItem } from "../../courses/feed-build";
+import { getLivePosts, markLiveSeen } from "../../courses/live/live-feed";
+import type { LivePost } from "../../courses/live/live-sources";
 import { POLLS } from "../../courses/feed-extras";
 import { INTERESTS, PACES, STYLES, readPrefs, savePrefs, type InterestId, type Prefs } from "../../courses/prefs";
 import { markDone, readProgress, summarizeProgress } from "../../courses/progress";
@@ -160,7 +162,7 @@ const learn = (t: Term, args: string[]) => {
 // ---------- feed ----------
 
 const PAGE = 6;
-let feedState = { key: "", page: 0 };
+let feedState: { key: string; page: number; live: LivePost[] | null } = { key: "", page: 0, live: null };
 
 const nextBadge = () =>
   readBadges()
@@ -196,6 +198,22 @@ const showItem = (t: Term, item: FeedItem) => {
       t.print(`**${item.fact.line}**`);
       t.print(`{dim:${item.fact.sub}}`);
       break;
+    case "live": {
+      // Text from the web goes in as plain segments so stray brackets or asterisks can't break the markup
+      const p = item.post;
+      t.segs([
+        { text: `● ${p.source}`, color: p.color },
+        { text: ` · live${p.author ? ` · by ${p.author}` : ""}${item.reason ? ` · ${item.reason}` : ""}`, tone: "dim" },
+      ]);
+      t.segs([{ text: p.kicker, tone: "dim" }]);
+      t.segs([{ text: p.title, bold: true, tone: "fg" }]);
+      if (p.stat) t.segs([{ text: p.stat.value, color: p.color }, { text: ` ${p.stat.label}`, tone: "dim" }]);
+      if (p.image) t.image(p.image, p.title);
+      if (p.body) t.segs([{ text: p.body }]);
+      t.segs([{ text: `↗ ${p.linkLabel}`, href: p.link }]);
+      markLiveSeen(p.id);
+      break;
+    }
     case "courses":
       t.print(`{accent:📚 ${COURSES.length} courses, ${ALL_CHAPTERS.length} chapters.} pick one: [[courses]]`);
       break;
@@ -210,17 +228,22 @@ const showItem = (t: Term, item: FeedItem) => {
   }
 };
 
-const feed = (t: Term, args: string[]) => {
+const feed = async (t: Term, args: string[]) => {
   const prefs = readPrefs();
   if (!prefs) {
     t.print("{yellow:first, tell me what you're into.} it takes 20 seconds.");
-    return startVibe(t, () => feed(t, args));
+    return startVibe(t, () => void feed(t, args));
   }
-  const filter = (INTERESTS.find(i => i.id === args.find(a => a !== "more"))?.id ?? null) as InterestId | null;
+  const filter = (INTERESTS.find(i => i.id === args.find(a => a !== "more" && a !== "refresh"))?.id ?? null) as InterestId | null;
   const key = `${filter}`;
-  if (args.includes("more") && feedState.key === key) feedState.page++;
-  else feedState = { key, page: 0 };
-  const items = buildFeed(prefs, filter);
+  const refresh = args.includes("refresh");
+  if (args.includes("more") && feedState.key === key && !refresh) feedState.page++;
+  else feedState = { key, page: 0, live: feedState.key === key && !refresh ? feedState.live : null };
+  if (!feedState.live) {
+    t.print("{dim:fetching live posts for your interests…}");
+    feedState.live = await getLivePosts(filter ? [filter] : prefs.interests, refresh);
+  }
+  const items = buildFeed(prefs, filter, feedState.live);
   const page = items.slice(feedState.page * PAGE, (feedState.page + 1) * PAGE);
   if (!feedState.page) {
     const hour = new Date().getHours();
@@ -233,7 +256,7 @@ const feed = (t: Term, args: string[]) => {
   }
   page.forEach(item => showItem(t, item));
   t.print("");
-  t.print(`{dim:${Math.min(items.length, (feedState.page + 1) * PAGE)}/${items.length}} [[more ↓|feed ${filter ? `${filter} ` : ""}more]]  [[stories]]`);
+  t.print(`{dim:${Math.min(items.length, (feedState.page + 1) * PAGE)}/${items.length}} [[more ↓|feed ${filter ? `${filter} ` : ""}more]]  [[↻ refresh|feed ${filter ? `${filter} ` : ""}refresh]]  [[stories]]`);
 };
 
 const vote = (t: Term, args: string[]) => {
@@ -400,7 +423,7 @@ const startVibe = (t: Term, then?: () => void) => {
 };
 
 export const learnCommands: Command[] = [
-  { name: "feed", aliases: ["home"], usage: "feed [topic] [more]", about: "your personal feed of lessons, games and polls", group: "start here", run: feed, complete: () => [...INTERESTS.map(i => i.id), "more"] },
+  { name: "feed", aliases: ["home"], usage: "feed [topic] [more|refresh]", about: "your feed: our lessons, games and polls mixed with live posts from the web", group: "start here", run: feed, complete: () => [...INTERESTS.map(i => i.id), "more", "refresh"] },
   { name: "stories", aliases: ["story"], usage: "stories [topic|all]", about: "today's fun facts from free APIs", group: "start here", run: stories, complete: () => ["all", "today", "tech", "money", "marketing", "data", "security", "space", "fun"] },
   { name: "courses", usage: "courses", about: "every course and your progress", group: "learn", run: listCourses },
   {

@@ -1,6 +1,7 @@
 import { COURSES } from "./data";
 import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
 import { GAMES, type GameMeta } from "./games/games";
+import type { LivePost } from "./live/live-sources";
 import { layoutsFor, type ChapterLayout } from "./post-layouts";
 import { INTERESTS, type InterestId, type Prefs } from "./prefs";
 import type { Course, CourseChapter } from "./types";
@@ -10,6 +11,7 @@ export type FeedItem =
   | { kind: "game"; game: GameMeta; reason?: string }
   | { kind: "poll"; poll: Poll; reason?: string }
   | { kind: "fact"; fact: Fact; reason?: string }
+  | { kind: "live"; post: LivePost; reason?: string }
   | { kind: "courses" }
   | { kind: "academy" }
   | { kind: "badge" };
@@ -31,9 +33,10 @@ const overlap = (tags: InterestId[], interests: InterestId[]) => tags.filter(t =
 
 /**
  * Chapters from every course, taken in turns so neighbours are never from the same course,
- * with games, polls and fun facts mixed in based on how the user likes to learn.
+ * with games, polls and fun facts mixed in based on how the user likes to learn,
+ * and live posts from the web (already ordered) woven in between.
  */
-export const buildFeed = (prefs: Prefs, filter: InterestId | null): FeedItem[] => {
+export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePost[] = []): FeedItem[] => {
   const matches = (tags: InterestId[]) => !filter || tags.includes(filter);
   const score = (tags: InterestId[]) => overlap(tags, prefs.interests);
   const byScore = <T extends { tags: InterestId[] }>(list: T[]) => list.filter(x => matches(x.tags)).sort((a, b) => score(b.tags) - score(a.tags));
@@ -90,19 +93,39 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null): FeedItem[] =
   };
 
   const items: FeedItem[] = [];
+  const liveQueue = live.filter(p => matches(p.tags));
+  const pushLive = () => {
+    const post = liveQueue.shift();
+    if (post) items.push({ kind: "live", post, reason: reasonFor(post.tags, prefs.interests) });
+  };
+
   let previous: ChapterLayout | undefined;
   chapters.forEach(({ course, chapter }, i) => {
     const options = layoutsFor(chapter);
     const layout = LAYOUT_CYCLE.map((_, k) => LAYOUT_CYCLE[(i + k) % LAYOUT_CYCLE.length]).find(l => l !== previous && options.includes(l)) ?? "carousel";
     previous = layout;
     items.push({ kind: "chapter", course, chapter, layout, reason: reasonFor(chapter.tags, prefs.interests) });
+    pushLive();
     if (i === 3 && !filter) items.push({ kind: "courses" });
     if (i === 6 && !filter) items.push({ kind: "badge" });
     if (i === 1 && (!filter || filter === "internet" || filter === "home")) items.push({ kind: "academy" });
     if ((i + 1) % every === 0) {
       const extra = nextExtra(course.id);
-      if (extra) items.push(extra);
+      if (extra) {
+        items.push(extra);
+        pushLive();
+      }
     }
   });
+
+  // Once our chapters run out, keep going with the web, still with one of ours every few posts
+  let sinceOurs = 0;
+  while (liveQueue.length) {
+    pushLive();
+    if (++sinceOurs < 2) continue;
+    const extra = nextExtra("");
+    if (extra) items.push(extra);
+    sinceOurs = 0;
+  }
   return items;
 };

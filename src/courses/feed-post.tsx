@@ -1,10 +1,12 @@
-import { useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { ChapterCover } from "./chapter-cover";
 import { COURSES, chapterHash, findCourse } from "./data";
 import type { Fact, Poll } from "./feed-extras";
 import { BookmarkIcon, ChevronIcon, CommentIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
 import { gameHash, type GameMeta } from "./games/games";
+import { markLiveSeen } from "./live/live-feed";
+import type { LivePost } from "./live/live-sources";
 import { slideOf, type ChapterLayout } from "./post-layouts";
 import type { Course, CourseChapter, LessonSlide } from "./types";
 
@@ -21,6 +23,13 @@ const POLL_CAPTIONS = [
   "vote first, then see what everyone else said 👀",
   "no googling. gut answer only 🫣",
   "most people get this wrong. do you? 🤔",
+];
+
+const LIVE_CAPTIONS = [
+  "fresh off the internet. what do you think? 👇",
+  "this just dropped. worth a look 👀",
+  "what people are talking about right now 🔥",
+  "straight from the source. we only picked it for you ✨",
 ];
 
 const CourseAvatar = ({ course }: { course: Course }) => (
@@ -231,6 +240,8 @@ type FrameProps = {
   caption: string;
   tags: string[];
   comments: number;
+  /** Real posts link to their real comments */
+  commentsLink?: string;
   age: string;
   seed: number;
   id: string;
@@ -332,7 +343,13 @@ const PostFrame = (props: FrameProps) => {
             more
           </button>
         )}
-        <p className="text-sm text-(--muted)">view all {props.comments} comments</p>
+        {props.commentsLink ? (
+          <a href={props.commentsLink} target="_blank" rel="noreferrer" className="block text-sm text-(--muted) hover:text-(--fg)">
+            {props.comments ? `view all ${props.comments.toLocaleString()} comments ↗` : "start the conversation ↗"}
+          </a>
+        ) : (
+          <p className="text-sm text-(--muted)">view all {props.comments} comments</p>
+        )}
         <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{props.age}</p>
       </div>
     </article>
@@ -755,6 +772,97 @@ export const FactPost = ({ fact, reason, seed }: { fact: Fact; reason?: string; 
       tags={fact.tags}
       comments={60 + seed * 9}
       age={`${seed + 2}h ago`}
+      seed={seed}
+    />
+  );
+};
+
+const timeAgo = (at?: number) => {
+  if (!at) return "today";
+  const minutes = Math.max(1, Math.round((Date.now() - at) / 60_000));
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return days < 7 ? `${days}d ago` : `${Math.round(days / 7)}w ago`;
+};
+
+/** A post from the web (dev.to, hacker news, github…), counted as seen once it scrolls into view */
+export const LivePostCard = ({ post, reason, seed }: { post: LivePost; reason?: string; seed: number }) => {
+  const { liked, toggle, bursts, onTap } = useLike();
+  const [imageOk, setImageOk] = useState(true);
+  const watched = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = watched.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      markLiveSeen(post.id);
+      observer.disconnect();
+    }, { threshold: 0.6 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [post.id]);
+
+  const open = (
+    <a
+      href={post.link}
+      target="_blank"
+      rel="noreferrer"
+      onClick={event => event.stopPropagation()}
+      className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-black transition-transform hover:scale-105"
+    >
+      {post.linkLabel} ↗
+    </a>
+  );
+
+  return (
+    <PostFrame
+      id={`post-${post.id}`}
+      avatar={
+        post.icon && !post.image ? (
+          <img src={post.icon} alt="" className="h-full w-full rounded-full object-cover" loading="lazy" />
+        ) : (
+          <span className="font-display text-sm font-bold uppercase">{post.source[0]}</span>
+        )
+      }
+      accent={post.color}
+      name={post.source}
+      meta={`● live · ${post.author ? `by ${post.author}` : post.kicker}`}
+      reason={reason}
+      media={
+        <>
+          <div ref={watched} onClick={onTap}>
+            {post.image && imageOk && (
+              <img src={post.image} alt="" loading="lazy" onError={() => setImageOk(false)} className="aspect-[16/9] w-full bg-white/5 object-cover" />
+            )}
+            <div className="flex flex-col gap-3 p-5 sm:p-6" style={{ background: `${post.color}12` }}>
+              <span className="font-jetbrains text-[10px] font-bold uppercase tracking-widest text-(--muted)">{post.kicker}</span>
+              <p className="font-display text-[clamp(1.2rem,5vw,1.55rem)] font-bold leading-[1.15] tracking-[-0.02em]">{post.title}</p>
+              {post.stat && (
+                <p className="flex items-baseline gap-2">
+                  <span className="font-poster text-4xl leading-none" style={{ color: post.color }}>
+                    {post.stat.value}
+                  </span>
+                  <span className="text-sm text-(--muted)">{post.stat.label}</span>
+                </p>
+              )}
+              {post.body && <p className="text-[15px] leading-snug text-(--muted)">{post.body}</p>}
+              {open}
+            </div>
+          </div>
+          <HeartBursts bursts={bursts} />
+        </>
+      }
+      liked={liked}
+      onToggleLike={toggle}
+      likes={Math.max(1, post.likes ?? 1)}
+      caption={LIVE_CAPTIONS[seed % LIVE_CAPTIONS.length]}
+      tags={post.hashtags}
+      comments={post.comments ?? 0}
+      commentsLink={post.link}
+      age={timeAgo(post.at)}
       seed={seed}
     />
   );

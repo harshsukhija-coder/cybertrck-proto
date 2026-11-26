@@ -8,7 +8,7 @@ import { BadgesPage } from "./badges/badges-page";
 import { useBadges } from "./badges/use-badges";
 import { ChapterCover } from "./chapter-cover";
 import { buildFeed, interestLabel, type FeedItem } from "./feed-build";
-import { ChapterPost, CoursesPost, FactPost, GamePost, PollPost } from "./feed-post";
+import { ChapterPost, CoursesPost, FactPost, GamePost, LivePostCard, PollPost } from "./feed-post";
 import { GameView, GamesGrid } from "./games/games-section";
 import { GAMES, gameHash, isGameId } from "./games/games";
 import { GEMS, useGem, type Gem } from "./gems";
@@ -16,6 +16,7 @@ import Onboarding from "./onboarding";
 import { CourseView, LearnHub } from "./learn-hub";
 import { INTERESTS, PACES, usePrefs, type InterestId, type Prefs } from "./prefs";
 import { useProgress } from "./progress";
+import { useLivePosts } from "./live/live-feed";
 import { StoryBar } from "./stories/story-bar";
 
 type View =
@@ -48,6 +49,8 @@ const itemKey = (item: FeedItem) => {
       return item.poll.id;
     case "fact":
       return item.fact.id;
+    case "live":
+      return `live-${item.post.id}`;
     case "courses":
       return "courses";
     case "academy":
@@ -156,6 +159,8 @@ const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
       return <PollPost poll={item.poll} reason={item.reason} seed={seed} />;
     case "fact":
       return <FactPost fact={item.fact} reason={item.reason} seed={seed} />;
+    case "live":
+      return <LivePostCard post={item.post} reason={item.reason} seed={seed} />;
     case "courses":
       return <CoursesPost base="#/feed/courses" />;
     case "academy":
@@ -176,7 +181,8 @@ const greeting = () => {
 
 const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
   const [filter, setFilter] = useState<InterestId | null>(null);
-  const items = buildFeed(prefs, filter);
+  const live = useLivePosts(filter ? [filter] : prefs.interests);
+  const items = buildFeed(prefs, filter, live.posts);
   const chips: InterestId[] = [...prefs.interests, ...INTERESTS.map(i => i.id).filter(id => !prefs.interests.includes(id))];
 
   const chip = (label: ReactNode, value: InterestId | null, color?: string) => {
@@ -212,6 +218,32 @@ const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-0">
         {chip("✦ for you", null)}
         {chips.map(id => chip(interestLabel(id), id, INTERESTS.find(i => i.id === id)?.color))}
+      </div>
+      <div className="flex items-center gap-2 px-4 font-jetbrains text-[11px] text-(--muted) sm:px-0">
+        <span className={`h-1.5 w-1.5 rounded-full ${live.loading ? "animate-pulse bg-(--gem)" : "bg-emerald-400"}`} />
+        <span className="min-w-0 truncate">
+          {live.loading
+            ? "fetching fresh posts from the web…"
+            : `${live.posts.length} live posts from the web, mixed with ours${live.updatedAt ? " · just updated" : ""}`}
+        </span>
+        {live.waiting > 0 ? (
+          <button
+            type="button"
+            onClick={live.showWaiting}
+            className="ml-auto shrink-0 animate-pop rounded-full bg-(--gem) px-3 py-1 font-bold text-black"
+          >
+            ↑ {live.waiting} new post{live.waiting === 1 ? "" : "s"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={live.refresh}
+            disabled={live.loading}
+            className="ml-auto shrink-0 rounded-full border border-(--line) px-3 py-1 text-(--fg) transition-colors hover:border-white/30 disabled:opacity-40"
+          >
+            ↻ refresh
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-6">
