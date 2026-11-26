@@ -1,6 +1,7 @@
 import { readBadges } from "../../courses/badges/use-badges";
 import { ALL_CHAPTERS, COURSES, findCourse } from "../../courses/data";
 import { buildFeed, interestLabel, type FeedItem } from "../../courses/feed-build";
+import { pathStatus, readGuide } from "../../courses/guide/guide-store";
 import { getLivePosts, markLiveSeen } from "../../courses/live/live-feed";
 import type { LivePost } from "../../courses/live/live-sources";
 import { POLLS } from "../../courses/feed-extras";
@@ -212,6 +213,22 @@ const showItem = (t: Term, item: FeedItem) => {
       if (p.body) t.segs([{ text: p.body }]);
       t.segs([{ text: `↗ ${p.linkLabel}`, href: p.link }]);
       markLiveSeen(p.id);
+      break;
+    }
+    case "guide": {
+      const { path } = item;
+      const s = pathStatus(path, readGuide());
+      t.print(`{${path.color}:🧭 your roadmap · ${path.title}}${reason}`);
+      if (!s.checked) {
+        t.print(`**how much do you know about ${path.title}?** answer a few quick questions and get your next steps.`);
+        t.print(`[[▶ take the 1-minute check|path check ${path.id}]]`);
+      } else if (!s.next.length) {
+        t.print(`{green:path complete 🏆} [[see it|path ${path.id}]]`);
+      } else {
+        t.print(`stage ${s.stage + 1}/${path.stages.length}: **${path.stages[s.stage].name}**  {${path.color}:${bar(s.stepsDone, s.stepsTotal, 10)}} {dim:${s.stepsDone}/${s.stepsTotal} steps}`);
+        t.print(`{dim:next:} ${s.next[0].label}`);
+        t.print(`[[▶ my next steps|path next]]  [[full roadmap|path ${path.id}]]`);
+      }
       break;
     }
     case "courses":

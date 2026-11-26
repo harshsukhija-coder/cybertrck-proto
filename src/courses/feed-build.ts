@@ -1,6 +1,7 @@
 import { COURSES } from "./data";
 import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
 import { GAMES, type GameMeta } from "./games/games";
+import { pathsFor, type LearningPath } from "./guide/paths";
 import type { LivePost } from "./live/live-sources";
 import { layoutsFor, type ChapterLayout } from "./post-layouts";
 import { INTERESTS, type InterestId, type Prefs } from "./prefs";
@@ -12,11 +13,16 @@ export type FeedItem =
   | { kind: "poll"; poll: Poll; reason?: string }
   | { kind: "fact"; fact: Fact; reason?: string }
   | { kind: "live"; post: LivePost; reason?: string }
+  /** A skill check, or your roadmap once you've taken it */
+  | { kind: "guide"; path: LearningPath; reason?: string }
   | { kind: "courses" }
   | { kind: "academy" }
   | { kind: "badge" };
 
 type ExtraKind = "game" | "poll" | "fact";
+
+/** Chapters after which a roadmap post shows up */
+const GUIDE_SLOTS = [0, 4, 9, 15, 22, 30];
 
 /** Order chapter layouts rotate through, so neighbouring posts never look the same */
 const LAYOUT_CYCLE: ChapterLayout[] = ["carousel", "story", "quiz", "poster", "split", "notes"];
@@ -99,6 +105,13 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
     if (post) items.push({ kind: "live", post, reason: reasonFor(post.tags, prefs.interests) });
   };
 
+  const guideQueue = pathsFor(filter ? [filter] : prefs.interests);
+  const pushGuide = () => {
+    const path = guideQueue.shift();
+    if (path) items.push({ kind: "guide", path, reason: reasonFor(path.interests, prefs.interests) });
+    return !!path;
+  };
+
   let previous: ChapterLayout | undefined;
   chapters.forEach(({ course, chapter }, i) => {
     const options = layoutsFor(chapter);
@@ -106,6 +119,7 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
     previous = layout;
     items.push({ kind: "chapter", course, chapter, layout, reason: reasonFor(chapter.tags, prefs.interests) });
     pushLive();
+    if (GUIDE_SLOTS.includes(i)) pushGuide();
     if (i === 3 && !filter) items.push({ kind: "courses" });
     if (i === 6 && !filter) items.push({ kind: "badge" });
     if (i === 1 && (!filter || filter === "internet" || filter === "home")) items.push({ kind: "academy" });
@@ -123,9 +137,11 @@ export const buildFeed = (prefs: Prefs, filter: InterestId | null, live: LivePos
   while (liveQueue.length) {
     pushLive();
     if (++sinceOurs < 2) continue;
+    sinceOurs = 0;
+    if (pushGuide()) continue;
     const extra = nextExtra("");
     if (extra) items.push(extra);
-    sinceOurs = 0;
   }
+  while (guideQueue.length) pushGuide();
   return items;
 };

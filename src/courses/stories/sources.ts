@@ -22,7 +22,8 @@ export type Slide = {
 export type StoryId = "today" | "tech" | "money" | "marketing" | "data" | "security" | "space" | "fun";
 
 export type Story = {
-  id: StoryId;
+  /** Guide stories use "path-<path id>" */
+  id: StoryId | `path-${string}`;
   label: string;
   color: string;
   glyph: string;
@@ -30,7 +31,7 @@ export type Story = {
   slides: Slide[];
 };
 
-type Sector = Omit<Story, "slides">;
+type Sector = Omit<Story, "slides"> & { id: StoryId };
 
 export const SECTORS: Sector[] = [
   { id: "today", label: "on this day", color: "#ffd166", glyph: "1d", interests: [] },

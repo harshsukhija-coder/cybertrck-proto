@@ -247,7 +247,7 @@ type FrameProps = {
   id: string;
 };
 
-const PostFrame = (props: FrameProps) => {
+export const PostFrame = (props: FrameProps) => {
   const [saved, setSaved] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const likers = [LIKERS[props.seed % LIKERS.length], LIKERS[(props.seed + 2) % LIKERS.length]];

@@ -62,6 +62,14 @@ export const SparkIcon = ({ className, filled }: IconProps) => (
   </svg>
 );
 
+export const RouteIcon = ({ className, filled }: IconProps) => (
+  <svg {...base} className={className}>
+    <circle cx="6" cy="18" r="2.5" fill={filled ? "currentColor" : "none"} />
+    <circle cx="18" cy="6" r="2.5" fill={filled ? "currentColor" : "none"} />
+    <path d="M8.5 18H16a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h7.5" />
+  </svg>
+);
+
 export const MedalIcon = ({ className, filled }: IconProps) => (
   <svg {...base} className={className}>
     <path d="M8 2.5h8l-2.2 6.2M8 2.5l2.2 6.2" />

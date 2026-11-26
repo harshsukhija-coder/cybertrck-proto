@@ -2,13 +2,14 @@ import { forwardRef, useState, type CSSProperties, type ReactNode } from "react"
 import { OfftrckMark } from "../icons/OfftrckMark";
 import { BadgeToast } from "./badges/badge-toast";
 import { useBadgeWatcher } from "./badges/use-badges";
-import { BookIcon, GamepadIcon, HomeIcon, MedalIcon, MonitorIcon, SparkIcon } from "./feed-icons";
+import { BookIcon, GamepadIcon, HomeIcon, MedalIcon, MonitorIcon, RouteIcon, SparkIcon } from "./feed-icons";
 
-export type Section = "feed" | "learn" | "games" | "badges";
+export type Section = "feed" | "learn" | "paths" | "games" | "badges";
 
 const NAV = [
   { href: "#/feed", label: "home", section: "feed", Icon: HomeIcon },
   { href: "#/feed/courses", label: "learn", section: "learn", Icon: BookIcon },
+  { href: "#/feed/paths", label: "paths", section: "paths", Icon: RouteIcon },
   { href: "#/feed/games", label: "games", section: "games", Icon: GamepadIcon },
   { href: "#/feed/badges", label: "badges", section: "badges", Icon: MedalIcon },
 ] as const;

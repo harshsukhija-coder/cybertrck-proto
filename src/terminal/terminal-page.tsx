@@ -5,6 +5,7 @@ import { academyCommands } from "./commands/academy";
 import { announceBadges, badgeCommands } from "./commands/badges";
 import { gameCommands } from "./commands/games";
 import { learnCommands } from "./commands/learn";
+import { pathCommands } from "./commands/paths";
 import { missionCommands } from "./commands/missions";
 import { LOGO, banner, gemColor, openFallback, shellCommands } from "./commands/shell";
 import { Term, type Chip, type Entry, type Seg, type Tone } from "./term";
@@ -48,7 +49,7 @@ const createTerm = (username: string | null, onLogin: (name: string) => void, on
   const t = new Term(username ?? "guest");
   t.pickFile = pickFile;
   t.accent = gemColor();
-  t.register([...shellCommands, ...learnCommands, ...gameCommands, ...academyCommands, ...badgeCommands, ...missionCommands]);
+  t.register([...shellCommands, ...learnCommands, ...pathCommands, ...gameCommands, ...academyCommands, ...badgeCommands, ...missionCommands]);
   t.fallback = openFallback;
   t.afterInput = announceBadges;
   t.logout = onLogout;

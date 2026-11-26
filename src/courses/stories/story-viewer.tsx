@@ -76,7 +76,7 @@ const Trivia = ({ trivia, color }: { trivia: NonNullable<Slide["trivia"]>; color
   );
 };
 
-const SlideView = ({ slide, color, onReady }: { slide: Slide; color: string; onReady: () => void }) => {
+const SlideView = ({ slide, color, onReady, onClose }: { slide: Slide; color: string; onReady: () => void; onClose: () => void }) => {
   const [imageOk, setImageOk] = useState(true);
   const photo = slide.image && imageOk ? slide.image : null;
   const length = slide.title.length;
@@ -132,11 +132,10 @@ const SlideView = ({ slide, color, onReady }: { slide: Slide; color: string; onR
         {slide.link && (
           <a
             href={slide.link.href}
-            target="_blank"
-            rel="noreferrer"
+            {...(slide.link.href.startsWith("#") ? { onClick: onClose } : { target: "_blank", rel: "noreferrer" })}
             className="mt-5 inline-flex items-center gap-2 self-start rounded-full bg-white px-4 py-2.5 text-sm font-bold text-black transition-transform active:scale-95"
           >
-            {slide.link.label} <span aria-hidden>↗</span>
+            {slide.link.label} <span aria-hidden>{slide.link.href.startsWith("#") ? "→" : "↗"}</span>
           </a>
         )}
       </div>
@@ -283,7 +282,7 @@ export const StoryViewer = ({ stories, start, seen, onClose }: Props) => {
           </div>
         </div>
 
-        <SlideView key={slide.id} slide={slide} color={story.color} onReady={() => setReady(slide.id)} />
+        <SlideView key={slide.id} slide={slide} color={story.color} onReady={() => setReady(slide.id)} onClose={onClose} />
       </div>
 
       <button type="button" aria-label="Next" onClick={next} className={sideButton}>

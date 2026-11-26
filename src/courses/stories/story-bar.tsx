@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useGuide } from "../guide/guide-store";
+import { guideStories } from "../guide/guide-stories";
 import type { InterestId } from "../prefs";
 import type { Story } from "./sources";
 import { StoryAvatar, StoryViewer } from "./story-viewer";
@@ -6,10 +8,16 @@ import { useStories } from "./use-stories";
 
 const ROW = "no-scrollbar -mx-4 flex gap-3.5 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0";
 
-/** Daily facts from public APIs, one bubble per sector. Watched bubbles turn grey and move to the end. */
+/**
+ * Your path stories (roadmap, next steps) plus daily facts from public APIs, one bubble per sector.
+ * Watched bubbles turn grey and move to the end.
+ */
 export const StoryBar = ({ interests }: { interests: InterestId[] }) => {
-  const { stories, seen, isDone } = useStories(interests);
+  const { stories: facts, seen, isDone } = useStories(interests);
+  const { state, finished } = useGuide();
   const [open, setOpen] = useState<{ list: Story[]; start: number } | null>(null);
+  const paths = guideStories(interests, state, finished);
+  const stories = facts && [...paths.filter(s => !isDone(s)), ...facts.filter(s => !isDone(s)), ...paths.filter(isDone), ...facts.filter(isDone)];
 
   if (!stories) {
     return (

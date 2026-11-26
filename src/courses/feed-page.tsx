@@ -10,6 +10,10 @@ import { ChapterCover } from "./chapter-cover";
 import { buildFeed, interestLabel, type FeedItem } from "./feed-build";
 import { ChapterPost, CoursesPost, FactPost, GamePost, LivePostCard, PollPost } from "./feed-post";
 import { GameView, GamesGrid } from "./games/games-section";
+import { GuidePost } from "./guide/guide-post";
+import { PathsPage } from "./guide/guide-page";
+import { NextStepCard } from "./guide/guide-ui";
+import { pathsFor } from "./guide/paths";
 import { GAMES, gameHash, isGameId } from "./games/games";
 import { GEMS, useGem, type Gem } from "./gems";
 import Onboarding from "./onboarding";
@@ -27,11 +31,13 @@ type View =
   | { kind: "games" }
   | { kind: "game"; id: string }
   | { kind: "badges"; id?: string }
+  | { kind: "paths"; id?: string; check: boolean }
   | { kind: "start" };
 
 const parseView = (route: string): View => {
   if (route.startsWith("#/academy")) return { kind: "academy", route };
-  const [, , section, id] = route.split("/");
+  const [, , section, id, extra] = route.split("/");
+  if (section === "paths") return { kind: "paths", id, check: extra === "check" };
   if (section === "games") return id ? { kind: "game", id } : { kind: "games" };
   if (section === "courses") return id ? { kind: "course", id } : { kind: "courses" };
   if (section === "badges") return { kind: "badges", id };
@@ -51,6 +57,8 @@ const itemKey = (item: FeedItem) => {
       return item.fact.id;
     case "live":
       return `live-${item.post.id}`;
+    case "guide":
+      return `guide-${item.path.id}`;
     case "courses":
       return "courses";
     case "academy":
@@ -103,6 +111,8 @@ const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGe
               : "finish any chapter to start your streak 🔥"}
         </p>
       </section>
+
+      <NextStepCard paths={pathsFor(prefs.interests)} />
 
       <NextBadge />
 
@@ -161,6 +171,8 @@ const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
       return <FactPost fact={item.fact} reason={item.reason} seed={seed} />;
     case "live":
       return <LivePostCard post={item.post} reason={item.reason} seed={seed} />;
+    case "guide":
+      return <GuidePost path={item.path} reason={item.reason} seed={seed} />;
     case "courses":
       return <CoursesPost base="#/feed/courses" />;
     case "academy":
@@ -281,6 +293,7 @@ const SECTION: Record<View["kind"], Section | undefined> = {
   games: "games",
   game: "games",
   badges: "badges",
+  paths: "paths",
   start: undefined,
 };
 
@@ -329,6 +342,7 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
         </div>
       )}
       {view.kind === "game" && <div className="px-4 sm:px-0">{isGameId(view.id) ? <GameView id={view.id} /> : <GamesGrid />}</div>}
+      {view.kind === "paths" && <PathsPage id={view.id} check={view.check} interests={prefs.interests} />}
       {view.kind === "badges" && <BadgesPage badgeId={view.id} username={username} prefs={prefs} />}
     </AppShell>
   );
