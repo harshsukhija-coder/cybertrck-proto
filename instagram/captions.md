@@ -1,6 +1,13 @@
-# offtrck academy · Instagram launch posts
+# offtrck · Instagram posts
 
-13 posts, in posting order. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
+23 posts in two series. Images are in `posts/` (1080×1350, Instagram's 4:5 portrait size).
+
+- **01–13:** offtrck academy launch.
+- **14–23:** what's new: terminal mode, the live feed, and paths (skill check + roadmaps). Captions are at the end of this file.
+
+## Series 1 · offtrck academy launch
+
+13 posts, in posting order.
 
 **Story arc:** tease (01–02) → reveal (03) → how it works (04) → each feature in the order a learner meets it (05–12) → launch (13).
 
@@ -312,3 +319,245 @@ if you finish it, share your badge and tag us. we'll repost it 🎉
 #offtrckacademy #networking #ccna #ciscopackettracer #freecourse #learnnetworking #techeducation
 ```
 **Alt text:** A terminal now getting replies from offtrck.academy, with the words "it's live", a checklist of features and a "start free" button.
+
+---
+
+## Series 2 · what's new on offtrck
+
+10 posts, in posting order: an intro (14), terminal mode (15–16), the live feed (17–18), paths (19–22), and a recap (23).
+
+**Suggested schedule:** one post a day. If you'd rather post fewer, the shortest version is 14, 15, 17, 19, 20 and 23.
+
+---
+
+## 14 · 3 new things
+**Image:** `posts/14.png`
+
+**Caption**
+```
+we've been busy 👀
+
+3 new ways to learn on offtrck:
+
+>_ terminal mode: the whole app, typed like a hacker
+● a live feed: fresh posts from the web, picked by what you're into
+⇄ paths: a 1-minute skill check, then a roadmap made for you
+
+over the next few posts we'll show you each one. all of it is free.
+
+which one are you trying first? 👇
+
+#offtrck #learntech #techeducation #newfeature #learnbydoing
+```
+**Alt text:** "3 new ways to learn" with three cards: terminal mode, a live feed and paths.
+
+---
+
+## 15 · terminal mode
+**Image:** `posts/15.png`
+
+**Caption**
+```
+>_ new: terminal mode
+
+everything on offtrck now works in a terminal too.
+read your feed, finish a lesson, play a game, do a lab, collect badges. all with commands.
+
+don't know the commands? no problem. every option can be tapped, so you can learn them as you go.
+
+built for laptops and tablets. on your phone, the normal app is still right there.
+
+would you learn like this? 👇
+
+#offtrck #terminal #commandline #linux #learntocode #hackerlife #techeducation
+```
+**Alt text:** A terminal where Riya types "feed" and sees a lesson, then types "play port-rush", answers "b" and gets "correct +10".
+
+---
+
+## 16 · the cheat sheet
+**Image:** `posts/16.png`
+
+**Caption**
+```
+save this one 📌 your terminal mode cheat sheet:
+
+feed → your feed, live posts included
+stories → today's facts and your path
+learn → read a chapter, card by card
+play → 10 mini games
+academy → blogs, quizzes and labs
+lab 4 → drop your Packet Tracer file, get graded
+missions → hacking story missions
+path → your roadmap and next steps
+badges → see them, then share them
+help → when you're stuck
+
+bonus tips:
+⇥ tab finishes the command for you
+↑ brings back the last one
+
+it also opens as a window on the classic desktop. 🖥
+
+#offtrck #terminal #cheatsheet #commandline #linux #ciscopackettracer
+```
+**Alt text:** A cheat sheet of ten terminal commands with a short description of each.
+
+---
+
+## 17 · the live feed
+**Image:** `posts/17.png`
+
+**Caption**
+```
+● new: your feed is now live
+
+your offtrck feed now pulls in real posts from around the web: dev articles, tech news, top questions from Q&A sites, new open-source projects, game deals and more.
+
+they sit in between our own lessons, games and polls. so you learn something, then see how it's used in the real world, then learn something else.
+
+every live post links back to where it came from, so you can read the full thing and join the comments.
+
+#offtrck #techfeed #technews #devcommunity #learntech #stayupdated
+```
+**Alt text:** A feed with one offtrck lesson, then a live post from dev.to marked "live · 2h ago", then an offtrck poll.
+
+---
+
+## 18 · picked by your interests
+**Image:** `posts/18.png`
+
+**Caption**
+```
+your feed ≠ everyone else's feed. 🎯
+
+when you join, you pick what you're into. the live feed only fetches posts for those interests:
+
+🔴 hacking & security → hacker news, infosec Q&A, github
+🔵 gaming & lag → today's game deals, dev.to
+🟢 money & investing → biggest crypto moves, personal finance Q&A
+🟠 streaming & video → shows out today, hacker news
+🟣 databases & data → stack overflow, github
+
+it refreshes on its own. new posts wait behind a "↑ new posts" button, so your feed never jumps while you're reading. posts you've already seen move to the back.
+
+which interests did you pick? 👇
+
+#offtrck #personalised #techfeed #cybersecurity #gaming #investing
+```
+**Alt text:** Five interests, each with an arrow to the websites its posts come from, and a bar saying "37 live posts, mixed with ours" with a "4 new posts" button.
+
+---
+
+## 19 · the skill check
+**Image:** `posts/19.png`
+
+**Caption**
+```
+⇄ new: paths
+
+how much do you really know? let's find out in a minute. ⏱
+
+first, tell us how much you think you know. then answer a few quick questions:
+✅ get one right → the next one is harder
+❌ miss one → the next one is easier
+🤷 not sure? tap "no idea yet". no guessing needed
+
+5 questions at most. every answer comes with a one-line "why".
+
+try this one: a video call keeps going even when a few packets get lost. does it use tcp or udp? 👇
+
+#offtrck #skillcheck #networking #learnnetworking #ccna #quiz
+```
+**Alt text:** A skill check question about video calls, with "udp" marked correct, a dashed "no idea yet" option, and progress dots for five levels.
+
+---
+
+## 20 · your result
+**Image:** `posts/20.png`
+
+**Caption**
+```
+your result isn't a grade. it's a starting point. 📍
+
+the skill check shows:
+→ how many stages you already know (we skip them)
+→ where you are on the path
+→ your next 3 steps, with one button each
+
+steps can be our lessons, games and labs, or the best free courses online. lessons tick themselves when you finish them. tick the rest yourself, and your path moves forward.
+
+no more "where do i even start?" 🙌
+
+#offtrck #roadmap #learningpath #networking #studytips #learnbydoing
+```
+**Alt text:** A result of 2 out of 5, a line of five stages with "you" on stage 3 (hands-on), and three next steps: tcp vs udp, ports and port rush.
+
+---
+
+## 21 · 6 roadmaps
+**Image:** `posts/21.png`
+
+**Caption**
+```
+6 roadmaps. 5 stages each. 🗺
+
+⇄ networking → network engineer
+! cybersecurity → penetration tester
+db data → data analyst
+₹ money → financial planner
+Σ accounting → accountant
+# marketing → social media manager
+
+every path goes curious → basics → hands-on → builder → pro.
+each stage tells you what you'll be able to do when it's done, and every path ends with the jobs it can lead to.
+
+you'll see the paths that match the interests you picked. tag someone who needs a roadmap 👇
+
+#offtrck #careerintech #roadmap #cybersecurity #dataanalytics #digitalmarketing
+```
+**Alt text:** Six roadmap cards (networking, cybersecurity, data, money, accounting, marketing), each with five stage dots and an example job.
+
+---
+
+## 22 · your next step, in stories
+**Image:** `posts/22.png`
+
+**Caption**
+```
+your next step now shows up in your stories. 📲
+
+tap your path bubble and you'll see:
+📍 where you are on the path
+👣 your next 3 steps, each with a "start now" button
+🧠 a question from your next level, to see if you're ready
+
+finish a step and the story changes with you.
+
+one small step a day is all it takes. 🔁
+
+#offtrck #dailylearning #habits #learningpath #stories #learntech
+```
+**Alt text:** A story screen showing "next step 1 of 3: read: tcp vs udp" with a "start now" button, next to story bubbles for networking and security.
+
+---
+
+## 23 · all new, all free
+**Image:** `posts/23.png`
+
+**Caption**
+```
+all new. all free. 🟢
+
+✅ terminal mode for laptops and tablets
+✅ a live feed, picked by your interests
+✅ 6 roadmaps with a 1-minute skill check
+✅ your next step, right in your stories
+
+take the skill check today and see where you land. then share your stage in the comments 👇
+
+link in bio 🔗
+
+#offtrck #learntech #techeducation #freecourse #roadmap #terminal
+```
+**Alt text:** A terminal running "path check security" with the result "you already know 3/5 stages", the words "all new. all free.", a checklist of the four new features and a "try it now" button.

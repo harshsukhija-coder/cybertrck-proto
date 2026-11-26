@@ -170,13 +170,102 @@
   .cta { margin-top: 56px; display: inline-flex; align-items: center; gap: 20px; background: var(--accent); color: #08090d; font-family: "Unbounded"; font-weight: 700; font-size: 38px; letter-spacing: -0.02em; padding: 30px 48px; border-radius: 99px; align-self: flex-start; }
   .recap { margin-top: 60px; display: grid; gap: 22px; }
   .recap div { display: flex; align-items: center; gap: 22px; font-size: 34px; }
-  .recap div::before { content: "✓"; width: 52px; height: 52px; border-radius: 99px; background: rgba(79,140,255,.16); color: var(--blue); display: grid; place-items: center; font-weight: 700; font-size: 26px; flex: none; }
+  .recap div::before { content: "✓"; width: 52px; height: 52px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 26px; flex: none; }
 
   .big-ip { font-family: "JetBrains Mono"; font-weight: 700; font-size: 104px; letter-spacing: -0.04em; line-height: 1; margin-top: 40px; }
   .big-ip span { color: var(--dim); }
   .ip-parts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 40px; }
   .ip-parts div { padding: 24px 26px; font-family: "JetBrains Mono"; font-size: 22px; color: var(--dim); line-height: 1.5; }
   .ip-parts div b { display: block; font-size: 34px; color: var(--text); font-weight: 600; filter: blur(9px); }
+
+  /* terminal mode */
+  .term .c { color: var(--text); }
+  .term .d { color: var(--dim); }
+  .term .a { color: var(--accent); }
+  .term .k { color: #08090d; background: var(--accent); padding: 0 10px; border-radius: 8px; }
+  .cmds { margin-top: 46px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cmd { padding: 24px 28px; }
+  .cmd code { font-family: "JetBrains Mono"; font-size: 30px; font-weight: 700; color: var(--accent); }
+  .cmd p { margin-top: 8px; font-size: 25px; color: var(--muted); line-height: 1.3; }
+
+  /* live feed */
+  .feed { margin-top: 48px; display: grid; gap: 16px; }
+  .mini { display: grid; grid-template-columns: 64px 1fr auto; gap: 22px; align-items: center; padding: 22px 28px; font-size: 28px; color: var(--muted); }
+  .mini .av { width: 64px; height: 64px; border-radius: 99px; display: grid; place-items: center; font-family: "Unbounded"; font-weight: 700; font-size: 24px; color: #08090d; }
+  .mini b { color: var(--text); font-weight: 600; }
+  .mini .m { font-family: "JetBrains Mono"; font-size: 19px; color: var(--dim); letter-spacing: .08em; text-transform: uppercase; }
+  .livecard { padding: 34px 36px; border-color: rgba(255,176,32,.45); }
+  .livecard .src { font-family: "JetBrains Mono"; font-size: 21px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .livecard .src b { color: var(--amber); font-weight: 600; }
+  .livecard h3 { margin-top: 16px; font-family: "Unbounded"; font-weight: 600; font-size: 40px; letter-spacing: -0.03em; line-height: 1.15; }
+  .livecard .row2 { margin-top: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .livecard .stat2 { font-family: "Anton"; font-size: 46px; color: var(--amber); }
+  .livecard .stat2 span { font-family: "JetBrains Mono"; font-size: 20px; color: var(--dim); letter-spacing: .08em; margin-left: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; background: var(--text); color: #08090d; font-weight: 700; font-size: 24px; padding: 16px 28px; border-radius: 99px; }
+  .btn.acc { background: var(--accent); }
+  .map { margin-top: 44px; display: grid; gap: 14px; }
+  .map-row { display: grid; grid-template-columns: 330px 40px 1fr; gap: 16px; align-items: center; padding: 22px 28px; font-size: 27px; }
+  .map-row .i { display: flex; align-items: center; gap: 14px; font-weight: 600; }
+  .map-row .i::before { content: ""; width: 16px; height: 16px; border-radius: 99px; background: var(--c); flex: none; }
+  .map-row .ar { color: var(--dim); font-size: 30px; }
+  .map-row .s { font-family: "JetBrains Mono"; font-size: 21px; color: var(--muted); line-height: 1.45; }
+  .status { margin-top: 30px; display: flex; align-items: center; gap: 18px; padding: 22px 28px; font-family: "JetBrains Mono"; font-size: 22px; color: var(--muted); }
+  .status .dot { width: 14px; height: 14px; border-radius: 99px; background: var(--green); flex: none; }
+  .status .btn { margin-left: auto; font-family: "JetBrains Mono"; font-size: 21px; padding: 12px 22px; background: var(--accent); }
+
+  /* paths */
+  .pips2 { display: flex; gap: 8px; }
+  .pips2 i { width: 40px; height: 10px; border-radius: 9px; background: rgba(255,255,255,.12); }
+  .pips2 i.ok { background: var(--green); }
+  .pips2 i.now { background: rgba(255,255,255,.5); }
+  .opt.idk { border-style: dashed; color: var(--dim); }
+  .score { display: flex; align-items: flex-end; gap: 26px; margin-top: 36px; }
+  .score b { font-family: "Anton"; font-weight: 400; font-size: 190px; line-height: .85; color: var(--accent); }
+  .score span { font-size: 32px; color: var(--muted); line-height: 1.3; padding-bottom: 12px; max-width: 520px; }
+  .trail { position: relative; display: flex; justify-content: space-between; margin-top: 64px; padding: 0 4px; }
+  .trail::before { content: ""; position: absolute; left: 34px; right: 34px; top: 30px; height: 6px; border-radius: 9px; background: rgba(255,255,255,.1); }
+  .trail::after { content: ""; position: absolute; left: 34px; width: calc((100% - 68px) * var(--fill)); top: 30px; height: 6px; border-radius: 9px; background: var(--accent); }
+  .st { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 66px; }
+  .st i { width: 66px; height: 66px; border-radius: 99px; display: grid; place-items: center; font-style: normal; font-family: "Anton"; font-size: 30px; background: var(--bg); border: 4px solid rgba(255,255,255,.15); color: var(--dim); }
+  .st.done i { background: var(--accent); border-color: var(--accent); color: #08090d; }
+  .st.here i { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 10px rgba(79,140,255,.16); }
+  .st span { margin-top: 14px; font-family: "JetBrains Mono"; font-size: 20px; color: var(--muted); white-space: nowrap; }
+  .st.here span { color: var(--text); font-weight: 700; }
+  .st .you { position: absolute; top: -50px; background: var(--accent); color: #08090d; font-family: "JetBrains Mono"; font-weight: 700; font-size: 17px; letter-spacing: .12em; padding: 5px 12px; border-radius: 99px; }
+  .nexts { margin-top: 52px; display: grid; gap: 14px; }
+  .nx { display: grid; grid-template-columns: 44px 1fr auto; gap: 22px; align-items: center; padding: 24px 28px; }
+  .nx .tick { width: 44px; height: 44px; border-radius: 99px; border: 3px solid rgba(255,255,255,.2); }
+  .nx .kind { font-family: "JetBrains Mono"; font-size: 19px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .nx .kind span { color: var(--dim); margin-left: 10px; }
+  .nx h4 { margin-top: 4px; font-size: 30px; font-weight: 600; }
+  .nx .go { border: 1px solid var(--line); border-radius: 99px; padding: 12px 22px; font-size: 22px; font-weight: 700; }
+  .nx.first { background: var(--panel-2); border-color: rgba(255,255,255,.18); }
+  .nx.first .go { background: var(--accent); color: #08090d; border: 0; }
+  .paths { margin-top: 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pth { padding: 26px 28px; display: grid; grid-template-columns: 68px 1fr; gap: 20px; align-items: start; }
+  .pth .g { width: 68px; height: 68px; border-radius: 20px; background: var(--c); color: #08090d; display: grid; place-items: center; font-family: "Unbounded"; font-weight: 700; font-size: 26px; }
+  .pth h3 { font-family: "Unbounded"; font-weight: 600; font-size: 27px; letter-spacing: -0.03em; }
+  .pth .dots { display: flex; gap: 7px; margin-top: 12px; }
+  .pth .dots i { width: 30px; height: 8px; border-radius: 9px; background: var(--c); opacity: .35; }
+  .pth .dots i:first-child { opacity: 1; }
+  .pth p { margin-top: 12px; font-family: "JetBrains Mono"; font-size: 18px; color: var(--muted); line-height: 1.45; }
+  .story-row { margin-top: 46px; display: grid; grid-template-columns: 400px 1fr; gap: 44px; align-items: center; }
+  .phone { aspect-ratio: 9 / 16; border-radius: 40px; border: 1px solid var(--line); background: #0c1220; padding: 26px 26px 34px; display: flex; flex-direction: column; }
+  .phone .bars { display: flex; gap: 6px; }
+  .phone .bars i { flex: 1; height: 5px; border-radius: 9px; background: rgba(255,255,255,.22); }
+  .phone .bars i.on { background: #fff; }
+  .phone .who { margin-top: 20px; display: flex; align-items: center; gap: 12px; font-size: 19px; color: var(--muted); }
+  .phone .who i { width: 40px; height: 40px; border-radius: 99px; background: var(--accent); color: #08090d; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 18px; }
+  .phone .who b { color: var(--text); }
+  .phone .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .phone .kk { font-family: "JetBrains Mono"; font-size: 17px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .phone h3 { margin-top: 14px; font-family: "Unbounded"; font-weight: 700; font-size: 38px; letter-spacing: -0.04em; line-height: 1.1; }
+  .phone p { margin-top: 14px; font-size: 21px; color: var(--muted); line-height: 1.4; }
+  .phone .btn { margin-top: 26px; align-self: flex-start; font-size: 21px; padding: 14px 24px; }
+  .bubbles { display: flex; gap: 22px; margin-bottom: 30px; }
+  .bub { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 19px; color: var(--muted); }
+  .bub i { width: 92px; height: 92px; border-radius: 99px; display: grid; place-items: center; font-style: normal; font-family: "Unbounded"; font-weight: 700; font-size: 30px; box-shadow: 0 0 0 4px var(--bg), 0 0 0 8px var(--c); background: color-mix(in srgb, var(--c) 18%, var(--bg)); color: var(--c); }
+  .bub.seen i { box-shadow: 0 0 0 4px var(--bg), 0 0 0 8px rgba(255,255,255,.16); opacity: .6; }
 </style>
 </head>
 <body>
@@ -484,6 +573,223 @@
     <div class="cta">start free →</div>
   </div>
   <div class="foot"><span>link in bio</span><span><b>offtrck academy</b></span></div>
+</section>
+
+<!-- ============ what's new: terminal mode, live feed, paths ============ -->
+
+<!-- 14 · what's new -->
+<section class="post" id="p14" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">14</div></div>
+  <div class="body">
+    <div class="kicker">new on offtrck</div>
+    <h1 class="md">3 new ways to <em>learn.</em></h1>
+    <div class="steps">
+      <div class="panel step"><div class="n" style="background: var(--green)">&gt;_</div><div><h3>terminal mode</h3><p>the whole app, typed like a hacker</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--amber)">●</div><div><h3>a live feed</h3><p>fresh posts from the web, picked by your interests</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--blue)">⇄</div><div><h3>paths</h3><p>a 1-minute skill check, then your roadmap</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>all free</span><span><b>next: terminal mode →</b></span></div>
+</section>
+
+<!-- 15 · terminal mode -->
+<section class="post" id="p15" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>terminal</span></div><div class="idx">15</div></div>
+  <div class="body">
+    <div class="kicker">new · terminal mode</div>
+    <h1 class="md">the whole app, <em>in a terminal.</em></h1>
+    <div class="panel term" style="margin-top: 52px; font-size: 27px">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div><span class="p">riya@offtrck:~$</span> <span class="c">feed</span></div>
+      <div class="d">● @networking · because you're into gaming</div>
+      <div class="c">tcp vs udp <span class="d">♥ 2,140</span></div>
+      <div class="a">▶ read it (4 min)</div>
+      <div style="margin-top: 14px"><span class="p">riya@offtrck:~$</span> <span class="c">play port-rush</span></div>
+      <div class="c">https lives on port… <span class="d">a) 22  b) 443  c) 53</span></div>
+      <div><span class="d">answer ›</span> <span class="c">b</span></div>
+      <div class="p">correct 🎉 +10</div>
+      <div style="margin-top: 14px"><span class="p">riya@offtrck:~$</span> <span class="cursor"></span></div>
+    </div>
+    <p class="sub">type the commands, or just <b>tap them.</b> lessons, games, labs, badges: it's all in there.</p>
+  </div>
+  <div class="foot"><span>for laptops and tablets</span><span><b>next: the cheat sheet →</b></span></div>
+</section>
+
+<!-- 16 · terminal cheat sheet -->
+<section class="post" id="p16" style="--accent: var(--cyan)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>terminal</span></div><div class="idx">16</div></div>
+  <div class="body">
+    <div class="kicker">terminal mode · cheat sheet</div>
+    <h1 class="md">everything is <em>one command</em> away.</h1>
+    <div class="cmds">
+      <div class="panel cmd"><code>feed</code><p>your feed, live posts included</p></div>
+      <div class="panel cmd"><code>stories</code><p>today's facts and your path</p></div>
+      <div class="panel cmd"><code>learn</code><p>read a chapter, card by card</p></div>
+      <div class="panel cmd"><code>play</code><p>10 mini games</p></div>
+      <div class="panel cmd"><code>academy</code><p>blogs, quizzes and labs</p></div>
+      <div class="panel cmd"><code>lab 4</code><p>drop your .pkt, get graded</p></div>
+      <div class="panel cmd"><code>missions</code><p>hacking story missions</p></div>
+      <div class="panel cmd"><code>path</code><p>your roadmap and next steps</p></div>
+      <div class="panel cmd"><code>badges</code><p>see them, then <b style="color: var(--text)">share</b> them</p></div>
+      <div class="panel cmd"><code>help</code><p>stuck? start here</p></div>
+    </div>
+    <p class="sub" style="font-size: 30px">also opens as a window on the <b>classic desktop.</b></p>
+  </div>
+  <div class="foot"><span>tab completes · ↑ repeats</span><span><b>next: a live feed →</b></span></div>
+</section>
+
+<!-- 17 · live feed -->
+<section class="post" id="p17" style="--accent: var(--amber)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">17</div></div>
+  <div class="body">
+    <div class="kicker">new · live feed</div>
+    <h1 class="md">your feed is now <em>alive.</em></h1>
+    <div class="feed">
+      <div class="panel mini"><span class="av" style="background: var(--blue)">N</span><span><b>@networking</b> · dns, explained in 4 minutes</span><span class="m">ours</span></div>
+      <div class="panel livecard">
+        <div class="src"><b>● live</b> · from dev.to · 2h ago</div>
+        <h3>i built a home lab on an old laptop. here's what i learned</h3>
+        <div class="row2"><span class="stat2">♥ 412<span>reactions</span></span><span class="btn">read on dev.to ↗</span></div>
+      </div>
+      <div class="panel mini"><span class="av" style="background: var(--green)">?</span><span><b>poll</b> · which port does https use?</span><span class="m">ours</span></div>
+    </div>
+    <p class="sub">real posts from around the web, <b>mixed in between</b> our lessons, games and polls.</p>
+  </div>
+  <div class="foot"><span>updates on its own</span><span><b>next: built around you →</b></span></div>
+</section>
+
+<!-- 18 · interests → sources -->
+<section class="post" id="p18" style="--accent: var(--amber)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">18</div></div>
+  <div class="body">
+    <div class="kicker">picked for you</div>
+    <h1 class="md">you pick the interests. <em>we find the posts.</em></h1>
+    <div class="map">
+      <div class="panel map-row" style="--c: var(--red)"><span class="i">hacking &amp; security</span><span class="ar">→</span><span class="s">hacker news · infosec q&amp;a · github</span></div>
+      <div class="panel map-row" style="--c: var(--cyan)"><span class="i">gaming &amp; lag</span><span class="ar">→</span><span class="s">today's game deals · dev.to</span></div>
+      <div class="panel map-row" style="--c: var(--green)"><span class="i">money &amp; investing</span><span class="ar">→</span><span class="s">biggest crypto moves · finance q&amp;a</span></div>
+      <div class="panel map-row" style="--c: #ff8a3d"><span class="i">streaming &amp; video</span><span class="ar">→</span><span class="s">shows out today · hacker news</span></div>
+      <div class="panel map-row" style="--c: var(--purple)"><span class="i">databases &amp; data</span><span class="ar">→</span><span class="s">stack overflow · github</span></div>
+    </div>
+    <div class="panel status"><span class="dot"></span>37 live posts, mixed with ours<span class="btn">↑ 4 new posts</span></div>
+    <p class="sub" style="font-size: 30px">new posts never jump your feed. <b>tap when you're ready.</b></p>
+  </div>
+  <div class="foot"><span>seen posts move to the back</span><span><b>next: paths →</b></span></div>
+</section>
+
+<!-- 19 · skill check -->
+<section class="post" id="p19">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>paths</span></div><div class="idx">19</div></div>
+  <div class="body">
+    <div class="kicker">new · skill check</div>
+    <h1 class="md">how much do you <em>really</em> know?</h1>
+    <div class="panel quiz">
+      <div class="meta"><span>networking · question 2 · hands-on level</span><span class="pips2"><i></i><i class="ok"></i><i class="now"></i><i></i><i></i></span></div>
+      <div class="q">a video call keeps going even when a few packets get lost. it most likely uses…</div>
+      <div class="opt">tcp</div>
+      <div class="opt good">udp</div>
+      <div class="opt">ftp</div>
+      <div class="opt idk">no idea yet</div>
+    </div>
+    <p class="sub">get it right, the next one is <b>harder.</b> miss it, the next one is <b>easier.</b> 5 questions at most.</p>
+  </div>
+  <div class="foot"><span>about 1 minute</span><span><b>next: your result →</b></span></div>
+</section>
+
+<!-- 20 · result + roadmap -->
+<section class="post" id="p20">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>paths</span></div><div class="idx">20</div></div>
+  <div class="body">
+    <div class="kicker">your result</div>
+    <div class="score"><b>2/5</b><span>stages you already know. we skip them for you.</span></div>
+    <div class="trail" style="--fill: .5">
+      <div class="st done"><i>✓</i><span>curious</span></div>
+      <div class="st done"><i>✓</i><span>basics</span></div>
+      <div class="st here"><em class="you" style="font-style: normal">YOU</em><i>3</i><span>hands-on</span></div>
+      <div class="st"><i>4</i><span>builder</span></div>
+      <div class="st"><i>5</i><span>pro</span></div>
+    </div>
+    <div class="nexts">
+      <div class="panel nx first"><span class="tick"></span><div><div class="kind">read<span>4 min</span></div><h4>tcp vs udp</h4></div><span class="go">go →</span></div>
+      <div class="panel nx"><span class="tick"></span><div><div class="kind">read<span>4 min</span></div><h4>ports</h4></div><span class="go">go →</span></div>
+      <div class="panel nx"><span class="tick"></span><div><div class="kind">play<span>3 min</span></div><h4>port rush</h4></div><span class="go">go →</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>your next 3 steps</span><span><b>next: 6 roadmaps →</b></span></div>
+</section>
+
+<!-- 21 · six roadmaps -->
+<section class="post" id="p21" style="--accent: var(--purple)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>paths</span></div><div class="idx">21</div></div>
+  <div class="body">
+    <div class="kicker">6 roadmaps</div>
+    <h1 class="md">a roadmap for <em>every</em> interest.</h1>
+    <div class="paths">
+      <div class="panel pth" style="--c: var(--blue)"><span class="g">⇄</span><div><h3>networking</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ network engineer</p></div></div>
+      <div class="panel pth" style="--c: var(--red)"><span class="g">!</span><div><h3>cybersecurity</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ penetration tester</p></div></div>
+      <div class="panel pth" style="--c: #38bdf8"><span class="g">db</span><div><h3>data</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ data analyst</p></div></div>
+      <div class="panel pth" style="--c: var(--green)"><span class="g">₹</span><div><h3>money</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ financial planner</p></div></div>
+      <div class="panel pth" style="--c: var(--amber)"><span class="g">Σ</span><div><h3>accounting</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ accountant</p></div></div>
+      <div class="panel pth" style="--c: #ff5fa2"><span class="g">#</span><div><h3>marketing</h3><span class="dots"><i></i><i></i><i></i><i></i><i></i></span><p>→ social media manager</p></div></div>
+    </div>
+    <p class="sub" style="font-size: 31px">5 stages each: <b>curious → basics → hands-on → builder → pro.</b> our lessons, games and labs, plus the best free courses online.</p>
+  </div>
+  <div class="foot"><span>made for the interests you pick</span><span><b>next: in your stories →</b></span></div>
+</section>
+
+<!-- 22 · next step in stories -->
+<section class="post" id="p22">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>paths</span></div><div class="idx">22</div></div>
+  <div class="body">
+    <div class="kicker">in your stories</div>
+    <h1 class="md">your next step, <em>every day.</em></h1>
+    <div class="story-row">
+      <div class="phone">
+        <div class="bars"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="who"><i>⇄</i><b>networking path</b> · offtrck guide</div>
+        <div class="mid">
+          <div class="kk">next step 1 of 3</div>
+          <h3>read: tcp vs udp</h3>
+          <p>why games and calls use a different protocol. about 4 min.</p>
+          <span class="btn">start now →</span>
+        </div>
+      </div>
+      <div>
+        <div class="bubbles">
+          <div class="bub" style="--c: var(--blue)"><i>⇄</i>networking</div>
+          <div class="bub" style="--c: var(--red)"><i>!</i>security</div>
+          <div class="bub seen" style="--c: var(--amber)"><i>1d</i>on this day</div>
+        </div>
+        <div class="recap" style="margin-top: 0; gap: 18px">
+          <div style="font-size: 29px">where you are on the path</div>
+          <div style="font-size: 29px">your next 3 steps</div>
+          <div style="font-size: 29px">a question from your next level</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>tick a step, your path moves</span><span><b>next: try it →</b></span></div>
+</section>
+
+<!-- 23 · recap -->
+<section class="post" id="p23" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">23</div></div>
+  <div class="body">
+    <div class="panel term" style="font-size: 28px">
+      <div><span class="p">riya@offtrck:~$</span> <span class="c">path check security</span></div>
+      <div class="o">you already know 3/5 stages. we'll skip those.</div>
+      <div class="o">next: read the owasp top 10 ↗</div>
+    </div>
+    <h1 class="xl" style="margin-top: 60px">all new. <em>all free.</em></h1>
+    <div class="recap">
+      <div>terminal mode for laptops and tablets</div>
+      <div>a live feed, picked by your interests</div>
+      <div>6 roadmaps with a 1-minute skill check</div>
+      <div>your next step, right in your stories</div>
+    </div>
+    <div class="cta">try it now →</div>
+  </div>
+  <div class="foot"><span>link in bio</span><span><b>offtrck</b></span></div>
 </section>
 
 <script>
