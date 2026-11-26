@@ -26,8 +26,11 @@ export type SharePost = {
 };
 
 const link = (hash: string) => `${siteUrl()}${hash}`;
-const hashtags = (tags: string[]) => ["offtrck", ...tags.map(t => t.replace(/[^a-z0-9]/gi, "")), "learnwithofftrck"].map(t => `#${t}`).join(" ");
-const letters = (options: string[]) => options.map((o, i) => `${String.fromCharCode(65 + i)}) ${o}`).join("\n");
+const hashtags = (tags: string[]) => ["offtrck", ...tags.slice(0, 2).map(t => t.replace(/[^a-z0-9]/gi, ""))].map(t => `#${t}`).join(" ");
+/** A random line, so every share (and every "another caption") sounds a bit different */
+const pick = (lines: string[]) => lines[Math.floor(Math.random() * lines.length)];
+const caption = (...lines: string[]) => lines.join("\n");
+const choices = (options: string[]) => (options.length === 2 ? `${options[0]} or ${options[1]}?` : options.join(" / "));
 
 export const shareChapter = (course: Course, chapter: CourseChapter): SharePost => {
   const url = link(chapterHash(course, chapter));
@@ -39,7 +42,19 @@ export const shareChapter = (course: Course, chapter: CourseChapter): SharePost 
     line: chapter.hook,
     photo: { src: chapter.photo, focus: chapter.focus, exposure: chapter.exposure },
     url,
-    caption: [`📖 "${chapter.title}" on @offtrck`, "", chapter.hook, "", `a ${chapter.minutes}-min read that finally made it click. read it here 👉 ${url}`, "", hashtags(chapter.tags)].join("\n"),
+    caption: caption(
+      pick([
+        `${chapter.hook} 👀\nspoiler: i know now. ${chapter.minutes} min →`,
+        `pov: ${chapter.title} finally makes sense 🧠\ntook ${chapter.minutes} min →`,
+        `${chapter.hook}\nwhy did nobody explain it like this 😭 →`,
+        `${chapter.minutes} min and i'm the ${chapter.title} expert now 💅 →`,
+        `${chapter.hook}\nthe answer lowkey shocked me 🤯 →`,
+        `me: scrolling\nalso me: accidentally learning ${chapter.title} 📚 →`,
+      ]),
+      url,
+      "",
+      hashtags(chapter.tags),
+    ),
   };
 };
 
@@ -53,7 +68,19 @@ export const shareGame = (game: GameMeta): SharePost => {
     line: game.tagline,
     photo: { src: game.photo, focus: game.focus, exposure: game.exposure },
     url,
-    caption: [`🎮 "${game.title}" on @offtrck`, "", `${game.tagline}.`, "", `free, no sign-up. think you can beat my score? 👉 ${url}`, "", hashtags(game.tags)].join("\n"),
+    caption: caption(
+      pick([
+        `${game.title} has me in a chokehold 🎮\nbeat my score. i dare you →`,
+        `${game.tagline.toLowerCase()}. sounds easy. it's not 💀\nyour turn →`,
+        `lost 20 min to ${game.title} and no regrets 😌\ntry it →`,
+        `just one more round of ${game.title}. (it was not one more round) 🫠 →`,
+        `${game.title} said "skill issue" and honestly fair 😭\nplay →`,
+        `found my new 2am game 🌙 ${game.title} →`,
+      ]),
+      url,
+      "",
+      hashtags(game.tags),
+    ),
   };
 };
 
@@ -67,7 +94,21 @@ export const shareQuick = (game: GameMeta, r: ChoiceRound): SharePost => {
     big: r.big ? r.prompt : undefined,
     options: r.options,
     url,
-    caption: [`⚡ quick one from @offtrck:`, "", r.big ? `${r.kicker} ${r.prompt}` : r.prompt, "", letters(r.options), "", `reply with your answer, then check it here 👉 ${url}`, "", hashtags(game.tags)].join("\n"),
+    caption: caption(
+      r.big ? `${r.kicker} ${r.prompt}` : r.prompt,
+      `${choices(r.options)} 👀`,
+      pick([
+        "no googling. drop your answer 👇",
+        "be honest, you'd fall for it 💀",
+        "10 seconds. go ⏱️",
+        "if you get this wrong we can't be friends 😤",
+        "easy? then prove it 😏",
+        "comment your answer before you check 👀",
+      ]),
+      `check it → ${url}`,
+      "",
+      hashtags(game.tags),
+    ),
   };
 };
 
@@ -80,7 +121,21 @@ export const sharePoll = (poll: Poll): SharePost => {
     title: poll.q,
     options: poll.options,
     url,
-    caption: [`📊 no googling. what's your answer?`, "", poll.q, "", letters(poll.options), "", `vote and see what everyone said on @offtrck 👉 ${url}`, "", hashtags(poll.tags)].join("\n"),
+    caption: caption(
+      poll.q,
+      choices(poll.options),
+      pick([
+        "gut answer only, no cap 🧢",
+        "most people get this wrong fr 🫣",
+        "vote first, google never 🙅",
+        "the results had me shook 😳",
+        "pick one. no overthinking 🫵",
+        "be so for real with your answer 💀",
+      ]),
+      `vote → ${url}`,
+      "",
+      hashtags(poll.tags),
+    ),
   };
 };
 
@@ -94,7 +149,19 @@ export const shareFact = (fact: Fact): SharePost => {
     title: fact.line,
     line: fact.sub,
     url,
-    caption: [`🤯 did you know? ${fact.big}: ${fact.line}`, "", fact.sub, "", `more facts like this on @offtrck 👉 ${url}`, "", hashtags(fact.tags)].join("\n"),
+    caption: caption(
+      pick([
+        `wait. ${fact.big}?? ${fact.line} 😳`,
+        `${fact.big}. ${fact.line}\nrent free in my head now 🧠`,
+        `${fact.big}: ${fact.line}\nthe more you know ✨`,
+        `${fact.big}. ${fact.line}\nnot me learning this at 2am 🌙`,
+        `fun fact for your next awkward silence:\n${fact.big}. ${fact.line} 🤓`,
+        `${fact.big}?? ${fact.line}\nbrain = expanded 🧠✨`,
+      ]),
+      `more → ${url}`,
+      "",
+      hashtags(fact.tags),
+    ),
   };
 };
 
@@ -107,15 +174,26 @@ export const shareLive = (post: LivePost): SharePost => {
     title: post.title,
     line: post.body,
     url: post.link,
-    caption: [
-      paper ? `📄 new research: ${post.title}` : `👀 ${post.title}`,
+    caption: caption(
+      paper
+        ? pick([
+            `new research just dropped 📄\n"${post.title}"`,
+            `"${post.title}"\nreading papers now. character development 📚`,
+            `nerd hours 🤓\n"${post.title}"`,
+            `the science is in and it's giving 🔬\n"${post.title}"`,
+            `big brain reading list 🧠\n"${post.title}"`,
+          ])
+        : pick([
+            `${post.title} 👀`,
+            `${post.title}\nthoughts? 👇`,
+            `saw this and had to share 🔥\n${post.title}`,
+            `the internet is wild today 😭\n${post.title}`,
+            `${post.title}\nwe need to talk about this 🫠`,
+          ]),
+      post.link,
       "",
-      paper ? `${post.kicker.replace(/^new paper · /, "published in ")}${post.author ? `, by ${post.author}` : ""}. read it: ${post.link}` : `via ${post.source}: ${post.link}`,
-      "",
-      `found it on my @offtrck feed 👉 ${siteUrl()}`,
-      "",
-      hashtags(post.hashtags),
-    ].join("\n"),
+      `found it on @offtrck ✨ ${hashtags(post.hashtags)}`,
+    ),
   };
 };
 
@@ -129,7 +207,19 @@ export const shareGuide = (path: LearningPath): SharePost => {
     title: `the ${path.title} path`,
     line: path.tagline,
     url,
-    caption: [`🧭 the ${path.title} path on @offtrck`, "", `${path.tagline}.`, "", `take the 1-minute skill check and get your own next steps 👉 ${url}`, "", hashtags(path.interests)].join("\n"),
+    caption: caption(
+      pick([
+        `entering my ${path.title} era 🧭`,
+        `${path.title} arc starts now. no skips 🧭`,
+        `${path.tagline.toLowerCase()}. we're so back 🧭`,
+        `main character energy: learning ${path.title} 🎬`,
+        `${path.title} glow up loading… 🧭`,
+      ]),
+      `1-min check, then your own roadmap →`,
+      url,
+      "",
+      hashtags(path.interests),
+    ),
   };
 };
 

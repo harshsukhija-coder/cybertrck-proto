@@ -64,6 +64,9 @@ const showBadge = (t: Term, args: string[]) => {
   }
 };
 
+/** The caption last shown for each badge, so "copy" copies what's on screen */
+const shownCaptions = new Map<string, string>();
+
 const share = async (t: Term, args: string[]) => {
   if (args[0] === "post") return sharePost(t, args.slice(1));
   const state = readBadges().find(b => b.badge.id === args[0]);
@@ -75,7 +78,9 @@ const share = async (t: Term, args: string[]) => {
     return;
   }
   if (!state.earnedAt) return t.print(`{dim:🔒 ${state.badge.name} is still locked. ${state.badge.how}.}`);
-  const caption = buildCaption(state.badge);
+  const id = state.badge.id;
+  if (args[1] === "new" || !shownCaptions.has(id)) shownCaptions.set(id, buildCaption(state.badge));
+  const caption = shownCaptions.get(id)!;
   if (args[1] === "image") {
     t.print("{dim:drawing your badge image…}");
     const blob = await drawBadgeCard(state.badge, t.username, state.earnedAt);
@@ -93,7 +98,7 @@ const share = async (t: Term, args: string[]) => {
   }
   t.print(rule(`share · ${state.badge.name}`, state.badge.color));
   t.block(caption.split("\n").map(line => line.replace(/[{}[\]]/g, "")));
-  t.print(`[[📋 copy caption|share ${state.badge.id} copy]]   [[🖼 download image|share ${state.badge.id} image]]`);
+  t.print(`[[🎲 another caption|share ${id} new]]   [[📋 copy caption|share ${id} copy]]   [[🖼 download image|share ${id} image]]`);
   t.segs(shareLinks(caption).flatMap(l => [{ text: `${l.label} ↗`, href: l.href }, { text: "   " }]));
   t.print("{dim:for instagram: download the image, copy the caption, then post both.}");
 };

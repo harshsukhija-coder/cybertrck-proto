@@ -4,7 +4,7 @@ import { drawPostCard, type SharePost } from "./post-share";
 import { SharePanel } from "./share-panel";
 
 /** Pop-up with the share image, caption and social buttons for one feed post */
-export const ShareSheet = ({ post, onClose }: { post: SharePost; onClose: () => void }) => {
+export const ShareSheet = ({ post, onClose, newCaption }: { post: SharePost; onClose: () => void; newCaption?: () => string }) => {
   const makeImage = useCallback(() => drawPostCard(post), [post]);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export const ShareSheet = ({ post, onClose }: { post: SharePost; onClose: () => 
           title={post.title}
           color={post.color}
           url={post.url}
+          newCaption={newCaption}
         />
       </div>
     </div>,

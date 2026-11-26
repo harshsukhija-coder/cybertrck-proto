@@ -7,16 +7,17 @@ export const formatDate = (iso?: string) => {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 };
 
-export const buildCaption = (badge: Badge) =>
-  [
-    `🏅 new badge unlocked on @offtrck: "${badge.name}"`,
-    "",
-    `${badge.brag}.`,
-    "",
-    `offtrck turns networking, accounting, money and more into bite-sized stories, quizzes and games. come learn with me 👉 ${siteUrl()}`,
-    "",
-    `#offtrck #${badge.hashtag} #learnwithofftrck`,
-  ].join("\n");
+/** Picks one of a few lines at random, so "another caption" gives something new */
+export const buildCaption = (badge: Badge) => {
+  const lines = [
+    `${badge.emoji} ${badge.name} unlocked\n${badge.brag}. we move 😌`,
+    `new badge who dis ${badge.emoji}\n${badge.name}. ${badge.brag} 💅`,
+    `${badge.brag}. not to flex but… ${badge.emoji} ${badge.name}`,
+    `${badge.emoji} ${badge.name} era activated\n${badge.brag}. ate 🔥`,
+    `just unlocked ${badge.name} ${badge.emoji}\nmain character behaviour fr`,
+  ];
+  return [lines[Math.floor(Math.random() * lines.length)], `learn with me → ${siteUrl()}`, "", `#offtrck #${badge.hashtag}`].join("\n");
+};
 
 /** The 4:5 image people post: medal, badge name, their name and the offtrck brand */
 export const drawBadgeCard = async (badge: Badge, username: string, earnedAt?: string) => {

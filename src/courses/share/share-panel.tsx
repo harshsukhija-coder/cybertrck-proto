@@ -12,10 +12,12 @@ type Props = {
   color: string;
   /** Link to what's being shared, offered as "copy link" */
   url?: string;
+  /** Writes a fresh random caption, for the "another caption" button */
+  newCaption?: () => string;
 };
 
 /** Image preview, editable caption and buttons for every way to share */
-export const SharePanel = ({ makeImage, initialCaption, fileName, title, color, url }: Props) => {
+export const SharePanel = ({ makeImage, initialCaption, fileName, title, color, url, newCaption }: Props) => {
   const [image, setImage] = useState<{ blob: Blob; url: string } | null>(null);
   const [failed, setFailed] = useState(false);
   const [caption, setCaption] = useState(initialCaption);
@@ -78,9 +80,24 @@ export const SharePanel = ({ makeImage, initialCaption, fileName, title, color, 
       </div>
 
       <div className="min-w-0">
-        <label className="font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)" htmlFor="share-caption">
-          your caption (edit it if you like)
-        </label>
+        <div className="flex items-center justify-between gap-2">
+          <label className="font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--muted)" htmlFor="share-caption">
+            your caption (edit it if you like)
+          </label>
+          {newCaption && (
+            <button
+              type="button"
+              onClick={() => {
+                let next = newCaption();
+                for (let tries = 0; next === caption && tries < 5; tries++) next = newCaption();
+                setCaption(next);
+              }}
+              className="shrink-0 rounded-full border border-(--line) px-3 py-1 text-xs font-semibold transition hover:border-white/30"
+            >
+              🎲 another caption
+            </button>
+          )}
+        </div>
         <textarea
           id="share-caption"
           value={caption}

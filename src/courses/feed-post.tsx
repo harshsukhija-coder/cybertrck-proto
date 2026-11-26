@@ -351,7 +351,7 @@ export const PostFrame = (props: FrameProps) => {
         )}
         <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{props.age}</p>
       </div>
-      {sharing && <ShareSheet post={sharing} onClose={closeShare} />}
+      {sharing && <ShareSheet post={sharing} onClose={closeShare} newCaption={() => props.share().caption} />}
     </article>
   );
 };

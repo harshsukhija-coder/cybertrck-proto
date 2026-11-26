@@ -122,7 +122,7 @@ const SharePill = ({ make, onPhoto }: { make: () => SharePost; onPhoto?: boolean
       >
         {onPhoto ? "↗" : "↗ share"}
       </button>
-      {sharing && <ShareSheet post={sharing} onClose={close} />}
+      {sharing && <ShareSheet post={sharing} onClose={close} newCaption={() => make().caption} />}
     </>
   );
 };

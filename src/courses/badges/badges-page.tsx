@@ -47,6 +47,7 @@ const BadgeShare = ({ badge, username, earnedAt }: { badge: Badge; username: str
     <SharePanel
       makeImage={makeImage}
       initialCaption={buildCaption(badge)}
+      newCaption={() => buildCaption(badge)}
       fileName={`offtrck-${badge.id}.png`}
       title={`offtrck badge: ${badge.name}`}
       color={badge.color}

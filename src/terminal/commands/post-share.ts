@@ -4,20 +4,22 @@ import { shareLinks } from "../../courses/share/share-utils";
 import { rule } from "../format";
 import type { Term } from "../term";
 
-/** Posts the feed has printed, so "share post <key>" can find them again */
-const shown = new Map<string, SharePost>();
+/** Feed items the terminal has printed, and the caption last shown for each, so "share post <key>" can find them again */
+const shown = new Map<string, { item: FeedItem; post: SharePost }>();
 
 /** Remembers a feed item and returns a clickable share link for it, or "" if it can't be shared */
 export const shareChip = (item: FeedItem) => {
   const post = shareOfItem(item);
   if (!post) return "";
-  shown.set(post.key, post);
+  shown.set(post.key, { item, post });
   return `[[↗ share|share post ${post.key}]]`;
 };
 
 export const sharePost = async (t: Term, args: string[]) => {
-  const post = shown.get(args[0] ?? "");
-  if (!post) return t.print("{dim:open your} [[feed]] {dim:and tap share under any post.}");
+  const entry = shown.get(args[0] ?? "");
+  if (!entry) return t.print("{dim:open your} [[feed]] {dim:and tap share under any post.}");
+  if (args[1] === "new") entry.post = shareOfItem(entry.item) ?? entry.post;
+  const { post } = entry;
   const { key, caption, url } = post;
 
   if (args[1] === "image") {
@@ -39,7 +41,7 @@ export const sharePost = async (t: Term, args: string[]) => {
 
   t.print(rule(`share · ${post.label}`, post.color));
   t.block(caption.split("\n").map(line => line.replace(/[{}[\]]/g, "")));
-  t.print(`[[📋 copy caption|share post ${key} copy]]   [[🔗 copy link|share post ${key} link]]   [[🖼 download image|share post ${key} image]]`);
+  t.print(`[[🎲 another caption|share post ${key} new]]   [[📋 copy caption|share post ${key} copy]]   [[🔗 copy link|share post ${key} link]]   [[🖼 download image|share post ${key} image]]`);
   t.segs(shareLinks(caption, url).flatMap(l => [{ text: `${l.label} ↗`, href: l.href }, { text: "   " }]));
   t.print("{dim:for instagram: download the image, copy the caption, then post both.}");
 };
