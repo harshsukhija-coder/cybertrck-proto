@@ -35,7 +35,10 @@ const TONE_COLOR: Partial<Record<Tone, string>> = {
   accent: "var(--acc)",
 };
 
-const SHELL_CHIPS: Chip[] = ["help", "feed", "learn", "play", "stories", "academy", "badges", "stats", "ls", "clear"].map(c => ({ label: c, send: c }));
+const SHELL_CHIPS: Chip[] = [
+  ...["help", "feed", "learn", "path", "play", "stories", "academy", "badges", "stats", "ls", "clear"].map(c => ({ label: c, send: c })),
+  { label: "modern ui ↗", send: "gui" },
+];
 
 const welcome = (t: Term) => {
   banner(t);
@@ -43,6 +46,7 @@ const welcome = (t: Term) => {
   t.print("");
   t.print("everything from the app works here: courses, games, stories, badges, the academy and the missions.");
   t.print("type [[help]] or try [[feed]] [[learn]] [[games]] [[badges]]. {dim:tap any underlined word to run it.}");
+  t.print("{dim:prefer buttons and pictures?} [[switch to the modern ui ↗|gui]] {dim:(or type} `ui`{dim:). you can always come back.}");
 };
 
 const createTerm = (username: string | null, onLogin: (name: string) => void, onLogout: () => void, pickFile: (accept: string) => void) => {
@@ -340,7 +344,14 @@ const TerminalSession = ({ username, onLogin, onLogout, frame }: Props) => {
           <button type="button" onClick={() => send("help")} className="window-button rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
             help
           </button>
-          {frame ? (
+          <a
+            href="#/feed"
+            title="switch to the modern ui (or type: ui)"
+            className="window-button rounded-md border border-(--acc)/40 px-2.5 py-1 text-(--acc) transition-colors hover:bg-(--acc) hover:text-black"
+          >
+            ⇄ modern ui
+          </a>
+          {frame && (
             <>
               <button type="button" onClick={frame.onMinimize} aria-label="minimize" className="window-button grid h-6 w-6 place-items-center rounded hover:bg-white/5 hover:text-[#eceef1]">
                 —
@@ -349,10 +360,6 @@ const TerminalSession = ({ username, onLogin, onLogout, frame }: Props) => {
                 ✕
               </button>
             </>
-          ) : (
-            <a href="#/feed" className="rounded px-2 py-1 hover:bg-white/5 hover:text-[#eceef1]">
-              gui ↗
-            </a>
           )}
         </span>
       </header>

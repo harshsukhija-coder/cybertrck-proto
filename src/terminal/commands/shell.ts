@@ -126,6 +126,8 @@ const GUI_ROUTES: Record<string, string> = {
   courses: "#/feed/courses",
   games: "#/feed/games",
   badges: "#/feed/badges",
+  paths: "#/feed/paths",
+  path: "#/feed/paths",
   academy: "#/academy",
   desktop: "#/",
 };
@@ -198,12 +200,15 @@ export const shellCommands: Command[] = [
   },
   {
     name: "gui",
+    aliases: ["ui", "modern", "app", "switch"],
     usage: "gui [page]",
-    about: "back to the visual app (feed, learn, games, badges, academy, desktop)",
-    group: "terminal",
+    about: "switch to the modern ui (feed, learn, paths, games, badges, academy, desktop)",
+    group: "start here",
     run: (t, args) => {
-      t.print("{dim:opening the visual app…}");
-      window.location.hash = GUI_ROUTES[args[0] ?? "feed"] ?? "#/feed";
+      const route = GUI_ROUTES[args[0] ?? "feed"];
+      if (!route) return t.print(`{red:no page called} ${args[0]}. try ${Object.keys(GUI_ROUTES).map(k => `[[${k}|gui ${k}]]`).join(" ")}`);
+      t.print("{dim:switching to the modern ui… come back any time from the menu (terminal mode).}");
+      window.location.hash = route;
     },
     complete: () => Object.keys(GUI_ROUTES),
   },
