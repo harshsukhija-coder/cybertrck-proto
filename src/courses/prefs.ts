@@ -10,6 +10,7 @@ export type InterestId =
   | "streaming"
   | "data"
   | "money"
+  | "business"
   | "marketing";
 export type StyleId = "stories" | "games" | "quiz" | "deep";
 export type PaceId = "snack" | "daily" | "deep";
@@ -17,6 +18,7 @@ export type PaceId = "snack" | "daily" | "deep";
 export const INTERESTS: { id: InterestId; label: string; hint: string; color: string }[] = [
   { id: "internet", label: "how the internet works", hint: "the big picture", color: "#4f8cff" },
   { id: "money", label: "money & investing", hint: "make it grow", color: "#2ee6a6" },
+  { id: "business", label: "accounting & business", hint: "where the money goes", color: "#ffb547" },
   { id: "marketing", label: "marketing & social media", hint: "why things go viral", color: "#ff5fa2" },
   { id: "data", label: "databases & data", hint: "where apps keep stuff", color: "#38bdf8" },
   { id: "gaming", label: "gaming & lag", hint: "why is my ping 300", color: "#4cc9f0" },

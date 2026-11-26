@@ -52,5 +52,14 @@ export const useProgress = () => {
   const nextIn = (course: Course) => course.chapters.find(ch => !isDone(course.id, ch.id)) ?? course.chapters[0];
   const totalDone = COURSES.reduce((sum, course) => sum + doneIn(course), 0);
 
-  return { isDone, doneIn, nextIn, totalDone, minutesToday: progress.minutes[today()] ?? 0 };
+  return {
+    isDone,
+    doneIn,
+    nextIn,
+    totalDone,
+    minutesToday: progress.minutes[today()] ?? 0,
+    daysLearned: Object.keys(progress.minutes).length,
+    /** The chapter finished most recently, to suggest what to do next */
+    lastDone: progress.done.at(-1),
+  };
 };

@@ -6,7 +6,11 @@ export type TileShape = "hero" | "side" | "tall" | "wide" | "stack" | "boss";
 export type LessonSlide =
   | { kind: "text"; title: string; body: string }
   | { kind: "stat"; big: string; body: string }
-  | { kind: "quiz"; q: string; options: string[]; answer: number; why: string };
+  | { kind: "quiz"; q: string; options: string[]; answer: number; why: string }
+  /** A beat of the course storyline, optionally with a line someone says */
+  | { kind: "story"; scene: string; body: string; say?: string }
+  /** A tiny two-column table, like a ledger or a balance sheet */
+  | { kind: "table"; title: string; head?: [string, string]; rows: [string, string][]; total?: [string, string]; note?: string };
 
 export type CourseChapter = {
   id: string;

@@ -1,6 +1,11 @@
 import { useCallback, useState } from "react";
 import type { GameId } from "./games";
 
+/** Fired after every finished game, so badges can update */
+export const GAMES_EVENT = "offtrck-games";
+
+const bestKey = (id: GameId) => `offtrck.games.best.${id}`;
+
 export const shuffle = <T,>(items: T[]) => {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -10,24 +15,26 @@ export const shuffle = <T,>(items: T[]) => {
   return copy;
 };
 
+export const readBest = (id: GameId) => {
+  const saved = localStorage.getItem(bestKey(id));
+  return saved === null ? null : Number(saved);
+};
+
 /** Best score per game, saved in the browser. `lowerWins` is for time-based games. */
 export const useBest = (id: GameId, lowerWins = false) => {
-  const key = `offtrck.games.best.${id}`;
-  const [best, setBest] = useState<number | null>(() => {
-    const saved = localStorage.getItem(key);
-    return saved === null ? null : Number(saved);
-  });
+  const [best, setBest] = useState<number | null>(() => readBest(id));
 
   const submit = useCallback(
     (score: number) => {
       const isBest = best === null || (lowerWins ? score < best : score > best);
       if (isBest) {
         setBest(score);
-        localStorage.setItem(key, String(score));
+        localStorage.setItem(bestKey(id), String(score));
       }
+      window.dispatchEvent(new Event(GAMES_EVENT));
       return isBest;
     },
-    [best, key, lowerWins],
+    [best, id, lowerWins],
   );
 
   return { best, submit };

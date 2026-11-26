@@ -24,6 +24,16 @@ export type Fact = {
 
 export const POLLS: Poll[] = [
   {
+    id: "poll-ledger",
+    courseId: "accounting",
+    q: "a shop sells ₹1 lakh this month. is that its profit?",
+    options: ["yes, ₹1 lakh", "no, minus its costs", "only if paid in cash"],
+    answer: 1,
+    votes: [18, 71, 11],
+    why: "sales minus expenses (stock, rent, salaries) is profit. a ₹1 lakh month might only leave ₹15k.",
+    tags: ["business", "money"],
+  },
+  {
     id: "poll-password",
     courseId: "networking",
     q: "what's the most used password in the world?",
@@ -106,6 +116,15 @@ export const POLLS: Poll[] = [
 ];
 
 export const FACTS: Fact[] = [
+  {
+    id: "fact-pacioli",
+    courseId: "accounting",
+    big: "1494",
+    line: "is when double-entry bookkeeping was first printed in a book.",
+    sub: "luca pacioli, a friend of leonardo da vinci, wrote it down. every company still uses it.",
+    duo: ["#1d1000", "#ffd27a"],
+    tags: ["business"],
+  },
   {
     id: "fact-email",
     courseId: "networking",

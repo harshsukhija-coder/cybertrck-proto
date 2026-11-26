@@ -1,44 +1,59 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { OfftrckMark } from "../icons/OfftrckMark";
-import { ChapterCover } from "./chapter-cover";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import AcademyPage from "./academy/academy-page";
 import { AcademyPost } from "./academy/academy-promo";
-import { CourseCatalog } from "./course-catalog";
-import { COURSES, chapterHash } from "./data";
+import { AppShell, type Section } from "./app-shell";
+import { BadgeMedal } from "./badges/badge-medal";
+import { badgeHash } from "./badges/badges";
+import { BadgesPage } from "./badges/badges-page";
+import { useBadges } from "./badges/use-badges";
+import { ChapterCover } from "./chapter-cover";
+import { COURSES } from "./data";
 import { FACTS, POLLS, type Fact, type Poll } from "./feed-extras";
-import { BookIcon, GamepadIcon, HomeIcon, MonitorIcon, SparkIcon } from "./feed-icons";
 import { ChapterPost, CoursesPost, FactPost, GamePost, PollPost } from "./feed-post";
+import { layoutsFor, type ChapterLayout } from "./post-layouts";
 import { GameView, GamesGrid } from "./games/games-section";
 import { GAMES, gameHash, isGameId, type GameMeta } from "./games/games";
 import { GEMS, useGem, type Gem } from "./gems";
 import Onboarding from "./onboarding";
-import { INTERESTS, PACES, STYLES, usePrefs, type InterestId, type Prefs } from "./prefs";
+import { CourseView, LearnHub } from "./learn-hub";
+import { INTERESTS, PACES, usePrefs, type InterestId, type Prefs } from "./prefs";
 import { useProgress } from "./progress";
+import { StoryBar } from "./stories/story-bar";
 import type { Course, CourseChapter } from "./types";
 
 type View =
   | { kind: "feed" }
-  | { kind: "courses"; id?: string }
+  | { kind: "courses" }
+  | { kind: "course"; id: string }
+  | { kind: "academy"; route: string }
   | { kind: "games" }
   | { kind: "game"; id: string }
+  | { kind: "badges"; id?: string }
   | { kind: "start" };
 
 const parseView = (route: string): View => {
+  if (route.startsWith("#/academy")) return { kind: "academy", route };
   const [, , section, id] = route.split("/");
   if (section === "games") return id ? { kind: "game", id } : { kind: "games" };
-  if (section === "courses") return { kind: "courses", id };
+  if (section === "courses") return id ? { kind: "course", id } : { kind: "courses" };
+  if (section === "badges") return { kind: "badges", id };
   if (section === "start") return { kind: "start" };
   return { kind: "feed" };
 };
 
 type FeedItem =
-  | { kind: "chapter"; course: Course; chapter: CourseChapter; reason?: string }
+  | { kind: "chapter"; course: Course; chapter: CourseChapter; layout: ChapterLayout; reason?: string }
   | { kind: "game"; game: GameMeta; reason?: string }
   | { kind: "poll"; poll: Poll; reason?: string }
   | { kind: "fact"; fact: Fact; reason?: string }
   | { kind: "courses" }
-  | { kind: "academy" };
+  | { kind: "academy" }
+  | { kind: "badge" };
 
 type ExtraKind = "game" | "poll" | "fact";
+
+/** Order chapter layouts rotate through, so neighbouring posts never look the same */
+const LAYOUT_CYCLE: ChapterLayout[] = ["carousel", "story", "quiz", "poster", "split", "notes"];
 
 const interestLabel = (id: InterestId) => INTERESTS.find(i => i.id === id)?.label ?? id;
 
@@ -111,9 +126,14 @@ const buildFeed = (prefs: Prefs, filter: InterestId | null): FeedItem[] => {
   };
 
   const items: FeedItem[] = [];
+  let previous: ChapterLayout | undefined;
   chapters.forEach(({ course, chapter }, i) => {
-    items.push({ kind: "chapter", course, chapter, reason: reasonFor(chapter.tags, prefs.interests) });
+    const options = layoutsFor(chapter);
+    const layout = LAYOUT_CYCLE.map((_, k) => LAYOUT_CYCLE[(i + k) % LAYOUT_CYCLE.length]).find(l => l !== previous && options.includes(l)) ?? "carousel";
+    previous = layout;
+    items.push({ kind: "chapter", course, chapter, layout, reason: reasonFor(chapter.tags, prefs.interests) });
     if (i === 3 && !filter) items.push({ kind: "courses" });
+    if (i === 6 && !filter) items.push({ kind: "badge" });
     if (i === 1 && (!filter || filter === "internet" || filter === "home")) items.push({ kind: "academy" });
     if ((i + 1) % every === 0) {
       const extra = nextExtra(course.id);
@@ -137,148 +157,28 @@ const itemKey = (item: FeedItem) => {
       return "courses";
     case "academy":
       return "academy";
+    case "badge":
+      return "badge";
   }
 };
 
-const NAV = [
-  { href: "#/feed", label: "feed", kind: "feed", Icon: HomeIcon },
-  { href: "#/feed/courses", label: "learn", kind: "courses", Icon: BookIcon },
-  { href: "#/feed/games", label: "games", kind: "games", Icon: GamepadIcon },
-  { href: "#/feed/start", label: "my vibe", kind: "start", Icon: SparkIcon },
-] as const;
-
-const isActive = (kind: string, view: View) => view.kind === kind || (kind === "games" && view.kind === "game");
-
-const SideNav = ({ view, username, onLogout }: { view: View; username: string; onLogout: () => void }) => (
-  <aside className="sticky top-0 hidden h-screen w-20 shrink-0 flex-col border-r border-(--line) px-3 py-6 md:flex xl:w-64 xl:px-5">
-    <a href="#/feed" className="flex items-center gap-2.5 px-3 font-display text-lg font-bold tracking-tight">
-      <OfftrckMark className="h-6 w-6 shrink-0 text-(--gem)" />
-      <span className="hidden xl:inline">offtrck</span>
-    </a>
-    <nav className="mt-10 flex flex-col gap-1.5">
-      {NAV.map(({ href, label, kind, Icon }) => {
-        const active = isActive(kind, view);
-        return (
-          <a
-            key={kind}
-            href={href}
-            title={label}
-            className={`flex items-center gap-4 rounded-2xl px-3 py-3 text-[15px] transition-colors hover:bg-white/5 ${
-              active ? "bg-white/[0.06] font-bold" : "text-(--muted) hover:text-(--fg)"
-            }`}
-          >
-            <Icon filled={active} className={`h-6 w-6 shrink-0 ${active ? "text-(--gem)" : ""}`} />
-            <span className="hidden xl:inline">{label}</span>
-          </a>
-        );
-      })}
-      <a
-        href="#/"
-        title="desktop (classic)"
-        className="flex items-center gap-4 rounded-2xl px-3 py-3 text-[15px] text-(--muted) transition-colors hover:bg-white/5 hover:text-(--fg)"
-      >
-        <MonitorIcon className="h-6 w-6 shrink-0" />
-        <span className="hidden xl:inline">desktop (classic)</span>
-      </a>
-    </nav>
-
-    <div className="mt-auto flex items-center gap-3 rounded-2xl px-2 py-2 xl:border xl:border-(--line) xl:bg-(--panel)">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 font-display text-sm font-bold uppercase">
-        {username[0]}
+/** The locked badge you're closest to, so there's always a next goal */
+const NextBadge = () => {
+  const { list } = useBadges();
+  const next = list.filter(b => !b.earnedAt).sort((a, b) => b.value / b.goal - a.value / a.goal)[0];
+  if (!next) return null;
+  return (
+    <a href={badgeHash(next.badge.id)} className="group flex items-center gap-4 rounded-3xl border border-(--line) bg-(--panel) p-4 backdrop-blur-sm transition hover:border-white/25">
+      <BadgeMedal badge={next.badge} earned={false} className="w-14" />
+      <span className="min-w-0 flex-1">
+        <span className="block font-jetbrains text-[10px] font-bold uppercase tracking-wider text-(--muted)">next badge</span>
+        <span className="block font-display text-sm font-bold lowercase">{next.badge.name}</span>
+        <span className="mt-0.5 block text-xs text-(--muted)">{next.badge.how}</span>
+        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-white/10">
+          <span className="block h-full rounded-full" style={{ width: `${Math.max(4, (next.value / next.goal) * 100)}%`, background: next.badge.color }} />
+        </span>
       </span>
-      <div className="hidden min-w-0 flex-1 xl:block">
-        <p className="truncate text-sm font-semibold">{username}</p>
-        <button type="button" onClick={onLogout} className="text-xs text-(--muted) hover:text-(--fg)">
-          log out
-        </button>
-      </div>
-    </div>
-  </aside>
-);
-
-const MobileTopBar = ({ username, onLogout }: { username: string; onLogout: () => void }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-(--line) bg-black/60 px-4 backdrop-blur-xl md:hidden">
-      <a href="#/feed" className="flex items-center gap-2 font-display text-base font-bold tracking-tight">
-        <OfftrckMark className="h-5 w-5 text-(--gem)" />
-        offtrck
-      </a>
-      <div className="relative flex items-center gap-1">
-        <a href="#/" aria-label="Classic desktop" className="rounded-full p-2 text-(--muted) hover:text-(--fg)">
-          <MonitorIcon className="h-6 w-6" />
-        </a>
-        <button
-          type="button"
-          aria-label="Account"
-          aria-expanded={open}
-          onClick={() => setOpen(o => !o)}
-          className="ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 font-display text-xs font-bold uppercase"
-        >
-          {username[0]}
-        </button>
-        {open && (
-          <div className="absolute right-0 top-11 w-44 animate-pop rounded-2xl border border-(--line) bg-[#0d0f14] p-1.5 shadow-2xl">
-            <p className="truncate px-3 py-2 text-xs text-(--muted)">signed in as {username}</p>
-            <button type="button" onClick={onLogout} className="w-full rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-white/5">
-              log out
-            </button>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-};
-
-const MobileTabBar = ({ view }: { view: View }) => (
-  <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-(--line) bg-black/75 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-    {NAV.map(({ href, label, kind, Icon }) => {
-      const active = isActive(kind, view);
-      return (
-        <a
-          key={kind}
-          href={href}
-          className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium ${active ? "text-(--fg)" : "text-(--muted)"}`}
-        >
-          {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-(--gem)" />}
-          <Icon filled={active} className={`h-6 w-6 ${active ? "text-(--gem)" : ""}`} />
-          {label}
-        </a>
-      );
-    })}
-  </nav>
-);
-
-/** One story bubble per course; tapping opens the next unfinished chapter */
-const Stories = () => {
-  const { nextIn, doneIn } = useProgress();
-  return (
-    <div className="no-scrollbar -mx-4 flex gap-3.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-      {COURSES.map(course => {
-        const next = nextIn(course);
-        const finished = doneIn(course) === course.chapters.length;
-        return (
-          <a key={course.id} href={chapterHash(course, next)} className="group flex w-[76px] shrink-0 flex-col items-center gap-1.5">
-            <span
-              className="rounded-full p-[2.5px] transition-transform group-hover:scale-105 group-active:scale-95"
-              style={{ boxShadow: `0 0 0 2px ${finished ? "rgba(255,255,255,0.2)" : course.color}` }}
-            >
-              <ChapterCover chapter={{ ...next, word: "", number: undefined }} className="h-16 w-16 rounded-full" />
-            </span>
-            <span className="w-full truncate text-center text-xs text-(--muted)">{course.label}</span>
-          </a>
-        );
-      })}
-      {GAMES.slice(0, 3).map(game => (
-        <a key={game.id} href={gameHash(game.id)} className="group flex w-[76px] shrink-0 flex-col items-center gap-1.5">
-          <span className="relative rounded-full p-[2.5px] ring-2 ring-white/25 transition-transform group-hover:scale-105 group-active:scale-95">
-            <ChapterCover chapter={{ ...game, word: "" }} className="h-16 w-16 rounded-full" />
-            <span className="absolute inset-0 grid place-items-center text-lg text-white drop-shadow">▶</span>
-          </span>
-          <span className="w-full truncate text-center text-xs text-(--muted)">{game.title}</span>
-        </a>
-      ))}
-    </div>
+    </a>
   );
 };
 
@@ -306,27 +206,7 @@ const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGe
         </p>
       </section>
 
-      <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold lowercase">your vibe</h2>
-          <a href="#/feed/start" className="text-xs font-semibold text-(--gem) hover:underline">
-            edit
-          </a>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {prefs.interests.map(id => {
-            const interest = INTERESTS.find(i => i.id === id);
-            return (
-              <span key={id} className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: `${interest?.color}22`, color: interest?.color }}>
-                {interest?.label}
-              </span>
-            );
-          })}
-        </div>
-        <p className="mt-3 text-xs text-(--muted)">
-          learns by: {prefs.styles.map(s => STYLES.find(x => x.id === s)?.word).join(", ")}
-        </p>
-      </section>
+      <NextBadge />
 
       <section className="rounded-3xl border border-(--line) bg-(--panel) p-5 backdrop-blur-sm">
         <div className="flex items-center justify-between">
@@ -374,7 +254,7 @@ const RightRail = ({ prefs, gem, onPickGem }: { prefs: Prefs; gem: Gem; onPickGe
 const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
   switch (item.kind) {
     case "chapter":
-      return <ChapterPost course={item.course} chapter={item.chapter} reason={item.reason} seed={seed} />;
+      return <ChapterPost course={item.course} chapter={item.chapter} layout={item.layout} reason={item.reason} seed={seed} />;
     case "game":
       return <GamePost game={item.game} reason={item.reason} seed={seed} />;
     case "poll":
@@ -385,6 +265,12 @@ const FeedPost = ({ item, seed }: { item: FeedItem; seed: number }) => {
       return <CoursesPost base="#/feed/courses" />;
     case "academy":
       return <AcademyPost />;
+    case "badge":
+      return (
+        <div className="px-4 sm:px-0">
+          <NextBadge />
+        </div>
+      );
   }
 };
 
@@ -426,7 +312,7 @@ const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
         </h1>
       </div>
       <div className="px-4 sm:px-0">
-        <Stories />
+        <StoryBar interests={prefs.interests} />
       </div>
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-0">
         {chip("✦ for you", null)}
@@ -460,16 +346,27 @@ const Feed = ({ prefs, username }: { prefs: Prefs; username: string }) => {
 
 type Props = { route: string; username: string; onLogout: () => void };
 
+const SECTION: Record<View["kind"], Section | undefined> = {
+  feed: "feed",
+  courses: "learn",
+  course: "learn",
+  academy: "learn",
+  games: "games",
+  game: "games",
+  badges: "badges",
+  start: undefined,
+};
+
 const FeedApp = ({ route, username, onLogout }: Props) => {
   const view = parseView(route);
   const { gem, setGem } = useGem();
   const { prefs, setPrefs } = usePrefs();
   const scroller = useRef<HTMLDivElement>(null);
-  const section = view.kind;
+  const page = view.kind === "academy" ? view.kind : `${view.kind}/${"id" in view ? view.id : ""}`;
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 });
-  }, [section]);
+  }, [page]);
 
   if (!prefs || view.kind === "start") {
     return (
@@ -485,51 +382,28 @@ const FeedApp = ({ route, username, onLogout }: Props) => {
     );
   }
 
-  const wide = view.kind === "games" || view.kind === "courses";
-
   return (
-    <div
+    <AppShell
       ref={scroller}
-      style={{ "--gem": gem.color } as CSSProperties}
-      className="cv-root relative h-full overflow-y-auto overflow-x-hidden font-vibe"
+      active={SECTION[view.kind]}
+      username={username}
+      onLogout={onLogout}
+      gemColor={gem.color}
+      width={view.kind === "feed" ? "narrow" : view.kind === "academy" ? "full" : "wide"}
+      rail={view.kind === "feed" && <RightRail prefs={prefs} gem={gem} onPickGem={setGem} />}
     >
-      <div className="cv-grid pointer-events-none fixed inset-x-0 top-0 h-[700px]" aria-hidden />
-      <div
-        className="pointer-events-none fixed left-1/2 top-[-320px] h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-(--gem) opacity-[0.1] blur-[140px]"
-        aria-hidden
-      />
-
-      <div className="relative flex min-h-full">
-        <SideNav view={view} username={username} onLogout={onLogout} />
-
-        <div className="min-w-0 flex-1">
-          <MobileTopBar username={username} onLogout={onLogout} />
-          <main className={`mx-auto w-full pb-28 pt-4 sm:px-4 sm:pt-8 md:pb-12 ${wide ? "max-w-3xl" : "max-w-[520px]"}`}>
-            {view.kind === "feed" && <Feed prefs={prefs} username={username} />}
-            {view.kind === "courses" && (
-              <div className="animate-tile-in px-4 sm:px-0">
-                <h1 className="mb-5 font-display text-3xl font-bold lowercase tracking-[-0.03em] sm:text-4xl">
-                  pick a <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">rabbit hole</span>
-                </h1>
-                <CourseCatalog courseId={view.id} base="#/feed/courses" />
-              </div>
-            )}
-            {view.kind === "games" && (
-              <div className="px-4 sm:px-0">
-                <GamesGrid />
-              </div>
-            )}
-            {view.kind === "game" && (
-              <div className="px-4 sm:px-0">{isGameId(view.id) ? <GameView id={view.id} /> : <GamesGrid />}</div>
-            )}
-          </main>
+      {view.kind === "feed" && <Feed prefs={prefs} username={username} />}
+      {view.kind === "courses" && <LearnHub />}
+      {view.kind === "course" && <CourseView courseId={view.id} />}
+      {view.kind === "academy" && <AcademyPage route={view.route} embedded />}
+      {view.kind === "games" && (
+        <div className="px-4 sm:px-0">
+          <GamesGrid />
         </div>
-
-        <RightRail prefs={prefs} gem={gem} onPickGem={setGem} />
-      </div>
-
-      <MobileTabBar view={view} />
-    </div>
+      )}
+      {view.kind === "game" && <div className="px-4 sm:px-0">{isGameId(view.id) ? <GameView id={view.id} /> : <GamesGrid />}</div>}
+      {view.kind === "badges" && <BadgesPage badgeId={view.id} username={username} prefs={prefs} />}
+    </AppShell>
   );
 };
 

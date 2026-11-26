@@ -1,10 +1,25 @@
+import { useState } from "react";
+import { Rich } from "../academy/academy-ui";
 import { ChapterCover } from "../chapter-cover";
+import { COURSES, chapterHash, findCourse } from "../data";
+import { BalanceIt } from "./balance-it";
+import { readBest } from "./game-utils";
 import { HigherLower } from "./higher-lower";
 import { PacketPuzzle } from "./packet-puzzle";
 import { PortRush } from "./port-rush";
 import { QueryBuilder } from "./query-builder";
 import { SwipeGame } from "./swipe-game";
-import { GAMES, PHISH_CARDS, SCAM_CARDS, TCP_UDP_CARDS, gameHash, type GameId, type GameMeta } from "./games";
+import {
+  ASSET_LIABILITY_CARDS,
+  DEBIT_CREDIT_CARDS,
+  GAMES,
+  PHISH_CARDS,
+  SCAM_CARDS,
+  TCP_UDP_CARDS,
+  gameHash,
+  type GameId,
+  type GameMeta,
+} from "./games";
 
 const formatPlays = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
@@ -46,6 +61,26 @@ const GameBody = ({ id }: { id: GameId }) => {
           right={{ label: "legit", color: "#4ade80" }}
         />
       );
+    case "debit-or-credit":
+      return (
+        <SwipeGame
+          gameId={id}
+          cards={DEBIT_CREDIT_CARDS}
+          left={{ label: "debit", color: "#ffb547" }}
+          right={{ label: "credit", color: "#4cc9f0" }}
+        />
+      );
+    case "asset-or-liability":
+      return (
+        <SwipeGame
+          gameId={id}
+          cards={ASSET_LIABILITY_CARDS}
+          left={{ label: "asset", color: "#2ee6a6" }}
+          right={{ label: "liability", color: "#ff8a3d" }}
+        />
+      );
+    case "balance-it":
+      return <BalanceIt />;
   }
 };
 
@@ -80,18 +115,78 @@ export const GamesGrid = () => (
     <h1 className="font-display text-3xl font-bold lowercase tracking-[-0.03em] sm:text-4xl">
       learn by <span className="font-accent text-[1.3em] font-normal italic tracking-normal text-(--gem)">playing</span>
     </h1>
-    <p className="mt-2 text-(--muted)">tiny games about the internet, data, money and marketing. beat your own best score.</p>
-    <div className="mt-7 grid gap-4 sm:grid-cols-2">
-      {GAMES.map((game, i) => (
-        <GameCard key={game.id} game={game} featured={i === 0} />
-      ))}
-    </div>
+    <p className="mt-2 text-(--muted)">tiny games for every course. each one starts with a 30-second refresher, so you're never lost.</p>
+    {COURSES.map(course => {
+      const games = GAMES.filter(g => g.course === course.id);
+      if (!games.length) return null;
+      return (
+        <section key={course.id} className="mt-9">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold lowercase">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: course.color }} />
+              {course.title}
+            </h2>
+            <a href={`#/feed/courses/${course.id}`} className="font-jetbrains text-[11px] uppercase tracking-wider text-(--muted) hover:text-(--fg)">
+              the course →
+            </a>
+          </div>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            {games.map((game, i) => (
+              <GameCard key={game.id} game={game} featured={games.length % 2 === 1 && i === 0} />
+            ))}
+          </div>
+        </section>
+      );
+    })}
   </div>
 );
 
-export const GameView = ({ id }: { id: GameId }) => {
-  const game = GAMES.find(g => g.id === id);
-  if (!game) return <GamesGrid />;
+const Primer = ({ game, onPlay }: { game: GameMeta; onPlay: () => void }) => {
+  const course = findCourse(game.primer.course);
+  const chapter = course?.chapters.find(ch => ch.id === game.primer.chapter);
+  return (
+    <div className="animate-tile-in">
+      <p className="font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--gem)">before you play · 30 sec read</p>
+      <ol className="mt-4 space-y-3">
+        {game.primer.points.map((point, i) => (
+          <li key={point} className="flex gap-3">
+            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/10 font-jetbrains text-[11px] font-bold">{i + 1}</span>
+            <p className="text-[15px] leading-relaxed text-(--fg)/90 [--accent:var(--gem)]">
+              <Rich text={point} />
+            </p>
+          </li>
+        ))}
+      </ol>
+
+      <button
+        type="button"
+        onClick={onPlay}
+        className="mt-6 w-full rounded-full bg-(--gem) py-3.5 font-semibold text-black transition-transform hover:-translate-y-0.5"
+      >
+        got it, let's play
+      </button>
+
+      {course && chapter && (
+        <a
+          href={chapterHash(course, chapter)}
+          className="group mt-4 flex items-center gap-3 rounded-2xl border border-(--line) p-2 pr-4 transition hover:bg-white/[0.05]"
+        >
+          <ChapterCover chapter={{ ...chapter, word: "", number: undefined }} className="h-14 w-14 shrink-0 rounded-xl" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">
+              want the full story? · {chapter.minutes} min
+            </span>
+            <span className="mt-0.5 block truncate font-semibold">learn {chapter.title} properly</span>
+          </span>
+          <span className="text-(--muted) transition-transform group-hover:translate-x-0.5">→</span>
+        </a>
+      )}
+    </div>
+  );
+};
+
+const GameScreen = ({ game }: { game: GameMeta }) => {
+  const [stage, setStage] = useState<"primer" | "play">(() => (readBest(game.id) === null ? "primer" : "play"));
 
   return (
     <div className="mx-auto max-w-md animate-tile-in">
@@ -100,14 +195,29 @@ export const GameView = ({ id }: { id: GameId }) => {
       </a>
       <div className="mt-4 flex items-center gap-4">
         <ChapterCover chapter={{ ...game, word: "" }} className="h-16 w-16 shrink-0 rounded-2xl" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-bold lowercase tracking-[-0.03em]">{game.title}</h1>
           <p className="text-sm text-(--muted)">{game.tagline}</p>
         </div>
       </div>
       <div className="mt-6 rounded-[28px] border border-(--line) bg-(--panel) p-4 backdrop-blur-sm sm:p-6">
-        <GameBody key={id} id={id} />
+        {stage === "primer" ? <Primer game={game} onPlay={() => setStage("play")} /> : <GameBody id={game.id} />}
       </div>
+      {stage === "play" && (
+        <button
+          type="button"
+          onClick={() => setStage("primer")}
+          className="mx-auto mt-4 block rounded-full border border-(--line) px-4 py-2 text-sm text-(--muted) transition hover:text-(--fg)"
+        >
+          📖 quick refresher
+        </button>
+      )}
     </div>
   );
+};
+
+export const GameView = ({ id }: { id: GameId }) => {
+  const game = GAMES.find(g => g.id === id);
+  if (!game) return <GamesGrid />;
+  return <GameScreen key={id} game={game} />;
 };

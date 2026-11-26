@@ -5,6 +5,9 @@ import tcpUdpPhoto from "../../assets/courses/tcp-udp.jpg";
 import creditPhoto from "../../assets/courses/credit.jpg";
 import selectPhoto from "../../assets/courses/select.jpg";
 import viralPhoto from "../../assets/courses/viral.jpg";
+import kettlePhoto from "../../assets/courses/acc-kettle.jpg";
+import ledgerPhoto from "../../assets/courses/acc-ledger.jpg";
+import scalePhoto from "../../assets/courses/acc-scale.jpg";
 import type { CoverArt } from "../chapter-cover";
 import type { InterestId } from "../prefs";
 
@@ -15,7 +18,13 @@ export type GameId =
   | "packet-puzzle"
   | "higher-lower"
   | "query-builder"
-  | "scam-or-legit";
+  | "scam-or-legit"
+  | "debit-or-credit"
+  | "asset-or-liability"
+  | "balance-it";
+
+/** What you need to know before playing, plus the chapter that explains it properly */
+export type Primer = { points: string[]; course: string; chapter: string };
 
 export type GameMeta = CoverArt & {
   id: GameId;
@@ -26,6 +35,9 @@ export type GameMeta = CoverArt & {
   caption: string;
   tags: InterestId[];
   plays: number;
+  /** Course the game belongs to, for grouping */
+  course: string;
+  primer: Primer;
 };
 
 export const GAMES: GameMeta[] = [
@@ -41,6 +53,12 @@ export const GAMES: GameMeta[] = [
     focus: "50% 50%",
     tags: ["gaming", "streaming", "internet"],
     plays: 8412,
+    course: "networking",
+    primer: {
+      points: ["**tcp** is careful delivery: every piece arrives, in order, or it gets sent again.", "**udp** is fast delivery: no waiting around, and a few pieces may get lost.", "ask yourself: is a late piece useless (udp) or is a missing piece a disaster (tcp)?"],
+      course: "networking",
+      chapter: "tcp-vs-udp",
+    },
   },
   {
     id: "real-or-phish",
@@ -54,6 +72,12 @@ export const GAMES: GameMeta[] = [
     focus: "30% 50%",
     tags: ["security", "privacy", "web"],
     plays: 12930,
+    course: "networking",
+    primer: {
+      points: ["the real website is the part just before the first `/`. in `accounts.google.com/x` that's **google.com**.", "fakes swap letters that look alike: `paypa1`, `amaz0n`, `dlscord`.", "extra words glued to a brand, like `netflix-billing-update.com`, are a red flag."],
+      course: "networking",
+      chapter: "dns",
+    },
   },
   {
     id: "port-rush",
@@ -68,6 +92,12 @@ export const GAMES: GameMeta[] = [
     exposure: 1.4,
     tags: ["security", "home", "gaming"],
     plays: 5307,
+    course: "networking",
+    primer: {
+      points: ["a **port** is a numbered door on a computer. each app listens behind its own door.", "the classics: **80** = http, **443** = https, **22** = ssh, **53** = dns.", "you get 30 seconds. tap the service that lives behind each number."],
+      course: "networking",
+      chapter: "ports",
+    },
   },
   {
     id: "packet-puzzle",
@@ -81,6 +111,12 @@ export const GAMES: GameMeta[] = [
     focus: "50% 50%",
     tags: ["internet", "streaming", "web"],
     plays: 6648,
+    course: "networking",
+    primer: {
+      points: ["big messages get chopped into small **packets** before they travel.", "packets can take different roads and arrive out of order.", "each one has a number. tap them in order to rebuild the message."],
+      course: "networking",
+      chapter: "packets",
+    },
   },
   {
     id: "higher-lower",
@@ -95,6 +131,12 @@ export const GAMES: GameMeta[] = [
     exposure: 1.3,
     tags: ["marketing", "streaming"],
     plays: 15204,
+    course: "marketing",
+    primer: {
+      points: ["you'll see two apps. tap the one with **more monthly users**.", "monthly users = people who open the app at least once a month.", "the giants are near 2–3 billion. most apps are far smaller than they feel."],
+      course: "marketing",
+      chapter: "going-viral",
+    },
   },
   {
     id: "query-builder",
@@ -108,6 +150,12 @@ export const GAMES: GameMeta[] = [
     focus: "50% 50%",
     tags: ["data", "web"],
     plays: 4870,
+    course: "databases",
+    primer: {
+      points: ["**SQL** is how you ask a database a question.", "`SELECT` picks columns, `FROM` picks the table, `WHERE` filters the rows.", "each round has one trap tile. don't use it."],
+      course: "databases",
+      chapter: "sql",
+    },
   },
   {
     id: "scam-or-legit",
@@ -121,6 +169,69 @@ export const GAMES: GameMeta[] = [
     focus: "50% 50%",
     tags: ["money", "security"],
     plays: 9931,
+    course: "money",
+    primer: {
+      points: ["nothing legit **guarantees** big returns. 30% a month is a scam promise.", "you never enter your upi pin to **receive** money.", "boring, regulated options like index funds, FDs and govt bonds are usually legit."],
+      course: "money",
+      chapter: "stocks",
+    },
+  },
+  {
+    id: "debit-or-credit",
+    title: "debit or credit?",
+    word: "debit?",
+    tagline: "riya's stall had a busy day. which side does each entry go on?",
+    how: "swipe or use ← →",
+    caption: "accountants make this look like magic. it's one rule and some practice. 10 entries, how many can you place? 📒",
+    photo: ledgerPhoto,
+    duo: ["#1d1000", "#ffd27a"],
+    focus: "50% 50%",
+    tags: ["business", "money"],
+    plays: 3184,
+    course: "accounting",
+    primer: {
+      points: ["**debit** is the left side of an account, **credit** is the right. not good or bad, just sides.", "**assets** and **expenses** go up with a debit.", "**liabilities**, **equity** and **revenue** go up with a credit. remember it as DEALER."],
+      course: "accounting",
+      chapter: "debit-credit",
+    },
+  },
+  {
+    id: "asset-or-liability",
+    title: "asset or liability?",
+    word: "own / owe",
+    tagline: "does the business own it, or owe it? swipe before the chai gets cold.",
+    how: "swipe or use ← →",
+    caption: "your phone is an asset. your phone EMI is a liability. can you sort 10 more? ☕",
+    photo: kettlePhoto,
+    duo: ["#1a0f00", "#ffb547"],
+    focus: "60% 45%",
+    tags: ["business", "money"],
+    plays: 4021,
+    course: "accounting",
+    primer: {
+      points: ["an **asset** is something the business owns or is owed: cash, equipment, stock.", "a **liability** is something it owes someone else: loans, unpaid bills, salaries due.", "quick test: will it bring money in (asset) or take money out to someone (liability)?"],
+      course: "accounting",
+      chapter: "assets-liabilities",
+    },
+  },
+  {
+    id: "balance-it",
+    title: "balance it",
+    word: "balance",
+    tagline: "one number is missing from the books. find it before the auditor does.",
+    how: "tap the missing number",
+    caption: "assets = liabilities + equity. sounds easy until the numbers get big. 8 rounds ⚖️",
+    photo: scalePhoto,
+    duo: ["#150b00", "#ffcf70"],
+    focus: "50% 50%",
+    tags: ["business"],
+    plays: 2276,
+    course: "accounting",
+    primer: {
+      points: ["**assets = liabilities + equity**. always, for every business.", "missing equity? it's **assets − liabilities**.", "missing assets? it's **liabilities + equity**."],
+      course: "accounting",
+      chapter: "balance-sheet",
+    },
   },
 ];
 
@@ -206,6 +317,32 @@ export const SCAM_CARDS: SwipeCard[] = [
   { prompt: "dm from a stranger: \"i'll double your crypto\"", side: "left", why: "nobody doubles your money for free. it's gone the moment you send it." },
   { prompt: "\"work from home: like videos, earn ₹5k/day\"", side: "left", why: "task scams pay small at first, then ask you to \"invest\" to unlock more." },
   { prompt: "government bond via RBI retail direct", side: "right", why: "backed by the government. about as safe as it gets." },
+];
+
+export const DEBIT_CREDIT_CARDS: SwipeCard[] = [
+  { prompt: "cash comes in from chai sales → cash account", side: "left", why: "cash is an asset. assets go up with a debit." },
+  { prompt: "chai sales of the day → sales account", side: "right", why: "sales are revenue. revenue goes up with a credit." },
+  { prompt: "riya borrows ₹20,000 → loan account", side: "right", why: "a loan is a liability. liabilities go up with a credit." },
+  { prompt: "she buys a new kettle → equipment account", side: "left", why: "equipment is an asset. it goes up, so debit." },
+  { prompt: "she pays rent → rent expense", side: "left", why: "rent is an expense. expenses go up with a debit." },
+  { prompt: "she pays rent → cash account", side: "right", why: "cash goes down. an asset going down is a credit." },
+  { prompt: "riya puts in her own ₹50,000 → owner's equity", side: "right", why: "equity goes up with a credit." },
+  { prompt: "electricity bill arrives → electricity expense", side: "left", why: "another expense going up, so debit." },
+  { prompt: "she repays part of the loan → loan account", side: "left", why: "the liability goes down. going down is the opposite side: debit." },
+  { prompt: "an office will pay ₹2,000 next week → receivables", side: "left", why: "money owed to you is an asset. assets go up with a debit." },
+];
+
+export const ASSET_LIABILITY_CARDS: SwipeCard[] = [
+  { prompt: "cash in the till", side: "left", why: "money the business has. classic asset." },
+  { prompt: "bank loan", side: "right", why: "it has to be paid back, with interest." },
+  { prompt: "delivery scooter the shop owns", side: "left", why: "equipment the business owns and uses to earn money." },
+  { prompt: "unpaid electricity bill", side: "right", why: "a bill you haven't paid yet is money you owe." },
+  { prompt: "money a customer owes you", side: "left", why: "called accounts receivable. it's coming to you, so it's an asset." },
+  { prompt: "credit card balance", side: "right", why: "you spent the bank's money. now you owe it." },
+  { prompt: "jars of tea leaves and sugar", side: "left", why: "stock (inventory) is an asset. you'll sell it as chai." },
+  { prompt: "salary owed to the helper", side: "right", why: "work done but not paid for yet: a liability." },
+  { prompt: "the shop building you own", side: "left", why: "property you own is an asset, even if it's not cash." },
+  { prompt: "supplier invoice due next week", side: "right", why: "called accounts payable. you owe it, so it's a liability." },
 ];
 
 export const PUZZLE_MESSAGES = [

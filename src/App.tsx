@@ -41,11 +41,18 @@ function App() {
   };
 
   if (TEAM_ROUTES.has(route)) return <FoundersPage />;
-  if (route.startsWith("#/courses")) return <CoursesPage route={route} />;
-  if (route.startsWith("#/academy")) return <AcademyPage route={route} />;
   if (route.startsWith("#/learn/")) {
     const [courseId = "", chapterId = ""] = route.slice("#/learn/".length).split("/");
     return <LessonReader key={route} courseId={courseId} chapterId={chapterId} />;
+  }
+  // Signed-in people get courses and the academy inside the app, with the same menu everywhere
+  if (route.startsWith("#/courses")) {
+    if (!username) return <CoursesPage route={route} />;
+    return <FeedApp route={route.replace("#/courses", "#/feed/courses")} username={username} onLogout={logout} />;
+  }
+  if (route.startsWith("#/academy")) {
+    if (!username) return <AcademyPage route={route} />;
+    return <FeedApp route={route} username={username} onLogout={logout} />;
   }
   if (!username) return <LoginScreen onLogin={login} />;
   if (route.startsWith("#/feed")) return <FeedApp route={route} username={username} onLogout={logout} />;

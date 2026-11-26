@@ -89,7 +89,7 @@ export const PortRush = () => {
   if (phase === "over") {
     return (
       <GameOver
-        headline={score >= 15 ? "certified port sniffer" : score >= 8 ? "not bad, netadmin" : "the doors won this time"}
+        headline={score >= 15 ? "legendary port sniffer" : score >= 8 ? "not bad, netadmin" : "the doors won this time"}
         score={score}
         detail={best !== null ? `your best: ${best}` : ""}
         newBest={newBest}

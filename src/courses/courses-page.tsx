@@ -111,7 +111,7 @@ const Hero = () => {
             href="#/academy"
             className="rounded-full border border-(--line) bg-(--panel) px-5 py-3 text-sm font-medium text-(--muted) backdrop-blur transition hover:text-(--fg)"
           >
-            🎓 get certified in networking
+            🛰️ networking academy: real labs
           </a>
         </div>
         <CoverStrip />

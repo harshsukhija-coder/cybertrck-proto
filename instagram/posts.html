@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>offtrck academy · instagram posts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..800&family=Unbounded:wght@400..900&family=Anton&family=Instrument+Serif:ital@1&family=Space+Grotesk:wght@400..700&display=block" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #08090d;
+    --panel: #10131b;
+    --panel-2: #151925;
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #eef0f5;
+    --muted: rgba(238, 240, 245, 0.56);
+    --dim: rgba(238, 240, 245, 0.34);
+    --blue: #4f8cff;
+    --green: #2ee6a6;
+    --amber: #ffb020;
+    --red: #ff4d6d;
+    --purple: #b36bff;
+    --cyan: #5ad1ff;
+    --accent: var(--blue);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1b1d24; font-family: "Space Grotesk", sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+  body.preview { display: flex; flex-wrap: wrap; gap: 40px; padding: 40px; }
+  body.preview .post { zoom: 0.4; }
+  body.single { background: var(--bg); }
+
+  .post {
+    width: 1080px; height: 1350px; position: relative; overflow: hidden;
+    background: var(--bg); padding: 72px 80px 64px; display: flex; flex-direction: column;
+  }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: "Unbounded"; font-weight: 700; font-size: 30px; letter-spacing: -0.02em; }
+  .brand span { font-weight: 400; color: var(--muted); }
+  .brand svg { width: 40px; height: 40px; color: var(--accent); }
+  .idx { font-family: "JetBrains Mono"; font-size: 22px; color: var(--dim); letter-spacing: 0.08em; }
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .foot { display: flex; align-items: center; justify-content: space-between; font-family: "JetBrains Mono"; font-size: 22px; color: var(--dim); letter-spacing: 0.06em; text-transform: uppercase; }
+  .foot b { color: var(--text); font-weight: 600; }
+
+  .kicker { font-family: "JetBrains Mono"; font-size: 24px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 14px; }
+  .kicker::before { content: ""; width: 12px; height: 12px; border-radius: 99px; background: currentColor; }
+  h1 { font-family: "Unbounded"; font-weight: 700; font-size: 92px; line-height: 1.02; letter-spacing: -0.045em; margin-top: 28px; }
+  h1.xl { font-size: 118px; }
+  h1.md { font-size: 76px; }
+  h1 em { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: var(--accent); font-size: 1.12em; }
+  .sub { font-size: 36px; line-height: 1.4; color: var(--muted); margin-top: 28px; max-width: 860px; }
+  .sub b { color: var(--text); font-weight: 600; }
+  .mono { font-family: "JetBrains Mono"; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 36px; }
+  .chip { display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 99px; padding: 12px 22px; font-family: "JetBrains Mono"; font-size: 22px; color: var(--muted); }
+
+  /* terminal */
+  .term { padding: 40px 44px; font-family: "JetBrains Mono"; font-size: 30px; line-height: 1.65; }
+  .term .bar { display: flex; gap: 12px; margin-bottom: 28px; }
+  .term .bar i { width: 18px; height: 18px; border-radius: 99px; background: rgba(255,255,255,.14); }
+  .term .p { color: var(--green); }
+  .term .o { color: var(--muted); }
+  .term .e { color: var(--red); }
+  .cursor { display: inline-block; width: 18px; height: 34px; background: var(--text); vertical-align: -6px; }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 56px; }
+  .stat { padding: 30px 28px; }
+  .stat b { display: block; font-family: "Anton"; font-size: 96px; line-height: 1; font-weight: 400; }
+  .stat span { display: block; margin-top: 14px; font-family: "JetBrains Mono"; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+  /* steps */
+  .steps { margin-top: 56px; display: grid; gap: 18px; }
+  .step { display: grid; grid-template-columns: 96px 1fr; gap: 30px; align-items: center; padding: 30px 36px; }
+  .step .n { width: 96px; height: 96px; border-radius: 28px; display: grid; place-items: center; font-family: "Anton"; font-size: 46px; color: #08090d; }
+  .step h3 { font-family: "Unbounded"; font-weight: 600; font-size: 38px; letter-spacing: -0.03em; }
+  .step p { font-size: 28px; color: var(--muted); margin-top: 8px; line-height: 1.35; }
+
+  /* blog list */
+  .list { margin-top: 48px; display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: 18px 1fr auto; gap: 26px; align-items: center; padding: 26px 32px; font-size: 32px; }
+  .row .dot { width: 18px; height: 18px; border-radius: 99px; }
+  .row .m { font-family: "JetBrains Mono"; font-size: 20px; color: var(--dim); letter-spacing: 0.08em; }
+  .callout { margin-top: 26px; padding: 30px 36px; border-left: 8px solid var(--green); border-radius: 18px; background: rgba(46,230,166,.07); font-size: 30px; line-height: 1.45; color: var(--muted); }
+  .callout b { color: var(--text); }
+  .callout .t { display: block; font-family: "JetBrains Mono"; font-size: 20px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+
+  /* animation mock */
+  .anim { margin-top: 52px; overflow: hidden; }
+  .anim-head { display: flex; justify-content: space-between; align-items: center; padding: 26px 36px; border-bottom: 1px solid var(--line); font-family: "JetBrains Mono"; font-size: 20px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+  .anim-head .pips { display: flex; gap: 10px; }
+  .anim-head .pips i { width: 46px; height: 8px; border-radius: 9px; background: rgba(255,255,255,.12); }
+  .anim-head .pips i.on { background: var(--amber); }
+  .stage { position: relative; height: 330px; padding: 0 40px; }
+  .stage .wire { position: absolute; left: 140px; right: 140px; top: 190px; height: 4px; background: rgba(255,255,255,.14); }
+  .stage .wire::before { content: ""; position: absolute; left: 0; width: 48%; top: 0; bottom: 0; background: var(--amber); }
+  .nodes { position: absolute; inset: 0 40px; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .node { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 46px; }
+  .node .ic { width: 124px; height: 124px; border-radius: 32px; background: var(--panel-2); border: 1px solid var(--line); display: grid; place-items: center; position: relative; z-index: 1; }
+  .node .ic.hot { border-color: var(--amber); box-shadow: 0 0 0 8px rgba(255,176,32,.12); }
+  .node .ic svg { width: 64px; height: 64px; color: var(--text); }
+  .node .lb { margin-top: 16px; font-family: "JetBrains Mono"; font-size: 22px; color: var(--muted); }
+  .packet { position: absolute; top: 56px; left: 50%; transform: translateX(-62%); background: var(--amber); color: #08090d; font-family: "JetBrains Mono"; font-weight: 700; font-size: 22px; padding: 10px 20px; border-radius: 99px; white-space: nowrap; }
+  .narr { padding: 28px 36px 34px; border-top: 1px solid var(--line); font-size: 29px; line-height: 1.4; color: var(--muted); display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: center; }
+  .narr b { color: var(--text); }
+  .ctrls { display: flex; gap: 12px; }
+  .ctrls i { width: 70px; height: 70px; border-radius: 99px; border: 1px solid var(--line); display: grid; place-items: center; font-style: normal; font-size: 28px; color: var(--text); }
+  .ctrls i.pri { background: var(--amber); color: #08090d; border: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+
+  /* quiz */
+  .quiz { margin-top: 52px; padding: 40px 42px; }
+  .quiz .q { font-size: 38px; line-height: 1.3; font-weight: 600; }
+  .quiz .meta { font-family: "JetBrains Mono"; font-size: 20px; letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; margin-bottom: 22px; display: flex; justify-content: space-between; }
+  .opt { margin-top: 18px; display: flex; justify-content: space-between; align-items: center; padding: 26px 30px; border-radius: 22px; border: 1px solid var(--line); font-size: 30px; color: var(--muted); }
+  .opt.good { border-color: var(--green); background: rgba(46,230,166,.09); color: var(--text); }
+  .opt.good::after { content: "✓"; color: var(--green); font-weight: 700; }
+  .why { margin-top: 24px; font-size: 27px; line-height: 1.45; color: var(--muted); }
+  .why b { color: var(--green); }
+
+  /* lab */
+  .lab { margin-top: 48px; overflow: hidden; }
+  .lab-head { padding: 28px 36px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .lab-head h3 { font-family: "Unbounded"; font-weight: 600; font-size: 32px; letter-spacing: -0.03em; }
+  .tasks { padding: 26px 36px 34px; display: grid; gap: 16px; border-top: 1px solid var(--line); }
+  .task { display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: center; font-size: 28px; color: var(--muted); }
+  .task i { width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--line); display: grid; place-items: center; font-family: "JetBrains Mono"; font-style: normal; font-size: 20px; color: var(--text); }
+  .task code { font-family: "JetBrains Mono"; font-size: 24px; color: var(--text); background: rgba(255,255,255,.06); padding: 2px 10px; border-radius: 8px; }
+
+  /* grading */
+  .drop { margin-top: 48px; padding: 34px 36px; border: 3px dashed rgba(255,255,255,.18); border-radius: 30px; display: grid; grid-template-columns: 96px 1fr auto; gap: 28px; align-items: center; }
+  .file { width: 96px; height: 112px; border-radius: 16px; background: var(--panel-2); border: 1px solid var(--line); display: grid; place-items: center; font-family: "JetBrains Mono"; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .drop .name { font-family: "JetBrains Mono"; font-size: 28px; }
+  .drop .s { font-size: 24px; color: var(--dim); margin-top: 6px; }
+  .arrow-down { text-align: center; font-size: 40px; color: var(--dim); margin: 14px 0; }
+  .result { padding: 34px 36px; }
+  .result-top { display: flex; align-items: center; gap: 30px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  .ring { width: 150px; height: 150px; border-radius: 99px; display: grid; place-items: center; font-family: "Anton"; font-size: 50px; flex: none; }
+  .stamp { font-family: "Anton"; font-size: 72px; line-height: 1; padding: 8px 26px 10px; border: 6px solid currentColor; border-radius: 20px; transform: rotate(-5deg); }
+  .result-top .info { margin-left: auto; text-align: right; font-family: "JetBrains Mono"; font-size: 21px; color: var(--dim); line-height: 1.6; }
+  .checks { display: grid; gap: 4px; margin-top: 18px; }
+  .ck { display: grid; grid-template-columns: 44px 1fr auto; gap: 18px; align-items: start; padding: 14px 0; font-size: 27px; line-height: 1.35; }
+  .ck .mk { width: 44px; height: 44px; border-radius: 99px; display: grid; place-items: center; font-weight: 700; font-size: 24px; }
+  .ck .mk.ok { background: rgba(46,230,166,.14); color: var(--green); }
+  .ck .mk.no { background: rgba(255,77,109,.16); color: var(--red); }
+  .ck .pts { font-family: "JetBrains Mono"; font-size: 22px; color: var(--dim); padding-top: 8px; }
+  .ck .reason { display: block; font-size: 24px; color: var(--muted); margin-top: 6px; }
+  .ck .hint { display: block; margin-top: 12px; padding: 16px 20px; border-radius: 14px; background: rgba(255,176,32,.08); font-size: 23px; color: var(--muted); }
+  .ck .hint b { color: var(--amber); font-family: "JetBrains Mono"; font-weight: 500; }
+
+  /* modules */
+  .mods { margin-top: 46px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mod { padding: 28px 30px 30px; position: relative; overflow: hidden; }
+  .mod::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c); }
+  .mod .num { font-family: "Anton"; font-size: 54px; line-height: 1; color: var(--c); }
+  .mod h3 { margin-top: 14px; font-family: "Unbounded"; font-weight: 600; font-size: 29px; letter-spacing: -0.03em; line-height: 1.15; }
+  .mod p { margin-top: 14px; font-family: "JetBrains Mono"; font-size: 19px; color: var(--muted); line-height: 1.5; }
+  .mod p b { color: var(--text); font-weight: 500; }
+
+  /* badge */
+  .badge-row { margin-top: 44px; display: grid; grid-template-columns: 470px 1fr; gap: 44px; align-items: center; }
+  .badge-row img { width: 100%; display: block; border-radius: 28px; transform: rotate(-3deg); box-shadow: 0 40px 90px rgba(0,0,0,.6); }
+  .share-list { display: grid; gap: 14px; }
+  .share-list .label { font-family: "JetBrains Mono"; font-size: 19px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .share-list .chip { justify-self: start; }
+  .reqs { display: flex; gap: 14px; margin-top: 52px; flex-wrap: wrap; }
+
+  /* cta */
+  .cta { margin-top: 56px; display: inline-flex; align-items: center; gap: 20px; background: var(--accent); color: #08090d; font-family: "Unbounded"; font-weight: 700; font-size: 38px; letter-spacing: -0.02em; padding: 30px 48px; border-radius: 99px; align-self: flex-start; }
+  .recap { margin-top: 60px; display: grid; gap: 22px; }
+  .recap div { display: flex; align-items: center; gap: 22px; font-size: 34px; }
+  .recap div::before { content: "✓"; width: 52px; height: 52px; border-radius: 99px; background: rgba(79,140,255,.16); color: var(--blue); display: grid; place-items: center; font-weight: 700; font-size: 26px; flex: none; }
+
+  .big-ip { font-family: "JetBrains Mono"; font-weight: 700; font-size: 104px; letter-spacing: -0.04em; line-height: 1; margin-top: 40px; }
+  .big-ip span { color: var(--dim); }
+  .ip-parts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 40px; }
+  .ip-parts div { padding: 24px 26px; font-family: "JetBrains Mono"; font-size: 22px; color: var(--dim); line-height: 1.5; }
+  .ip-parts div b { display: block; font-size: 34px; color: var(--text); font-weight: 600; filter: blur(9px); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+    <path d="M12 2.5 20.5 7.25v9.5L12 21.5 3.5 16.75v-9.5Z" />
+    <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="pc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" />
+  </symbol>
+  <symbol id="switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.5" y="6" width="19" height="12" rx="2.5" /><path d="M7 10.5h9l-2-2M17 13.5H8l2 2" />
+  </symbol>
+  <symbol id="router" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9" /><path d="M7 9.5h9l-2-2M17 14.5H8l2 2" />
+  </symbol>
+  <symbol id="server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="8" rx="2" /><rect x="4" y="13" width="16" height="8" rx="2" /><path d="M8 7h.01M8 17h.01" />
+  </symbol>
+</svg>
+
+<!-- 01 · teaser -->
+<section class="post" id="p01" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">01</div></div>
+  <div class="body">
+    <div class="panel term">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div><span class="p">C:\&gt;</span> ping offtrck.academy</div>
+      <div class="o">Pinging offtrck.academy with 32 bytes of data:</div>
+      <div class="e">Request timed out.</div>
+      <div class="e">Request timed out.</div>
+      <div class="e">Request timed out.</div>
+      <div style="margin-top: 12px"><span class="p">C:\&gt;</span> <span class="cursor"></span></div>
+    </div>
+    <h1 class="xl" style="margin-top: 72px">something is <em>coming.</em></h1>
+    <p class="sub">no reply yet. that's on purpose.</p>
+  </div>
+  <div class="foot"><span>not live yet</span><span><b>turn on notifications</b></span></div>
+</section>
+
+<!-- 02 · teaser -->
+<section class="post" id="p02" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck</div><div class="idx">02</div></div>
+  <div class="body">
+    <div class="kicker">quick test</div>
+    <h1 class="md">can you read this?</h1>
+    <div class="big-ip">192.168.1.10<span>/24</span></div>
+    <div class="ip-parts">
+      <div class="panel">network<b>192.168.1</b></div>
+      <div class="panel">host<b>.10</b></div>
+      <div class="panel">mask<b>255.255.255.0</b></div>
+    </div>
+    <p class="sub" style="margin-top: 56px">if that looks like a random string of numbers, <b>good.</b> very soon it won't.</p>
+  </div>
+  <div class="foot"><span>coming soon</span><span><b>offtrck</b></span></div>
+</section>
+
+<!-- 03 · reveal -->
+<section class="post" id="p03">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">03</div></div>
+  <div class="body">
+    <div class="kicker">introducing offtrck academy</div>
+    <h1 class="xl">networking, from zero to <em>pro.</em></h1>
+    <p class="sub">learn how the internet really works, then prove it by building real networks in <b>Cisco Packet Tracer.</b></p>
+    <div class="stats">
+      <div class="panel stat"><b>6</b><span>modules</span></div>
+      <div class="panel stat"><b>14</b><span>blogs</span></div>
+      <div class="panel stat"><b>6</b><span>labs</span></div>
+      <div class="panel stat"><b style="color: var(--blue)">1</b><span>badge</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>free · at your own pace</span><span><b>next: how it works →</b></span></div>
+</section>
+
+<!-- 04 · how it works -->
+<section class="post" id="p04">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">04</div></div>
+  <div class="body">
+    <div class="kicker">how it works</div>
+    <h1 class="md">4 steps. <em>that's it.</em></h1>
+    <div class="steps">
+      <div class="panel step"><div class="n" style="background: var(--blue)">1</div><div><h3>read and play</h3><p>short blogs with animations you can tap through</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--green)">2</div><div><h3>prove it</h3><p>a quiz after every module. 70% to pass</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--amber)">3</div><div><h3>build it for real</h3><p>solve a problem in Cisco Packet Tracer and upload the file</p></div></div>
+      <div class="panel step"><div class="n" style="background: var(--red)">4</div><div><h3>earn the badge</h3><p>finish every lab, then share your new badge</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>next: the blogs</span><span><b>offtrck academy</b></span></div>
+</section>
+
+<!-- 05 · blogs -->
+<section class="post" id="p05">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">05</div></div>
+  <div class="body">
+    <div class="kicker">step 1 · read</div>
+    <h1 class="md">14 blogs. <em>zero</em> boring textbook talk.</h1>
+    <div class="list">
+      <div class="panel row"><i class="dot" style="background: var(--blue)"></i>what really happens when you open a website<span class="m">M1</span></div>
+      <div class="panel row"><i class="dot" style="background: var(--green)"></i>ip addresses, explained like a postcode<span class="m">M2</span></div>
+      <div class="panel row"><i class="dot" style="background: var(--green)"></i>subnetting without tears<span class="m">M2</span></div>
+      <div class="panel row"><i class="dot" style="background: var(--purple)"></i>dhcp: the address vending machine<span class="m">M5</span></div>
+      <div class="panel row"><i class="dot" style="background: var(--cyan)"></i>acls: the bouncer at the door<span class="m">M6</span></div>
+    </div>
+    <div class="callout"><span class="t">tip, straight from module 2</span>wherever the mask says <b>255</b>, that part is the network. wherever it says <b>0</b>, it's for devices.</div>
+  </div>
+  <div class="foot"><span>5–8 minutes each</span><span><b>next: animations →</b></span></div>
+</section>
+
+<!-- 06 · animations -->
+<section class="post" id="p06" style="--accent: var(--amber)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">06</div></div>
+  <div class="body">
+    <div class="kicker">step 1 · play</div>
+    <h1 class="md">don't just read it.<br /><em>tap it.</em></h1>
+    <div class="panel anim">
+      <div class="anim-head"><span>● a packet's trip</span><span class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+      <div class="stage">
+        <div class="wire"></div>
+        <div class="nodes">
+          <div class="node"><div class="ic"><svg><use href="#pc" /></svg></div><div class="lb">your laptop</div></div>
+          <div class="node" style="position: relative"><div class="packet">packet</div><div class="ic hot"><svg><use href="#switch" /></svg></div><div class="lb">switch</div></div>
+          <div class="node"><div class="ic"><svg><use href="#router" /></svg></div><div class="lb">router</div></div>
+          <div class="node"><div class="ic"><svg><use href="#server" /></svg></div><div class="lb">website</div></div>
+        </div>
+      </div>
+      <div class="narr"><span>the <b>switch</b> checks its table and sends the packet out of <b>one</b> port only.</span><span class="ctrls"><i>‹</i><i class="pri">›</i></span></div>
+    </div>
+    <div class="chips">
+      <span class="chip">tcp handshake</span><span class="chip">arp</span><span class="chip">dhcp</span><span class="chip">dns lookup</span><span class="chip">binary</span><span class="chip">subnet calculator</span><span class="chip">vlans</span><span class="chip">routing</span><span class="chip">firewall rules</span>
+    </div>
+  </div>
+  <div class="foot"><span>12 animations inside</span><span><b>next: quizzes →</b></span></div>
+</section>
+
+<!-- 07 · quizzes -->
+<section class="post" id="p07" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">07</div></div>
+  <div class="body">
+    <div class="kicker">step 2 · prove it</div>
+    <h1 class="md">a quiz after <em>every</em> module.</h1>
+    <div class="panel quiz">
+      <div class="meta"><span>module 2 quiz</span><span>question 3 / 8</span></div>
+      <div class="q">PC A is 192.168.1.10/24 and PC B is 192.168.2.10/24. can they talk without a router?</div>
+      <div class="opt">yes, same network</div>
+      <div class="opt good">no, different networks</div>
+      <p class="why"><b>why:</b> with /24, the first three numbers are the network. 192.168.<b>1</b> isn't 192.168.<b>2</b>, so you need a router.</p>
+    </div>
+    <p class="sub">score <b>70%</b> to pass. every answer comes with an explanation.</p>
+  </div>
+  <div class="foot"><span>6 quizzes</span><span><b>next: the real test →</b></span></div>
+</section>
+
+<!-- 08 · packet tracer lab -->
+<section class="post" id="p08" style="--accent: var(--red)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">08</div></div>
+  <div class="body">
+    <div class="kicker">step 3 · build it</div>
+    <h1 class="md">build it in <em>Packet Tracer.</em></h1>
+    <div class="panel lab">
+      <div class="lab-head"><h3>lab 4 · connect two offices</h3><span class="chip">~25 min</span></div>
+      <svg viewBox="0 0 920 320" width="100%" style="display:block">
+        <rect x="30" y="30" width="370" height="270" rx="22" fill="rgba(79,140,255,.05)" stroke="rgba(79,140,255,.45)" stroke-dasharray="8 8" stroke-width="2" />
+        <rect x="520" y="30" width="370" height="270" rx="22" fill="rgba(46,230,166,.05)" stroke="rgba(46,230,166,.45)" stroke-dasharray="8 8" stroke-width="2" />
+        <text x="52" y="66" fill="#4f8cff" font-family="JetBrains Mono" font-size="20">192.168.1.0/24</text>
+        <text x="542" y="66" fill="#2ee6a6" font-family="JetBrains Mono" font-size="20">192.168.2.0/24</text>
+        <line x1="310" y1="120" x2="610" y2="120" stroke="rgba(255,255,255,.35)" stroke-width="3" />
+        <line x1="310" y1="120" x2="130" y2="230" stroke="rgba(255,255,255,.25)" stroke-width="3" />
+        <line x1="610" y1="120" x2="790" y2="230" stroke="rgba(255,255,255,.25)" stroke-width="3" />
+        <rect x="396" y="88" width="128" height="28" rx="8" fill="#10131b" /><text x="460" y="108" text-anchor="middle" fill="rgba(238,240,245,.6)" font-family="JetBrains Mono" font-size="17">10.0.0.0/30</text>
+        <circle cx="310" cy="120" r="40" fill="#151925" stroke="#ff4d6d" stroke-width="3" />
+        <use href="#router" x="286" y="96" width="48" height="48" style="color:#ff4d6d" />
+        <text x="310" y="188" text-anchor="middle" fill="#eef0f5" font-family="Space Grotesk" font-weight="600" font-size="22">R1</text>
+        <circle cx="610" cy="120" r="40" fill="#151925" stroke="#ff4d6d" stroke-width="3" />
+        <use href="#router" x="586" y="96" width="48" height="48" style="color:#ff4d6d" />
+        <text x="610" y="188" text-anchor="middle" fill="#eef0f5" font-family="Space Grotesk" font-weight="600" font-size="22">R2</text>
+        <rect x="96" y="200" width="68" height="60" rx="14" fill="#151925" stroke="rgba(255,255,255,.2)" stroke-width="2" />
+        <use href="#pc" x="108" y="208" width="44" height="44" style="color:#eef0f5" />
+        <text x="130" y="288" text-anchor="middle" fill="rgba(238,240,245,.6)" font-family="JetBrains Mono" font-size="18">PC-A .10</text>
+        <rect x="756" y="200" width="68" height="60" rx="14" fill="#151925" stroke="rgba(255,255,255,.2)" stroke-width="2" />
+        <use href="#pc" x="768" y="208" width="44" height="44" style="color:#eef0f5" />
+        <text x="790" y="288" text-anchor="middle" fill="rgba(238,240,245,.6)" font-family="JetBrains Mono" font-size="18">PC-B .10</text>
+      </svg>
+      <div class="tasks">
+        <div class="task"><i>1</i><span>give each router interface its IP address</span></div>
+        <div class="task"><i>2</i><span>add a static route on <b style="color:var(--text)">both</b> routers: <code>ip route …</code></span></div>
+        <div class="task"><i>3</i><span>ping PC-A → PC-B, then save the <code>.pkt</code> file</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>6 hands-on labs</span><span><b>next: upload it →</b></span></div>
+</section>
+
+<!-- 09 · upload & pass -->
+<section class="post" id="p09" style="--accent: var(--green)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">09</div></div>
+  <div class="body">
+    <div class="kicker">step 3 · get graded</div>
+    <h1 class="md">upload it. graded in <em>seconds.</em></h1>
+    <div class="drop">
+      <div class="file">.pkt</div>
+      <div><div class="name">connect-two-offices.pkt</div><div class="s">drag and drop, or pick the file</div></div>
+      <span class="chip" style="color: var(--green); border-color: rgba(46,230,166,.4)">read ✓</span>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="panel result">
+      <div class="result-top">
+        <div class="ring" style="border: 12px solid var(--green)">100</div>
+        <div class="stamp" style="color: var(--green)">PASS</div>
+        <div class="info">5 devices<br />4 cables<br />PT 9.0</div>
+      </div>
+      <div class="checks">
+        <div class="ck"><span class="mk ok">✓</span><span>R1 G0/0 is 192.168.1.1 /24 and up</span><span class="pts">10</span></div>
+        <div class="ck"><span class="mk ok">✓</span><span>R2 has a route to 192.168.1.0/24</span><span class="pts">10</span></div>
+        <div class="ck"><span class="mk ok">✓</span><span>PC-A can ping PC-B (there and back)</span><span class="pts">25</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>80% to pass a lab</span><span><b>next: what if it fails? →</b></span></div>
+</section>
+
+<!-- 10 · fail explains why -->
+<section class="post" id="p10" style="--accent: var(--red)">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">10</div></div>
+  <div class="body">
+    <div class="kicker">step 3 · fix it</div>
+    <h1 class="md">failed? you'll know <em>exactly</em> why.</h1>
+    <div class="panel result" style="margin-top: 52px">
+      <div class="result-top">
+        <div class="ring" style="border: 12px solid var(--red)">65</div>
+        <div class="stamp" style="color: var(--red)">FAIL</div>
+        <div class="info">need 80<br />to pass</div>
+      </div>
+      <div class="checks">
+        <div class="ck"><span class="mk ok">✓</span><span>R1 has a route to 192.168.2.0/24</span><span class="pts">10</span></div>
+        <div class="ck"><span class="mk no">✕</span><span>R2 has a route to 192.168.1.0/24
+          <span class="reason">R2 has no route back, so replies get lost.</span>
+          <span class="hint">hint: on R2 type <b>ip route 192.168.1.0 255.255.255.0 10.0.0.1</b></span></span><span class="pts">0/10</span></div>
+        <div class="ck"><span class="mk no">✕</span><span>PC-A can ping PC-B (there and back)
+          <span class="reason">the request arrives, the reply never comes home.</span></span><span class="pts">0/25</span></div>
+      </div>
+    </div>
+    <p class="sub">fix it in Packet Tracer, upload again. <b>your best score counts.</b></p>
+  </div>
+  <div class="foot"><span>no waiting for a teacher</span><span><b>next: the full course →</b></span></div>
+</section>
+
+<!-- 11 · syllabus -->
+<section class="post" id="p11">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">11</div></div>
+  <div class="body">
+    <div class="kicker">the full course</div>
+    <h1 class="md">6 modules, in <em>this</em> order.</h1>
+    <div class="mods">
+      <div class="panel mod" style="--c: var(--blue)"><div class="num">01</div><h3>how networks actually work</h3><p>lab: <b>hello, packet tracer</b></p></div>
+      <div class="panel mod" style="--c: var(--green)"><div class="num">02</div><h3>ip addresses and subnetting</h3><p>lab: <b>your first office LAN</b></p></div>
+      <div class="panel mod" style="--c: var(--amber)"><div class="num">03</div><h3>switching and vlans</h3><p>lab: <b>split the office with vlans</b></p></div>
+      <div class="panel mod" style="--c: var(--red)"><div class="num">04</div><h3>routing</h3><p>lab: <b>connect two offices</b></p></div>
+      <div class="panel mod" style="--c: var(--purple)"><div class="num">05</div><h3>dhcp and dns</h3><p>lab: <b>automatic addresses with dhcp</b></p></div>
+      <div class="panel mod" style="--c: var(--cyan)"><div class="num">06</div><h3>security basics</h3><p>lab: <b>harden the router</b></p></div>
+    </div>
+    <p class="sub">every module: <b>blogs → quiz → lab.</b> about 4 hours in total.</p>
+  </div>
+  <div class="foot"><span>beginner friendly</span><span><b>next: the finish line →</b></span></div>
+</section>
+
+<!-- 12 · badge -->
+<section class="post" id="p12">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">12</div></div>
+  <div class="body">
+    <div class="kicker">step 4 · earn the badge</div>
+    <h1 class="md">finish the course. <em>flex the badge.</em></h1>
+    <div class="badge-row">
+      <img src="assets/badge-network-pro.png" alt="" />
+      <div class="share-list">
+        <div class="label">share it on</div>
+        <span class="chip">Instagram</span><span class="chip">LinkedIn</span><span class="chip">X</span><span class="chip">WhatsApp</span>
+        <div class="label" style="margin-top: 10px">caption written for you ✓</div>
+      </div>
+    </div>
+    <div class="reqs">
+      <span class="chip">6 quizzes ✓</span><span class="chip">6 labs ✓</span><span class="chip">final challenge ✓</span>
+    </div>
+  </div>
+  <div class="foot"><span>image + caption, ready to post</span><span><b>15 badges to collect</b></span></div>
+</section>
+
+<!-- 13 · launch -->
+<section class="post" id="p13">
+  <div class="top"><div class="brand"><svg><use href="#logo" /></svg>offtrck <span>academy</span></div><div class="idx">13</div></div>
+  <div class="body">
+    <div class="panel term" style="font-size: 28px">
+      <div><span class="p">C:\&gt;</span> ping offtrck.academy</div>
+      <div class="o">Reply from offtrck.academy: time=1ms</div>
+      <div class="o">Reply from offtrck.academy: time=1ms</div>
+    </div>
+    <h1 class="xl" style="margin-top: 64px">it's <em>live.</em></h1>
+    <div class="recap">
+      <div>14 blogs + 12 animations</div>
+      <div>6 quizzes</div>
+      <div>6 Cisco Packet Tracer labs, graded instantly</div>
+      <div>a network pro badge to share</div>
+    </div>
+    <div class="cta">start free →</div>
+  </div>
+  <div class="foot"><span>link in bio</span><span><b>offtrck academy</b></span></div>
+</section>
+
+<script>
+  const only = new URLSearchParams(location.search).get("p");
+  if (only) {
+    document.body.classList.add("single");
+    document.querySelectorAll(".post").forEach(p => { if (p.id !== "p" + only) p.remove(); });
+  } else {
+    document.body.classList.add("preview");
+  }
+</script>
+</body>
+</html>

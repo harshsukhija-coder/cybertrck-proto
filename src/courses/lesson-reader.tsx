@@ -109,6 +109,55 @@ const Slide = ({
     );
   }
 
+  if (slide.kind === "story") {
+    return (
+      <div className="flex h-full flex-col justify-center px-7">
+        <p className="flex items-center gap-2 font-jetbrains text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: highlight }}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: highlight }} />
+          the story · {slide.scene}
+        </p>
+        <p className="mt-4 font-accent text-[1.9rem] italic leading-[1.15] text-white">{slide.body}</p>
+        {slide.say && (
+          <div className="mt-7 flex items-end gap-2.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-display text-sm font-bold" style={{ background: highlight, color: shadow }}>
+              R
+            </span>
+            <p className="max-w-[80%] rounded-2xl rounded-bl-md bg-white px-4 py-2.5 font-vibe text-[15px] leading-snug text-black">{slide.say}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (slide.kind === "table") {
+    return (
+      <div className="flex h-full flex-col justify-center px-6">
+        <h2 className="font-display text-2xl font-bold leading-tight text-white">{slide.title}</h2>
+        <div className="mt-5 overflow-hidden rounded-2xl border border-white/15 bg-black/25 font-vibe">
+          {slide.head && (
+            <div className="flex justify-between gap-4 border-b border-white/10 px-4 py-2.5 font-jetbrains text-[10px] font-bold uppercase tracking-widest text-white/50">
+              <span>{slide.head[0]}</span>
+              <span className="text-right">{slide.head[1]}</span>
+            </div>
+          )}
+          {slide.rows.map(([left, right]) => (
+            <div key={left + right} className="flex justify-between gap-4 border-b border-white/[0.06] px-4 py-3 text-[15px] last:border-0">
+              <span className="text-white/85">{left}</span>
+              <span className="text-right font-semibold tabular-nums text-white">{right}</span>
+            </div>
+          ))}
+          {slide.total && (
+            <div className="flex justify-between gap-4 px-4 py-3 font-display text-base font-bold" style={{ background: highlight, color: shadow }}>
+              <span>{slide.total[0]}</span>
+              <span className="text-right tabular-nums">{slide.total[1]}</span>
+            </div>
+          )}
+        </div>
+        {slide.note && <p className="mt-4 font-vibe text-[15px] leading-snug text-white/70">{slide.note}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex h-full flex-col justify-center px-7">
       <span

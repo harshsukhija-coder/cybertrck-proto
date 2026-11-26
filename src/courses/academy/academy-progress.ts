@@ -14,7 +14,6 @@ export type AcademyProgress = {
   /** best lab result, keyed by "module/lesson" */
   labs: Record<string, LabResult>;
   exam?: number;
-  certificate?: { name: string; id: string; date: string };
 };
 
 const empty = (): AcademyProgress => ({ read: [], quiz: {}, labs: {} });
@@ -56,11 +55,6 @@ export const saveExam = (score: number) =>
     p.exam = Math.max(p.exam ?? 0, score);
   });
 
-export const saveCertificate = (certificate: AcademyProgress["certificate"]) =>
-  save(p => {
-    p.certificate = certificate;
-  });
-
 export const useAcademy = () => {
   const [progress, setProgress] = useState(load);
 
@@ -96,7 +90,7 @@ export const useAcademy = () => {
     gradedTotal: graded.length,
     examUnlocked,
     examPassed,
-    certified: examUnlocked && examPassed,
+    finished: examUnlocked && examPassed,
     next: ALL_LESSONS.find(x => statusOf(lessonKey(x.module, x.lesson), x.lesson.kind) !== "done"),
   };
 };

@@ -8,8 +8,8 @@ import type { Lab } from "./types";
 const DEMO_LAB = MODULES.find(m => m.id === "routing")!.lessons.find((l): l is Lab => l.kind === "lab")!;
 
 const Progress = () => {
-  const { done, total, certified } = useAcademy();
-  if (certified) return <span className="font-jetbrains text-[11px] text-emerald-300">🎓 certified</span>;
+  const { done, total, finished } = useAcademy();
+  if (finished) return <span className="font-jetbrains text-[11px] text-emerald-300">🛰️ network pro</span>;
   if (!done) return null;
   return (
     <span className="font-jetbrains text-[11px] text-(--muted)">
@@ -24,14 +24,14 @@ export const AcademyBanner = () => (
     href="#/academy"
     className="group mt-4 flex flex-col gap-4 rounded-3xl border border-(--gem)/30 bg-(--gem)/[0.06] p-5 transition hover:bg-(--gem)/10 @2xl:flex-row @2xl:items-center @2xl:p-6"
   >
-    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-(--gem) text-2xl">🎓</span>
+    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-(--gem) text-2xl">🛰️</span>
     <span className="min-w-0 flex-1">
       <span className="flex items-center gap-2 font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em] text-(--gem)">
-        full course + certificate <Progress />
+        full course + network pro badge <Progress />
       </span>
       <span className="mt-1.5 block font-display text-xl font-bold lowercase leading-tight tracking-[-0.02em]">ready to go deeper? build real networks.</span>
       <span className="mt-1 block text-sm text-(--muted)">
-        {COUNTS.articles} blogs, {COUNTS.quizzes} quizzes and {COUNTS.labs} Cisco Packet Tracer labs, graded the moment you upload. Pass them all to earn a certificate.
+        {COUNTS.articles} blogs, {COUNTS.quizzes} quizzes and {COUNTS.labs} Cisco Packet Tracer labs, graded the moment you upload. Pass the final exam to unlock the network pro badge.
       </span>
     </span>
     <span className="shrink-0 self-start rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition group-hover:-translate-y-0.5 @2xl:self-center">
@@ -64,7 +64,7 @@ export const AcademyPost = () => (
       <div className="px-4 pt-3.5 sm:px-0">
         <p className="font-display text-lg font-bold lowercase leading-tight">build it in packet tracer. upload it. get graded in 2 seconds.</p>
         <p className="mt-1 text-sm text-(--muted)">
-          the full networking course: {MODULES.length} modules, {COUNTS.labs} hands-on labs and a certificate with your name on it.
+          the full networking course: {MODULES.length} modules, {COUNTS.labs} hands-on labs and a network pro badge you can share.
         </p>
         <span className="mt-3 inline-flex rounded-full bg-(--gem) px-4 py-2 text-sm font-semibold text-black transition group-hover:-translate-y-0.5">start for free →</span>
       </div>

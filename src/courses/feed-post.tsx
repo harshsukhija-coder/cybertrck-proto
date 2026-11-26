@@ -5,7 +5,8 @@ import { COURSES, chapterHash, findCourse } from "./data";
 import type { Fact, Poll } from "./feed-extras";
 import { BookmarkIcon, ChevronIcon, CommentIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
 import { gameHash, type GameMeta } from "./games/games";
-import type { Course, CourseChapter } from "./types";
+import { slideOf, type ChapterLayout } from "./post-layouts";
+import type { Course, CourseChapter, LessonSlide } from "./types";
 
 const DOUBLE_TAP_MS = 300;
 const LIKERS = ["packet_pal", "stonks.sid", "dns.diva", "brand.bae", "query.queen", "lagless.lena", "budget.boss", "subnet.sam"];
@@ -338,18 +339,221 @@ const PostFrame = (props: FrameProps) => {
   );
 };
 
+// ---------- chapter post layouts ----------
+
+const CtaLink = ({ course, chapter, label, dark = false }: { course: Course; chapter: CourseChapter; label: string; dark?: boolean }) => {
+  const [shadow, highlight] = chapter.duo;
+  return (
+    <a
+      href={chapterHash(course, chapter)}
+      onClick={event => event.stopPropagation()}
+      className="inline-flex w-fit items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-transform hover:-translate-y-0.5"
+      style={dark ? { background: shadow, color: highlight } : { background: highlight, color: shadow }}
+    >
+      {label}
+      <ChevronIcon className="h-4 w-4" />
+    </a>
+  );
+};
+
+/** Photo on top, a giant number breaking out of it */
+const PosterMedia = ({ course, chapter, onTap }: { course: Course; chapter: CourseChapter; onTap: () => boolean }) => {
+  const stat = slideOf(chapter, "stat")!;
+  const [shadow, highlight] = chapter.duo;
+  return (
+    <div onClick={onTap} className="relative flex aspect-[4/5] flex-col" style={{ background: shadow }}>
+      <ChapterCover chapter={{ ...chapter, word: "", number: undefined }} className="min-h-0 w-full flex-1" />
+      <div className="relative px-6 pb-6 sm:px-7 sm:pb-7">
+        <p
+          className="-mt-[0.5em] break-words font-poster text-[clamp(4.5rem,24vw,8rem)] uppercase leading-[0.9] [text-shadow:0_6px_30px_rgba(0,0,0,0.5)]"
+          style={{ color: highlight }}
+        >
+          {stat.big}
+        </p>
+        <p className="mt-3 font-vibe text-[17px] leading-snug text-white/90">{stat.body}</p>
+        <div className="mt-4">
+          <CtaLink course={course} chapter={chapter} label="find out why" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** A real question you can answer right in the feed */
+const QuizMedia = ({ course, chapter }: { course: Course; chapter: CourseChapter }) => {
+  const quiz = slideOf(chapter, "quiz")!;
+  const [picked, setPicked] = useState<number | null>(null);
+  const [shadow, highlight] = chapter.duo;
+  const answered = picked !== null;
+  return (
+    <div className="relative">
+      <div className="absolute inset-0">
+        <ChapterCover chapter={{ ...chapter, word: "", number: undefined }} className="h-full w-full" />
+      </div>
+      <div className="absolute inset-0" style={{ background: `${shadow}cc` }} />
+      <div className="relative flex flex-col p-5 sm:p-7">
+        <span className="w-fit rounded-full px-2.5 py-1 font-jetbrains text-[10px] font-bold uppercase tracking-widest" style={{ background: highlight, color: shadow }}>
+          can you answer this?
+        </span>
+        <p className="mt-4 font-display text-[clamp(1.35rem,5.8vw,1.8rem)] font-bold lowercase leading-[1.12] tracking-[-0.03em] text-white">{quiz.q}</p>
+        <div className="mt-5 grid gap-2">
+          {quiz.options.map((option, i) => {
+            const tone = !answered
+              ? "border-white/20 bg-black/30 hover:border-white/50"
+              : i === quiz.answer
+                ? "border-emerald-300 bg-emerald-400/25"
+                : i === picked
+                  ? "border-rose-300 bg-rose-500/25"
+                  : "border-white/10 bg-black/20 opacity-50";
+            return (
+              <button
+                key={option}
+                type="button"
+                disabled={answered}
+                onClick={() => setPicked(i)}
+                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-[15px] font-semibold text-white backdrop-blur-sm transition active:scale-[0.98] ${tone}`}
+              >
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/30 font-jetbrains text-[11px]">
+                  {answered && i === quiz.answer ? "✓" : answered && i === picked ? "✕" : String.fromCharCode(65 + i)}
+                </span>
+                {option}
+              </button>
+            );
+          })}
+        </div>
+        {answered && (
+          <div className="mt-4 animate-tile-in">
+            <p className="text-sm leading-snug text-white/85">
+              <b className={picked === quiz.answer ? "text-emerald-300" : "text-rose-300"}>{picked === quiz.answer ? "correct! " : "not quite. "}</b>
+              {quiz.why}
+            </p>
+            <div className="mt-4">
+              <CtaLink course={course} chapter={chapter} label={`the full chapter · ${chapter.minutes} min`} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/** Lesson cards you can swipe, like sticky notes on a desk */
+const NotesMedia = ({ course, chapter }: { course: Course; chapter: CourseChapter }) => {
+  const notes = chapter.lesson.filter((s): s is Extract<LessonSlide, { kind: "text" }> => s.kind === "text").slice(0, 3);
+  const [shadow, highlight] = chapter.duo;
+  const tilt = ["-rotate-2", "rotate-1", "-rotate-1"];
+  return (
+    <div className="py-5" style={{ background: `${highlight}12` }}>
+      <p className="px-5 font-jetbrains text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: highlight }}>
+        {chapter.title} in {notes.length} notes · swipe →
+      </p>
+      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-3">
+        {notes.map((note, i) => (
+          <div
+            key={note.title}
+            className={`flex aspect-square w-[72%] shrink-0 snap-center flex-col rounded-2xl p-5 shadow-xl shadow-black/30 sm:w-[62%] ${tilt[i % tilt.length]}`}
+            style={i % 2 === 0 ? { background: highlight, color: shadow } : { background: shadow, color: "#fff", border: `1px solid ${highlight}40` }}
+          >
+            <span className="font-poster text-4xl leading-none opacity-40">{i + 1}</span>
+            <p className="mt-3 font-display text-lg font-bold lowercase leading-tight">{note.title}</p>
+            <p className="mt-2 line-clamp-5 text-sm leading-snug opacity-85">{note.body}</p>
+          </div>
+        ))}
+        <div className="flex aspect-square w-[72%] shrink-0 snap-center flex-col justify-center gap-4 rounded-2xl border border-dashed border-white/20 p-5 sm:w-[62%]">
+          <p className="font-accent text-2xl italic leading-tight text-white">{chapter.hook}</p>
+          <CtaLink course={course} chapter={chapter} label="read the chapter" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** Compact editorial card: photo beside the headline, spoiler hidden until tapped */
+const SplitMedia = ({ course, chapter, onTap }: { course: Course; chapter: CourseChapter; onTap: () => boolean }) => {
+  const [revealed, setRevealed] = useState(false);
+  const [shadow, highlight] = chapter.duo;
+  return (
+    <div
+      onClick={() => !onTap() && setRevealed(true)}
+      className="grid cursor-pointer grid-cols-[42%_minmax(0,1fr)]"
+      style={{ background: shadow }}
+    >
+      <ChapterCover chapter={{ ...chapter, number: undefined }} wordClass="text-4xl" className="min-h-56 h-full w-full" />
+      <div className="flex flex-col justify-between gap-4 p-5">
+        <span className="font-jetbrains text-[10px] font-bold uppercase tracking-widest" style={{ color: highlight }}>
+          ch {chapter.number} · {chapter.minutes} min
+        </span>
+        <p className="font-display text-xl font-bold lowercase leading-[1.1] tracking-[-0.03em] text-white">{chapter.hook}</p>
+        <div>
+          <p className={`font-accent text-lg italic leading-tight transition-[filter,opacity] duration-500 ${revealed ? "" : "select-none opacity-60 blur-sm"}`} style={{ color: highlight }}>
+            {chapter.tease}
+          </p>
+          {revealed ? (
+            <div className="mt-3">
+              <CtaLink course={course} chapter={chapter} label="go deeper" />
+            </div>
+          ) : (
+            <span className="mt-2 inline-block text-xs text-white/60">tap to reveal</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** A scene from the course storyline, like a comic panel */
+const StoryMedia = ({ course, chapter, onTap }: { course: Course; chapter: CourseChapter; onTap: () => boolean }) => {
+  const scene = slideOf(chapter, "story")!;
+  const [shadow, highlight] = chapter.duo;
+  return (
+    <div onClick={onTap} style={{ background: shadow }}>
+      <div className="relative">
+        <ChapterCover chapter={{ ...chapter, word: "", number: undefined }} className="aspect-[16/10] w-full" />
+        <span className="absolute left-4 top-4 rounded-md px-2 py-1 font-poster text-lg uppercase leading-none" style={{ background: highlight, color: shadow }}>
+          {scene.scene}
+        </span>
+      </div>
+      <div className="p-5 sm:p-6">
+        <p className="font-accent text-[1.6rem] italic leading-[1.15] text-white">{scene.body}</p>
+        {scene.say && (
+          <div className="mt-4 flex items-end gap-2.5">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full font-display text-xs font-bold" style={{ background: highlight, color: shadow }}>
+              R
+            </span>
+            <p className="rounded-2xl rounded-bl-md bg-white px-4 py-2 text-[15px] leading-snug text-black">{scene.say}</p>
+          </div>
+        )}
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <span className="text-sm text-white/60">what happens next?</span>
+          <CtaLink course={course} chapter={chapter} label="continue the story" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ChapterPost = ({
   course,
   chapter,
   reason,
   seed,
+  layout = "carousel",
 }: {
   course: Course;
   chapter: CourseChapter;
   reason?: string;
   seed: number;
+  layout?: ChapterLayout;
 }) => {
   const { liked, toggle, bursts, onTap } = useLike();
+  const media = {
+    carousel: <Carousel course={course} chapter={chapter} onTap={onTap} />,
+    poster: <PosterMedia course={course} chapter={chapter} onTap={onTap} />,
+    quiz: <QuizMedia course={course} chapter={chapter} />,
+    notes: <NotesMedia course={course} chapter={chapter} />,
+    split: <SplitMedia course={course} chapter={chapter} onTap={onTap} />,
+    story: <StoryMedia course={course} chapter={chapter} onTap={onTap} />,
+  }[layout];
   return (
     <PostFrame
       id={`post-${chapter.id}`}
@@ -369,7 +573,7 @@ export const ChapterPost = ({
       reason={reason}
       media={
         <>
-          <Carousel course={course} chapter={chapter} onTap={onTap} />
+          {media}
           <HeartBursts bursts={bursts} />
         </>
       }

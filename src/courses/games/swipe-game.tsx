@@ -94,7 +94,7 @@ export const SwipeGame = ({ gameId, cards, left, right, promptClass = "font-disp
     const missed = results.filter(r => !r.correct);
     return (
       <GameOver
-        headline={score === deck.length ? "flawless. actual genius." : score >= deck.length * 0.7 ? "big brain energy" : "the internet tricked you"}
+        headline={score === deck.length ? "flawless. actual genius." : score >= deck.length * 0.7 ? "big brain energy" : "sneaky ones, right? try again"}
         score={`${score}/${deck.length}`}
         detail={best !== null ? `your best: ${best}/${deck.length}` : ""}
         newBest={newBest}

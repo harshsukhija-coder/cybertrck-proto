@@ -93,7 +93,7 @@ export const QueryBuilder = () => {
   if (phase === "over") {
     return (
       <GameOver
-        headline={finalScore < 40 ? "certified database whisperer" : finalScore < 70 ? "query runs fine" : "it compiled. eventually."}
+        headline={finalScore < 40 ? "official database whisperer" : finalScore < 70 ? "query runs fine" : "it compiled. eventually."}
         score={`${finalScore}s`}
         detail={`${mistakes} wrong ${mistakes === 1 ? "tile" : "tiles"}${best !== null ? ` · your best: ${best}s` : ""}`}
         newBest={newBest}

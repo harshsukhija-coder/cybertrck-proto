@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "react";
 import { markRead, saveExam, saveQuiz, useAcademy } from "./academy-progress";
 import { KindIcon, Ring, Shell, StatusMark } from "./academy-ui";
+import { BadgeMedal } from "../badges/badge-medal";
+import { badgeHash, findBadge } from "../badges/badges";
 import { ArticleView } from "./article-view";
-import { CertificatePage } from "./certificate";
 import { ACADEMY_TITLE, COUNTS, FINAL_EXAM, MODULES, findLesson, lessonHash, lessonKey, neighbours } from "./content";
 import { LabView } from "./lab-view";
 import { QuizView } from "./quiz-view";
 import { EXAM_PASS, KIND_LABEL, QUIZ_PASS, type Lesson, type Module } from "./types";
 
 const DEFAULT_ACCENT = "#4f8cff";
+const PRO_BADGE = findBadge("network-pro")!;
 
 const lessonMinutes = (lesson: Lesson) => (lesson.kind === "quiz" ? 5 : lesson.minutes);
 
@@ -18,7 +20,7 @@ const HOW = [
   { icon: "📖", title: "read and play", text: "short blogs with animations you can poke at" },
   { icon: "✅", title: "prove it", text: `a quiz after every module (${QUIZ_PASS}% to pass)` },
   { icon: "🛠️", title: "build it for real", text: "solve a problem in Cisco Packet Tracer, upload the file, get graded" },
-  { icon: "🎓", title: "get certified", text: "pass the final exam and download your certificate" },
+  { icon: "🛰️", title: "earn the badge", text: "pass the final exam to unlock the network pro badge, then share it" },
 ];
 
 const ModuleCard = ({ module }: { module: Module }) => {
@@ -63,7 +65,7 @@ const ModuleCard = ({ module }: { module: Module }) => {
 };
 
 const Overview = () => {
-  const { done, total, next, examUnlocked, examPassed, certified, gradedPassed, gradedTotal, progress } = useAcademy();
+  const { done, total, next, examUnlocked, examPassed, finished, gradedPassed, gradedTotal, progress } = useAcademy();
   const hours = Math.round(COUNTS.minutes / 60);
 
   return (
@@ -71,10 +73,10 @@ const Overview = () => {
       <section className="mx-auto max-w-5xl px-5 pb-10 pt-12 sm:px-6 sm:pt-20">
         <span className="inline-flex items-center gap-2 rounded-full border border-(--line) bg-(--panel) px-3.5 py-1.5 font-jetbrains text-[11px] uppercase tracking-wider text-(--muted)">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-(--accent)" />
-          free course · certificate included
+          free course · real hands-on labs
         </span>
         <h1 className="mt-6 max-w-3xl font-display text-[clamp(2.3rem,6.5vw,4.6rem)] font-bold lowercase leading-[1] tracking-[-0.045em]">
-          networking, from zero to <span className="font-accent text-[1.15em] font-normal italic tracking-normal text-(--accent)">certified.</span>
+          networking, from zero to <span className="font-accent text-[1.15em] font-normal italic tracking-normal text-(--accent)">pro.</span>
         </h1>
         <p className="mt-5 max-w-xl text-lg text-(--muted)">
           Learn how the internet really works, then prove it by building real networks in Cisco Packet Tracer. Every practical is graded the moment you upload it.
@@ -100,19 +102,19 @@ const Overview = () => {
             <span className="font-jetbrains text-xs">{Math.round((done / total) * 100)}%</span>
           </Ring>
           <div className="min-w-0 flex-1">
-            <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{done === 0 ? "start here" : certified ? "all done" : "up next"}</p>
+            <p className="font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{done === 0 ? "start here" : finished ? "all done" : "up next"}</p>
             <p className="mt-1 truncate font-display text-lg font-bold lowercase">
-              {certified ? "grab your certificate 🎓" : next ? next.lesson.title : examUnlocked ? "the final exam" : ""}
+              {finished ? "you're a network pro 🛰️" : next ? next.lesson.title : examUnlocked ? "the final exam" : ""}
             </p>
             <p className="text-sm text-(--muted)">
               {gradedPassed}/{gradedTotal} quizzes and labs passed
             </p>
           </div>
           <a
-            href={certified ? "#/academy/certificate" : next ? lessonHash(next.module, next.lesson) : "#/academy/exam"}
+            href={finished ? badgeHash("network-pro") : next ? lessonHash(next.module, next.lesson) : "#/academy/exam"}
             className="w-full shrink-0 rounded-full bg-(--accent) px-6 py-3 text-center font-semibold text-black transition hover:-translate-y-0.5 sm:w-auto"
           >
-            {done === 0 ? "start the course →" : certified ? "view certificate →" : "continue →"}
+            {done === 0 ? "start the course →" : finished ? "share your badge →" : "continue →"}
           </a>
         </div>
       </section>
@@ -154,11 +156,11 @@ const Overview = () => {
                 </span>
               </span>
             </a>
-            <a href="#/academy/certificate" className={`flex items-center gap-4 rounded-3xl border p-5 sm:p-6 transition hover:bg-white/[0.04] ${certified ? "border-emerald-400/40 bg-emerald-400/[0.06]" : "border-(--line) bg-white/[0.02]"}`}>
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/5 text-2xl">{certified ? "🎓" : "🔒"}</span>
+            <a href={badgeHash("network-pro")} className={`flex items-center gap-4 rounded-3xl border p-5 sm:p-6 transition hover:bg-white/[0.04] ${finished ? "border-(--accent)/40 bg-(--accent)/[0.06]" : "border-(--line) bg-white/[0.02]"}`}>
+              <BadgeMedal badge={PRO_BADGE} earned={finished} className="w-12" />
               <span className="min-w-0">
-                <span className="block font-display text-lg font-bold lowercase">certificate</span>
-                <span className="block text-sm text-(--muted)">{certified ? "unlocked: download it now" : `${ACADEMY_TITLE}, with your name on it`}</span>
+                <span className="block font-display text-lg font-bold lowercase">network pro badge</span>
+                <span className="block text-sm text-(--muted)">{finished ? "unlocked: share it with your friends" : "pass the final exam to unlock it"}</span>
               </span>
             </a>
           </li>
@@ -252,8 +254,8 @@ const Exam = () => {
     <div className="mx-auto max-w-2xl px-5 pb-24 pt-10 sm:px-6 sm:pt-14">
       <QuizView kind="exam" title={`${ACADEMY_TITLE}: final exam`} questions={FINAL_EXAM} passMark={EXAM_PASS} best={progress.exam} onFinish={saveExam} />
       {(progress.exam ?? 0) >= EXAM_PASS && (
-        <a href="#/academy/certificate" className="mt-8 flex animate-pop items-center justify-center gap-2 rounded-full bg-emerald-400 py-4 font-semibold text-black transition hover:-translate-y-0.5">
-          🎓 claim your certificate →
+        <a href={badgeHash("network-pro")} className="mt-8 flex animate-pop items-center justify-center gap-2 rounded-full bg-emerald-400 py-4 font-semibold text-black transition hover:-translate-y-0.5">
+          🛰️ you unlocked the network pro badge. share it →
         </a>
       )}
     </div>
@@ -262,7 +264,29 @@ const Exam = () => {
 
 // ---------- router ----------
 
-const AcademyPage = ({ route }: { route: string }) => {
+/** Inside the signed-in app the academy keeps the app's menu, with a breadcrumb instead of its own header */
+const EmbeddedFrame = ({ accent, crumb, children }: { accent: string; crumb?: React.ReactNode; children: React.ReactNode }) => (
+  <div style={{ "--accent": accent } as React.CSSProperties}>
+    <nav className="mx-auto flex max-w-5xl items-center gap-2 px-5 pt-5 font-jetbrains text-xs uppercase tracking-wider text-(--muted) sm:px-6 sm:pt-8">
+      <a href="#/feed/courses" className="hover:text-(--fg)">
+        learn
+      </a>
+      <span>/</span>
+      <a href="#/academy" className={crumb ? "hover:text-(--fg)" : "text-(--fg)"}>
+        networking academy
+      </a>
+      {crumb && (
+        <>
+          <span>/</span>
+          <span className="min-w-0 truncate text-(--fg)">{crumb}</span>
+        </>
+      )}
+    </nav>
+    {children}
+  </div>
+);
+
+const AcademyPage = ({ route, embedded = false }: { route: string; embedded?: boolean }) => {
   const [first = "", second = ""] = route.replace(/^#\/academy\/?/, "").split("/");
   const scroller = useRef<HTMLDivElement>(null);
   const found = findLesson(first, second);
@@ -278,9 +302,6 @@ const AcademyPage = ({ route }: { route: string }) => {
   if (first === "exam") {
     body = <Exam />;
     crumb = "final exam";
-  } else if (first === "certificate") {
-    body = <CertificatePage />;
-    crumb = "certificate";
   } else if (found) {
     accent = found.module.color;
     crumb = (
@@ -299,6 +320,14 @@ const AcademyPage = ({ route }: { route: string }) => {
           back to the academy
         </a>
       </div>
+    );
+  }
+
+  if (embedded) {
+    return (
+      <EmbeddedFrame accent={accent} crumb={crumb}>
+        <div ref={scroller}>{body}</div>
+      </EmbeddedFrame>
     );
   }
 
