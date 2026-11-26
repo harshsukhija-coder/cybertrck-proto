@@ -37,7 +37,7 @@ const cachedPosts = (sources: Source[]) => {
 
 const isFresh = (source: Source) => {
   const entry = readCache()[source.id];
-  return !!entry && Date.now() - entry.at < FRESH_MS;
+  return !!entry && Date.now() - entry.at < (source.freshMs ?? FRESH_MS);
 };
 
 const readSeen = (): string[] => {
@@ -96,7 +96,7 @@ export const orderLive = (posts: LivePost[], interests: InterestId[], seed = 0):
 export const getLivePosts = async (interests: InterestId[], force = false) => {
   const sources = sourcesFor(interests);
   const controller = new AbortController();
-  await Promise.all(sources.filter(s => force || !isFresh(s)).map(s => loadSource(s, controller.signal)));
+  await Promise.all(sources.filter(s => (force && !s.freshMs) || !isFresh(s)).map(s => loadSource(s, controller.signal)));
   return orderLive(cachedPosts(sources), interests, force ? Math.floor(Math.random() * 1e6) : 0);
 };
 
@@ -149,7 +149,7 @@ export const useLivePosts = (interests: InterestId[]) => {
     setSeed(Math.floor(Math.random() * 1e6));
     setWaiting({ key, count: 0 });
     const signal = new AbortController().signal;
-    await Promise.all(sources.map(s => loadSource(s, signal).then(() => setVersion(v => v + 1))));
+    await Promise.all(sources.filter(s => !s.freshMs || !isFresh(s)).map(s => loadSource(s, signal).then(() => setVersion(v => v + 1))));
     setRefreshing(false);
     setUpdatedAt(Date.now());
   }, [sources, key]);

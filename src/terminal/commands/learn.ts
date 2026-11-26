@@ -218,7 +218,7 @@ const showItem = (t: Term, item: FeedItem) => {
       const p = item.post;
       t.segs([
         { text: `● ${p.source}`, color: p.color },
-        { text: ` · live${p.author ? ` · by ${p.author}` : ""}${item.reason ? ` · ${item.reason}` : ""}`, tone: "dim" },
+        { text: ` · ${p.kind === "paper" ? "research paper" : "live"}${p.author ? ` · by ${p.author}` : ""}${item.reason ? ` · ${item.reason}` : ""}`, tone: "dim" },
       ]);
       t.segs([{ text: p.kicker, tone: "dim" }]);
       t.segs([{ text: p.title, bold: true, tone: "fg" }]);

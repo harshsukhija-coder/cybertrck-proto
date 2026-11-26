@@ -6,7 +6,7 @@ import type { Fact, Poll } from "./feed-extras";
 import { BookmarkIcon, ChevronIcon, DotsIcon, GamepadIcon, HeartIcon, ShareIcon, VerifiedIcon } from "./feed-icons";
 import { gameHash, type GameMeta } from "./games/games";
 import { markLiveSeen } from "./live/live-feed";
-import type { LivePost } from "./live/live-sources";
+import { liveLabel, type LivePost } from "./live/live-sources";
 import { slideOf, type ChapterLayout } from "./post-layouts";
 import { shareChapter, shareFact, shareGame, shareLive, sharePoll, type SharePost } from "./share/post-share";
 import { ShareSheet } from "./share/share-sheet";
@@ -32,6 +32,12 @@ const LIVE_CAPTIONS = [
   "this just dropped. worth a look 👀",
   "what people are talking about right now 🔥",
   "straight from the source. we only picked it for you ✨",
+];
+
+const PAPER_CAPTIONS = [
+  "what researchers just published in your world 📄",
+  "new research, picked for your interests. skim the summary, open it if it hooks you 🔬",
+  "this is where tomorrow's chapters come from 🧪",
 ];
 
 const CourseAvatar = ({ course }: { course: Course }) => (
@@ -786,6 +792,7 @@ export const LivePostCard = ({ post, reason, seed }: { post: LivePost; reason?: 
   const { liked, toggle, bursts, onTap } = useLike();
   const [imageOk, setImageOk] = useState(true);
   const watched = useRef<HTMLDivElement>(null);
+  const captions = post.kind === "paper" ? PAPER_CAPTIONS : LIVE_CAPTIONS;
 
   useEffect(() => {
     const node = watched.current;
@@ -823,7 +830,7 @@ export const LivePostCard = ({ post, reason, seed }: { post: LivePost; reason?: 
       }
       accent={post.color}
       name={post.source}
-      meta={`● live · ${post.author ? `by ${post.author}` : post.kicker}`}
+      meta={`${liveLabel(post)} · ${post.author ? `by ${post.author}` : post.kicker}`}
       reason={reason}
       media={
         <>
@@ -852,7 +859,7 @@ export const LivePostCard = ({ post, reason, seed }: { post: LivePost; reason?: 
       liked={liked}
       onToggleLike={toggle}
       likes={Math.max(1, post.likes ?? 1)}
-      caption={LIVE_CAPTIONS[seed % LIVE_CAPTIONS.length]}
+      caption={captions[seed % captions.length]}
       tags={post.hashtags}
       share={() => shareLive(post)}
       age={timeAgo(post.at)}

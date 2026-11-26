@@ -98,15 +98,26 @@ export const shareFact = (fact: Fact): SharePost => {
   };
 };
 
-export const shareLive = (post: LivePost): SharePost => ({
-  key: post.id,
-  label: `live · ${post.source}`,
-  color: post.color,
-  title: post.title,
-  line: post.body,
-  url: post.link,
-  caption: [`👀 ${post.title}`, "", `via ${post.source}: ${post.link}`, "", `found it on my @offtrck feed 👉 ${siteUrl()}`, "", hashtags(post.hashtags)].join("\n"),
-});
+export const shareLive = (post: LivePost): SharePost => {
+  const paper = post.kind === "paper";
+  return {
+    key: post.id,
+    label: paper ? "new research" : `live · ${post.source}`,
+    color: post.color,
+    title: post.title,
+    line: post.body,
+    url: post.link,
+    caption: [
+      paper ? `📄 new research: ${post.title}` : `👀 ${post.title}`,
+      "",
+      paper ? `${post.kicker.replace(/^new paper · /, "published in ")}${post.author ? `, by ${post.author}` : ""}. read it: ${post.link}` : `via ${post.source}: ${post.link}`,
+      "",
+      `found it on my @offtrck feed 👉 ${siteUrl()}`,
+      "",
+      hashtags(post.hashtags),
+    ].join("\n"),
+  };
+};
 
 export const shareGuide = (path: LearningPath): SharePost => {
   const url = link(pathHash(path.id, true));

@@ -25,12 +25,19 @@ export type LivePost = {
   link: string;
   linkLabel: string;
   hashtags: string[];
+  /** Research papers get their own label instead of "live" */
+  kind?: "paper";
 };
+
+/** The small label next to the account name: "● live" or "📄 research" */
+export const liveLabel = (post: LivePost) => (post.kind === "paper" ? "📄 research" : "● live");
 
 export type Source = {
   id: string;
   interests: InterestId[];
   load: (signal: AbortSignal) => Promise<LivePost[]>;
+  /** How long a load stays fresh, when it should differ from the default */
+  freshMs?: number;
 };
 
 const PER_SOURCE = 6;
@@ -331,6 +338,101 @@ const deals: Source = {
   },
 };
 
+// ---------- OpenAlex: new research papers in a field, most-cited first ----------
+
+type Work = {
+  id: string;
+  title: string | null;
+  publication_date: string;
+  cited_by_count: number;
+  doi: string | null;
+  abstract_inverted_index: Record<string, number[]> | null;
+  open_access: { is_oa: boolean; oa_url: string | null };
+  primary_location: { landing_page_url: string | null; source: { display_name: string } | null } | null;
+  authorships: { author: { display_name: string } }[];
+};
+
+/** OpenAlex ships abstracts as word → positions, so put the words back in order */
+const unpackAbstract = (index: Work["abstract_inverted_index"]) => {
+  if (!index) return "";
+  const words: string[] = [];
+  for (const [word, spots] of Object.entries(index)) for (const at of spots) words[at] = word;
+  return words.filter(Boolean).join(" ");
+};
+
+const authorLine = (authors: Work["authorships"]) =>
+  !authors.length ? undefined : authors.length === 1 ? authors[0].author.display_name : `${authors[0].author.display_name} and ${authors.length - 1} other${authors.length > 2 ? "s" : ""}`;
+
+const PAPER_TAGS: Partial<Record<InterestId, string>> = {
+  internet: "networking",
+  home: "wifi",
+  web: "websecurity",
+  security: "cybersecurity",
+  privacy: "privacy",
+  data: "databases",
+  gaming: "games",
+  streaming: "video",
+  marketing: "marketing",
+  business: "accounting",
+  money: "finance",
+};
+
+/**
+ * `topics` are OpenAlex research topic ids (openalex.org/topics). Only papers from
+ * established journals and conferences, from the last three months, most-cited first.
+ */
+const papers = (interest: InterestId, topics: string[]): Source => ({
+  id: `papers-${interest}`,
+  interests: [interest],
+  freshMs: 6 * 60 * 60 * 1000,
+  load: async signal => {
+    const filter = [
+      `primary_topic.id:${topics.join("|")}`,
+      `from_publication_date:${isoDay(daysAgo(90))}`,
+      `to_publication_date:${isoDay(new Date())}`,
+      "language:en",
+      "has_abstract:true",
+      "primary_location.source.is_core:true",
+    ].join(",");
+    const select = "id,title,publication_date,cited_by_count,doi,abstract_inverted_index,open_access,primary_location,authorships";
+    const { results } = await getJson<{ results: Work[] }>(
+      `https://api.openalex.org/works?filter=${encodeURIComponent(filter)}&sort=cited_by_count:desc&per_page=10&select=${select}`,
+      signal,
+    );
+    return results
+      .filter(w => {
+        const title = w.title?.trim() ?? "";
+        return title.length >= 15 && title !== w.primary_location?.source?.display_name;
+      })
+      .slice(0, PER_SOURCE)
+      .map(w => {
+        const venue = w.primary_location?.source?.display_name;
+        const free = w.open_access.is_oa && !!w.open_access.oa_url;
+        const published = new Date(`${w.publication_date}T12:00:00`);
+        return {
+          id: `paper-${w.id.split("/").pop()}`,
+          sourceId: `papers-${interest}`,
+          source: "research papers",
+          color: "#c4b5fd",
+          tags: [interest],
+          kicker: `new paper${venue ? ` · ${clip(venue, 48)}` : ""}`,
+          title: plain(w.title!),
+          body: clip(plain(unpackAbstract(w.abstract_inverted_index)), 220) || undefined,
+          stat: w.cited_by_count
+            ? { value: compact(w.cited_by_count), label: `citation${w.cited_by_count === 1 ? "" : "s"} already · ${free ? "free to read" : "paywalled"}` }
+            : { value: published.toLocaleDateString("en-GB", { day: "numeric", month: "short" }).toLowerCase(), label: free ? "published · free to read" : "published" },
+          author: authorLine(w.authorships),
+          likes: w.cited_by_count,
+          at: published.getTime(),
+          link: (free ? w.open_access.oa_url : null) ?? w.doi ?? w.primary_location?.landing_page_url ?? w.id,
+          linkLabel: free ? "read the paper (free)" : "see the paper",
+          hashtags: ["research", PAPER_TAGS[interest] ?? interest],
+          kind: "paper" as const,
+        };
+      });
+  },
+});
+
 /** Every place live posts come from, and which interests each one feeds */
 export const SOURCES: Source[] = [
   devto("networking", ["internet", "home"]),
@@ -362,6 +464,17 @@ export const SOURCES: Source[] = [
   coins,
   shows,
   deals,
+  papers("internet", ["T10138", "T10714", "T10742", "T11478"]),
+  papers("home", ["T11158", "T10575", "T10326"]),
+  papers("web", ["T12799", "T12479", "T12601"]),
+  papers("security", ["T10400", "T11644", "T11241", "T12479"]),
+  papers("privacy", ["T10764", "T11045", "T11598"]),
+  papers("data", ["T10317", "T11106", "T11891"]),
+  papers("gaming", ["T11197", "T10731"]),
+  papers("streaming", ["T10741", "T11165", "T11478"]),
+  papers("marketing", ["T10609", "T14244", "T13355"]),
+  papers("business", ["T10081", "T13366", "T10058", "T11995"]),
+  papers("money", ["T10047", "T10517", "T13744", "T11326"]),
 ];
 
 export const sourcesFor = (interests: InterestId[]) => SOURCES.filter(s => s.interests.some(i => interests.includes(i)));

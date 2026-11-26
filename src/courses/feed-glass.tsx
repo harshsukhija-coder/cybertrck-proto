@@ -8,7 +8,7 @@ import { useQuickRound } from "./games/use-quick-round";
 import { useGuide } from "./guide/guide-store";
 import { pathHash, type LearningPath } from "./guide/paths";
 import { markLiveSeen } from "./live/live-feed";
-import type { LivePost } from "./live/live-sources";
+import { liveLabel, type LivePost } from "./live/live-sources";
 import { shareChapter, shareFact, shareGame, shareGuide, shareLive, sharePoll, shareQuick, type SharePost } from "./share/post-share";
 import { ShareSheet } from "./share/share-sheet";
 import type { Course, CourseChapter } from "./types";
@@ -343,11 +343,11 @@ const LiveCard = ({ post, reason, compact }: { post: LivePost; reason?: string; 
       <Shell accent={post.color} compact={compact} id={`glass-live-${post.id}`}>
         {hasImage && (
           <Photo src={post.image!} ratio={compact ? "aspect-[4/3]" : "aspect-video"} onError={() => setImageOk(false)}>
-            {!compact && <Who avatar={avatar} name={post.source} meta="live" />}
+            {!compact && <Who avatar={avatar} name={post.source} meta={liveLabel(post).slice(2)} />}
           </Photo>
         )}
         <div className={compact ? "p-2.5" : "p-4"}>
-          {(!hasImage || compact) && <Header avatar={avatar} name={post.source} meta="● live" />}
+          {(!hasImage || compact) && <Header avatar={avatar} name={post.source} meta={liveLabel(post)} />}
           {!compact && <div className={hasImage ? "" : "mt-3"}><Reason text={reason} /></div>}
           <p className="mt-2 font-jetbrains text-[10px] uppercase tracking-wider text-(--muted)">{post.kicker}</p>
           <h3 className={`mt-1 font-display font-bold leading-snug tracking-[-0.01em] ${compact ? "line-clamp-3 text-sm" : "text-xl"}`}>{post.title}</h3>
